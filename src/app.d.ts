@@ -1,14 +1,7 @@
+// Paper prototype runs entirely on the client; no server locals are used.
 declare global {
 	namespace App {
-		interface Locals {
-			user?: {
-				id: number;
-				username: string;
-				role: 'parent' | 'organizer';
-				firstName: string;
-				lastName: string;
-			};
-		}
+		// empty
 	}
 }
 

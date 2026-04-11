@@ -6,11 +6,11 @@
 	let { children } = $props();
 	let menuOpen = $state(false);
 
-	// Redirect to the organizer login if not authenticated as an organizer.
+	// Redirect to the volunteer login if not authenticated as a volunteer.
 	$effect(() => {
 		const user = store.currentUser;
-		if (!user || user.role !== 'organizer') {
-			goto('/login?role=organizer');
+		if (!user || user.role !== 'volunteer') {
+			goto('/login?role=volunteer');
 		}
 	});
 
@@ -28,27 +28,37 @@
 	}
 </script>
 
-{#if store.currentUser && store.currentUser.role === 'organizer'}
-	<nav class="nav" style="background:#27ae60;">
-		<a href="/organizer" class="brand">Volunteer Tracker (Admin)</a>
+{#if store.currentUser && store.currentUser.role === 'volunteer'}
+	<nav class="nav">
+		<a href="/volunteer" class="brand">Volunteer Tracker</a>
 		<button class="hamburger" onclick={() => (menuOpen = !menuOpen)} aria-label="Menu">
 			{menuOpen ? '\u2715' : '\u2630'}
 		</button>
 		<div class="nav-links" class:open={menuOpen}>
 			<a
-				href="/organizer"
-				class:active={page.url.pathname === '/organizer'}
+				href="/volunteer"
+				class:active={page.url.pathname === '/volunteer'}
+				onclick={closeMenu}>Home</a
+			>
+			<a
+				href="/volunteer/events"
+				class:active={isActive('/volunteer/events')}
 				onclick={closeMenu}>Events</a
 			>
 			<a
-				href="/organizer/volunteers"
-				class:active={isActive('/organizer/volunteers')}
-				onclick={closeMenu}>Volunteers</a
+				href="/volunteer/log"
+				class:active={isActive('/volunteer/log')}
+				onclick={closeMenu}>Log</a
 			>
 			<a
-				href="/organizer/manage"
-				class:active={isActive('/organizer/manage')}
-				onclick={closeMenu}>Manage</a
+				href="/volunteer/account"
+				class:active={isActive('/volunteer/account')}
+				onclick={closeMenu}>Account</a
+			>
+			<a
+				href="/volunteer/tutorial"
+				class:active={isActive('/volunteer/tutorial')}
+				onclick={closeMenu}>Tutorial</a
 			>
 			<button
 				type="button"
