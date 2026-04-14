@@ -1,42 +1,81 @@
-# sv
+# Volunteer Tracker
 
-Everything you need to build a Svelte project, powered by [`sv`](https://github.com/sveltejs/cli).
+Swim team volunteer hours tracker. Parents log hours/donations, organizers manage events and see who's contributed.
 
-## Creating a project
+## Stack
 
-If you're seeing this, you've probably already done this step. Congrats!
+- **SvelteKit** (Svelte 5 w/ runes) — frontend + server routes
+- **Drizzle ORM** — type-safe database queries
+- **Neon** — serverless Postgres
+- **Bun** — package manager + runtime
 
-```sh
-# create a new project
-npx sv create my-app
-```
-
-To recreate this project with the same configuration:
+## Setup
 
 ```sh
-# recreate this project
-bun x sv@0.14.1 create --template minimal --types ts --install bun my-app
+bun install
 ```
 
-## Developing
+Create a `.env` file with your Neon database URL:
 
-Once you've created a project and installed dependencies with `npm install` (or `pnpm install` or `yarn`), start a development server:
+```
+DATABASE_URL=postgresql://...
+```
+
+Push the schema to the database and seed it with test data:
 
 ```sh
-npm run dev
-
-# or start the server and open the app in a new browser tab
-npm run dev -- --open
+bun run db:push
+bun run db:seed
 ```
 
-## Building
-
-To create a production version of your app:
+## Dev
 
 ```sh
-npm run build
+bun run dev --open
 ```
 
-You can preview the production build with `npm run preview`.
+## Test accounts (after seeding)
 
-> To deploy your app, you may need to install an [adapter](https://svelte.dev/docs/kit/adapters) for your target environment.
+| Username | Password | Role |
+|----------|----------|------|
+| admin | admin123 | organizer |
+| raymond | password | parent |
+| mary | password | parent |
+| zilin | password | parent |
+
+## Project structure
+
+```
+src/
+├── hooks.server.ts          # runs on every request, loads user from session cookie
+├── lib/
+│   └── server/
+│       ├── auth.ts          # login, register, session tokens
+│       ├── settings.ts      # site-wide settings (hours required, donation rate)
+│       ├── seed.ts          # populates db with test data
+│       └── db/
+│           ├── index.ts     # database connection
+│           └── schema.ts    # all table definitions
+└── routes/
+    ├── login/               # login page
+    ├── register/            # registration page
+    ├── logout/              # clears session
+    ├── organizer/           # organizer dashboard (manage events, view volunteers)
+    │   ├── manage/          # event/settings management
+    │   └── volunteers/      # volunteer list + individual profiles
+    └── parent/              # parent dashboard (log hours, view events)
+        ├── account/         # account settings
+        ├── events/          # event list + signup
+        ├── log/             # log volunteer hours
+        └── tutorial/        # how-to guide
+```
+
+## Commands
+
+| Command | What it does |
+|---------|-------------|
+| `bun run dev` | Start dev server |
+| `bun run build` | Production build |
+| `bun run db:push` | Sync schema.ts to the database |
+| `bun run db:seed` | Seed test data |
+| `bun run check` | TypeScript type checking |

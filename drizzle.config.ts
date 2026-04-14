@@ -1,3 +1,6 @@
+// tells drizzle-kit where our schema is and how to connect to the database
+// used by `bun run db:push` to sync schema changes to Neon
+
 import { defineConfig } from 'drizzle-kit';
 
 export default defineConfig({
