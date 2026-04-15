@@ -1,13 +1,11 @@
-<!-- logout page — clears the session and sends user back to the landing page -->
+<!-- logout page — just a form that posts to the server action -->
 <script lang="ts">
-	import { onMount } from 'svelte';
-	import { goto } from '$app/navigation';
-	import { store } from '$lib/store.svelte';
-
-	onMount(() => {
-		store.logout();
-		goto('/');
-	});
+	import { enhance } from '$app/forms';
 </script>
 
-<p style="padding: 40px; text-align: center;">Signing out...</p>
+<div style="padding: 40px; text-align: center;">
+	<p>Click below to sign out.</p>
+	<form method="POST" use:enhance>
+		<button type="submit" class="btn btn-primary" style="margin-top:12px;">Sign Out</button>
+	</form>
+</div>

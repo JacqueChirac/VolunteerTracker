@@ -1,124 +1,15 @@
-<!-- account page — manage children (add/link/unlink) and change password -->
+<!-- account page — manage children + change password (server-side forms) -->
 <script lang="ts">
-	import { store, type ChildStatus } from '$lib/store.svelte';
+	import { enhance } from '$app/forms';
+	import type { PageData, ActionData } from './$types';
 
-	// --- toggle which form is showing ---
+	let { data, form }: { data: PageData; form: ActionData } = $props();
 	let showAddChild = $state(false);
 	let showLinkChild = $state(false);
-
-	// --- add child form ---
-	let newFirstName = $state('');
-	let newLastName = $state('');
-	let newLevel = $state('');
-	let newStatus = $state<ChildStatus>('full_member');
-	let addChildError = $state<string | null>(null);
-	let addChildSuccess = $state(false);
-
-	// --- link existing child form ---
-	let linkChildId = $state<number | ''>('');
-	let linkError = $state<string | null>(null);
-	let linkSuccess = $state(false);
-
-	let unlinkSuccess = $state(false);
-
-	// --- password change ---
-	let currentPassword = $state('');
-	let newPassword = $state('');
-	let passwordError = $state<string | null>(null);
-	let passwordSuccess = $state(false);
-
-	const user = $derived(store.currentUser);
-
-	// children linked to this user, with their hour progress
-	const myChildren = $derived.by(() => {
-		if (!user) return [];
-		return store.getLinkedChildren(user.id).map((child) => ({
-			...child,
-			totalHours: store.getChildTotalHours(child.id),
-			requiredHours: store.getHoursRequired(child.status)
-		}));
-	});
-
-	// children that exist but aren't linked to this user (for the "link existing" dropdown)
-	const unlinkedChildren = $derived(store.getUnlinkedChildrenForCurrentUser());
-
-	// clear all success/error messages
-	function clearFlashes() {
-		addChildError = null;
-		addChildSuccess = false;
-		linkError = null;
-		linkSuccess = false;
-		unlinkSuccess = false;
-	}
-
-	// create a new child and link to this user
-	function handleAddChild(e: Event) {
-		e.preventDefault();
-		clearFlashes();
-		if (!newFirstName || !newLastName) {
-			addChildError = 'First and last name are required.';
-			return;
-		}
-		store.addChildForCurrentUser({
-			firstName: newFirstName.trim(),
-			lastName: newLastName.trim(),
-			level: newLevel.trim(),
-			status: newStatus
-		});
-		// reset form
-		newFirstName = '';
-		newLastName = '';
-		newLevel = '';
-		newStatus = 'full_member';
-		addChildSuccess = true;
-		showAddChild = false;
-	}
-
-	// link an already-existing child to this user
-	function handleLinkChild(e: Event) {
-		e.preventDefault();
-		clearFlashes();
-		if (!linkChildId) {
-			linkError = 'Please select a child.';
-			return;
-		}
-		const result = store.linkChildToCurrentUser(Number(linkChildId));
-		if (!result.ok) {
-			linkError = result.error;
-			return;
-		}
-		linkChildId = '';
-		linkSuccess = true;
-		showLinkChild = false;
-	}
-
-	// remove the link between a child and this user
-	function handleUnlink(childId: number, firstName: string) {
-		if (!confirm(`Unlink ${firstName} from your account?`)) return;
-		clearFlashes();
-		store.unlinkChildFromCurrentUser(childId);
-		unlinkSuccess = true;
-	}
-
-	function handleChangePassword(e: Event) {
-		e.preventDefault();
-		passwordError = null;
-		passwordSuccess = false;
-		const result = store.changePassword(currentPassword, newPassword);
-		if (!result.ok) {
-			passwordError = result.error;
-			return;
-		}
-		currentPassword = '';
-		newPassword = '';
-		passwordSuccess = true;
-	}
 </script>
 
 <h1>My Account</h1>
-<p style="color:var(--text-light);margin-bottom:24px;">
-	Manage your children and account settings.
-</p>
+<p style="color:var(--text-light);margin-bottom:24px;">Manage your children and account settings.</p>
 
 <div class="grid-2">
 	<!-- left column: children -->
@@ -126,70 +17,43 @@
 		<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;flex-wrap:wrap;gap:8px;">
 			<h2>My Children</h2>
 			<div style="display:flex;gap:6px;">
-				<button
-					class="btn btn-accent"
-					style="font-size:0.85rem;padding:6px 14px;"
-					onclick={() => { showLinkChild = !showLinkChild; showAddChild = false; }}
-				>
+				<button class="btn btn-accent" style="font-size:0.85rem;padding:6px 14px;" onclick={() => { showLinkChild = !showLinkChild; showAddChild = false; }}>
 					{showLinkChild ? 'Cancel' : 'Link Existing'}
 				</button>
-				<button
-					class="btn btn-primary"
-					style="font-size:0.85rem;padding:6px 14px;"
-					onclick={() => { showAddChild = !showAddChild; showLinkChild = false; }}
-				>
+				<button class="btn btn-primary" style="font-size:0.85rem;padding:6px 14px;" onclick={() => { showAddChild = !showAddChild; showLinkChild = false; }}>
 					{showAddChild ? 'Cancel' : '+ New Child'}
 				</button>
 			</div>
 		</div>
 
-		<!-- success/error messages -->
-		{#if addChildSuccess}
-			<div class="card" style="background:#d4edda;border:1px solid #c3e6cb;margin-bottom:12px;">
-				<p style="color:#155724;">Child added successfully.</p>
-			</div>
+		{#if form?.success}
+			<div class="card" style="background:#d4edda;border:1px solid #c3e6cb;margin-bottom:12px;"><p style="color:#155724;">Child added successfully.</p></div>
 		{/if}
-		{#if unlinkSuccess}
-			<div class="card" style="background:#d4edda;border:1px solid #c3e6cb;margin-bottom:12px;">
-				<p style="color:#155724;">Child unlinked from your account.</p>
-			</div>
+		{#if form?.unlinkSuccess}
+			<div class="card" style="background:#d4edda;border:1px solid #c3e6cb;margin-bottom:12px;"><p style="color:#155724;">Child unlinked.</p></div>
 		{/if}
-		{#if linkSuccess}
-			<div class="card" style="background:#d4edda;border:1px solid #c3e6cb;margin-bottom:12px;">
-				<p style="color:#155724;">Child linked to your account.</p>
-			</div>
+		{#if form?.linkSuccess}
+			<div class="card" style="background:#d4edda;border:1px solid #c3e6cb;margin-bottom:12px;"><p style="color:#155724;">Child linked.</p></div>
 		{/if}
-		{#if addChildError}
-			<p class="error" style="margin-bottom:12px;">{addChildError}</p>
-		{/if}
-		{#if linkError}
-			<p class="error" style="margin-bottom:12px;">{linkError}</p>
+		{#if form?.error}
+			<p class="error" style="margin-bottom:12px;">{form.error}</p>
 		{/if}
 
-		<!-- link existing child form (hidden by default) -->
+		<!-- link existing child form -->
 		{#if showLinkChild}
 			<div class="card" style="margin-bottom:16px;">
 				<h3>Link an Existing Child</h3>
-				<p style="font-size:0.85rem;color:var(--text-light);margin-top:4px;margin-bottom:12px;">
-					If another guardian already added your child, select them here to link to your account.
-					Your hours will count toward their goal.
-				</p>
-				{#if unlinkedChildren.length === 0}
-					<p style="color:var(--text-light);">
-						No unlinked children available. Use "New Child" to create one.
-					</p>
+				<p style="font-size:0.85rem;color:var(--text-light);margin-top:4px;margin-bottom:12px;">If another guardian already added your child, select them here.</p>
+				{#if data.allChildren.length === 0}
+					<p style="color:var(--text-light);">No unlinked children available.</p>
 				{:else}
-					<form onsubmit={handleLinkChild}>
+					<form method="POST" action="?/linkChild" use:enhance>
 						<div class="form-group">
 							<label for="childId">Select Child</label>
-							<select id="childId" bind:value={linkChildId} required>
-								<option value="">-- Select a child --</option>
-								{#each unlinkedChildren as child}
-									<option value={child.id}>
-										{child.firstName}
-										{child.lastName}
-										{child.level ? ` (${child.level})` : ''} -- {child.status === 'tryout' ? 'Tryout' : 'Full Member'}
-									</option>
+							<select id="childId" name="childId" required>
+								<option value="">-- Select --</option>
+								{#each data.allChildren as child}
+									<option value={child.id}>{child.firstName} {child.lastName}{child.level ? ` (${child.level})` : ''} — {child.status === 'tryout' ? 'Tryout' : 'Full Member'}</option>
 								{/each}
 							</select>
 						</div>
@@ -199,76 +63,45 @@
 			</div>
 		{/if}
 
-		<!-- add new child form (hidden by default) -->
+		<!-- add new child form -->
 		{#if showAddChild}
 			<div class="card" style="margin-bottom:16px;">
 				<h3>Add a New Child</h3>
-				<form onsubmit={handleAddChild} style="margin-top:12px;">
-					<div class="form-group">
-						<label for="firstName">First Name</label>
-						<input id="firstName" type="text" bind:value={newFirstName} required />
-					</div>
-					<div class="form-group">
-						<label for="lastName">Last Name</label>
-						<input id="lastName" type="text" bind:value={newLastName} required />
-					</div>
-					<div class="form-group">
-						<label for="level">Level</label>
-						<input id="level" type="text" bind:value={newLevel} placeholder="e.g. Beginner, Intermediate, Competitive" />
-					</div>
-					<div class="form-group">
-						<label for="status">Status</label>
-						<select id="status" bind:value={newStatus}>
-							<option value="full_member">Full Member (30 hrs/year)</option>
-							<option value="tryout">Tryout (4 hrs)</option>
-						</select>
+				<form method="POST" action="?/addChild" use:enhance style="margin-top:12px;">
+					<div class="form-group"><label for="firstName">First Name</label><input id="firstName" name="firstName" type="text" required /></div>
+					<div class="form-group"><label for="lastName">Last Name</label><input id="lastName" name="lastName" type="text" required /></div>
+					<div class="form-group"><label for="level">Level</label><input id="level" name="level" type="text" placeholder="e.g. Beginner, Competitive" /></div>
+					<div class="form-group"><label for="status">Status</label>
+						<select id="status" name="status"><option value="full_member">Full Member (30 hrs/year)</option><option value="tryout">Tryout (4 hrs)</option></select>
 					</div>
 					<button type="submit" class="btn btn-primary" style="width:100%;">Add Child</button>
 				</form>
 			</div>
 		{/if}
 
-		<!-- list of linked children with progress bars -->
-		{#if myChildren.length === 0}
-			<div class="card">
-				<p style="color:var(--text-light);">
-					No children linked yet. Add a new child or link an existing one to start tracking hours.
-				</p>
-			</div>
+		<!-- linked children with progress -->
+		{#if data.children.length === 0}
+			<div class="card"><p style="color:var(--text-light);">No children linked yet.</p></div>
 		{/if}
-
-		{#each myChildren as child}
+		{#each data.children as child (child.id)}
 			<div class="card" style="margin-bottom:12px;">
 				<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;flex-wrap:wrap;gap:4px;">
 					<h3>{child.firstName} {child.lastName}</h3>
 					<div style="display:flex;align-items:center;gap:8px;">
-						<span style="font-size:0.85rem;color:var(--text-light);">
-							{child.status === 'tryout' ? 'Tryout' : 'Full Member'}
-							{#if child.level}&middot; {child.level}{/if}
-						</span>
-						<button
-							class="btn btn-danger"
-							style="padding:2px 8px;font-size:0.75rem;"
-							onclick={() => handleUnlink(child.id, child.firstName)}
-						>
-							Unlink
-						</button>
+						<span style="font-size:0.85rem;color:var(--text-light);">{child.status === 'tryout' ? 'Tryout' : 'Full Member'}{#if child.level} &middot; {child.level}{/if}</span>
+						<form method="POST" action="?/unlinkChild" use:enhance style="display:inline;">
+							<input type="hidden" name="childId" value={child.id} />
+							<button type="submit" class="btn btn-danger" style="padding:2px 8px;font-size:0.75rem;" onclick={(e) => { if (!confirm(`Unlink ${child.firstName}?`)) e.preventDefault(); }}>Unlink</button>
+						</form>
 					</div>
 				</div>
 				<div class="progress-bar">
-					<div
-						class="progress-bar-fill"
-						style="width:{Math.min(100, (child.totalHours / child.requiredHours) * 100)}%;{child.totalHours >= child.requiredHours ? 'background:#27ae60' : ''}"
-					>
+					<div class="progress-bar-fill" style="width:{Math.min(100, (child.totalHours / child.requiredHours) * 100)}%;{child.totalHours >= child.requiredHours ? 'background:#27ae60' : ''}">
 						{child.totalHours} / {child.requiredHours} hrs
 					</div>
 				</div>
 				<p style="font-size:0.85rem;color:var(--text-light);margin-top:4px;">
-					{#if child.totalHours >= child.requiredHours}
-						Goal reached!
-					{:else}
-						{(child.requiredHours - child.totalHours).toFixed(1)} hours remaining
-					{/if}
+					{#if child.totalHours >= child.requiredHours}Goal reached!{:else}{(child.requiredHours - child.totalHours).toFixed(1)} hours remaining{/if}
 				</p>
 			</div>
 		{/each}
@@ -278,23 +111,13 @@
 	<div>
 		<h2>Change Password</h2>
 		<div class="card" style="margin-top:12px;">
-			{#if passwordSuccess}
-				<div style="background:#d4edda;border:1px solid #c3e6cb;padding:12px;border-radius:8px;margin-bottom:12px;">
-					<p style="color:#155724;">Password changed successfully.</p>
-				</div>
+			{#if form?.passwordSuccess}
+				<div style="background:#d4edda;border:1px solid #c3e6cb;padding:12px;border-radius:8px;margin-bottom:12px;"><p style="color:#155724;">Password changed.</p></div>
 			{/if}
-			{#if passwordError}
-				<p class="error" style="margin-bottom:12px;">{passwordError}</p>
-			{/if}
-			<form onsubmit={handleChangePassword}>
-				<div class="form-group">
-					<label for="currentPassword">Current Password</label>
-					<input id="currentPassword" type="password" bind:value={currentPassword} required />
-				</div>
-				<div class="form-group">
-					<label for="newPassword">New Password</label>
-					<input id="newPassword" type="password" bind:value={newPassword} required />
-				</div>
+			{#if form?.passwordError}<p class="error" style="margin-bottom:12px;">{form.passwordError}</p>{/if}
+			<form method="POST" action="?/changePassword" use:enhance>
+				<div class="form-group"><label for="currentPassword">Current Password</label><input id="currentPassword" name="currentPassword" type="password" required /></div>
+				<div class="form-group"><label for="newPassword">New Password</label><input id="newPassword" name="newPassword" type="password" required /></div>
 				<button type="submit" class="btn btn-primary" style="width:100%;">Change Password</button>
 			</form>
 		</div>

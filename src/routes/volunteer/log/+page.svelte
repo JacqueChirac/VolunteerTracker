@@ -1,125 +1,67 @@
-<!-- log hours page — volunteers enter their hours here -->
-<!-- also shows their recent contribution history -->
+<!-- log hours page — volunteer logs hours or donations -->
 <script lang="ts">
-	import { store } from '$lib/store.svelte';
+	import { enhance } from '$app/forms';
+	import type { PageData, ActionData } from './$types';
 
-	// form defaults to today's date
-	let date = $state(new Date().toISOString().split('T')[0]);
-	let hours = $state('');
-	let notes = $state('');
-
-	let error = $state<string | null>(null);
-	let successMessage = $state<string | null>(null);
-
-	const user = $derived(store.currentUser);
-
-	// show the 20 most recent contributions
-	const myContributions = $derived.by(() => {
-		if (!user) return [];
-		return store.getUserContributions(user.id).slice(0, 20);
-	});
-
-	function handleLogHours(e: Event) {
-		e.preventDefault();
-		error = null;
-		successMessage = null;
-
-		if (!date || !hours) {
-			error = 'Date and hours are required.';
-			return;
-		}
-		const hoursNum = parseFloat(hours);
-		if (isNaN(hoursNum) || hoursNum <= 0) {
-			error = 'Hours must be a positive number.';
-			return;
-		}
-
-		store.logHoursForCurrentUser({ date, hours: hoursNum, notes });
-		successMessage = `Logged ${hoursNum} volunteer hours.`;
-		hours = '';
-		notes = '';
-	}
-
-	function handleDelete(id: number) {
-		if (!confirm('Delete this contribution?')) return;
-		error = null;
-		successMessage = null;
-		const result = store.deleteContribution(id);
-		if (!result.ok) {
-			error = result.error;
-			return;
-		}
-		successMessage = 'Contribution deleted.';
-	}
+	let { data, form }: { data: PageData; form: ActionData } = $props();
+	let tab = $state<'volunteering' | 'donation'>('volunteering');
 </script>
 
 <h1>Log Hours</h1>
-<p style="color:var(--text-light);margin-bottom:24px;">Log your volunteer hours.</p>
+<p style="color:var(--text-light);margin-bottom:24px;">Log your volunteer hours or donations.</p>
 
-{#if successMessage}
-	<div class="card" style="background:#d4edda;border:1px solid #c3e6cb;margin-bottom:16px;">
-		<p style="color:#155724;">{successMessage}</p>
-	</div>
+{#if form?.success}
+	<div class="card" style="background:#d4edda;border:1px solid #c3e6cb;margin-bottom:16px;"><p style="color:#155724;">{form.message}</p></div>
 {/if}
-
-{#if error}
-	<p class="error" style="margin-bottom:16px;">{error}</p>
-{/if}
+{#if form?.error}<p class="error" style="margin-bottom:16px;">{form.error}</p>{/if}
 
 <div class="grid-2">
 	<!-- left: log form -->
 	<div class="card">
-		<h2>Log Volunteer Hours</h2>
-		<form onsubmit={handleLogHours} style="margin-top:16px;">
-			<div class="form-group">
-				<label for="date">Date</label>
-				<input id="date" type="date" bind:value={date} required />
-			</div>
-			<div class="form-group">
-				<label for="hours">Hours</label>
-				<input id="hours" type="number" step="0.5" min="0.5" bind:value={hours} required />
-			</div>
-			<div class="form-group">
-				<label for="notes">Notes (optional)</label>
-				<textarea id="notes" rows="2" bind:value={notes}></textarea>
-			</div>
-			<button type="submit" class="btn btn-accent" style="width:100%;">Log Hours</button>
-		</form>
+		<div style="display:flex;gap:8px;margin-bottom:16px;">
+			<button class="btn {tab === 'volunteering' ? 'btn-primary' : 'btn-outline'}" style="flex:1;text-align:center;" onclick={() => tab = 'volunteering'}>Log Hours</button>
+			<button class="btn {tab === 'donation' ? 'btn-primary' : 'btn-outline'}" style="flex:1;text-align:center;" onclick={() => tab = 'donation'}>Log Donation</button>
+		</div>
+
+		{#if tab === 'volunteering'}
+			<form method="POST" action="?/volunteering" use:enhance>
+				<div class="form-group"><label for="date">Date</label><input id="date" name="date" type="date" required value={new Date().toISOString().split('T')[0]} /></div>
+				<div class="form-group"><label for="hours">Hours</label><input id="hours" name="hours" type="number" step="0.5" min="0.5" required /></div>
+				<div class="form-group"><label for="notes">Notes (optional)</label><textarea id="notes" name="notes" rows="2"></textarea></div>
+				<button type="submit" class="btn btn-accent" style="width:100%;">Log Hours</button>
+			</form>
+		{:else}
+			<form method="POST" action="?/donation" use:enhance>
+				<p style="font-size:0.85rem;color:var(--text-light);margin-bottom:12px;">Rate: ${data.donationRate} = 1 volunteer hour</p>
+				<div class="form-group"><label for="date2">Date</label><input id="date2" name="date" type="date" required value={new Date().toISOString().split('T')[0]} /></div>
+				<div class="form-group"><label for="amount">Amount ($)</label><input id="amount" name="amount" type="number" step="0.01" min="1" required /></div>
+				<div class="form-group"><label for="notes2">Notes (optional)</label><textarea id="notes2" name="notes" rows="2"></textarea></div>
+				<button type="submit" class="btn btn-accent" style="width:100%;">Log Donation</button>
+			</form>
+		{/if}
 	</div>
 
 	<!-- right: recent history -->
 	<div>
 		<h2>Recent Contributions</h2>
-		{#if myContributions.length === 0}
-			<div class="card" style="margin-top:12px;">
-				<p style="color:var(--text-light);">No contributions logged yet.</p>
-			</div>
+		{#if data.contributions.length === 0}
+			<div class="card" style="margin-top:12px;"><p style="color:var(--text-light);">No contributions logged yet.</p></div>
 		{:else}
 			<div class="table-wrap" style="margin-top:12px;">
 				<table>
-					<thead>
-						<tr>
-							<th>Date</th>
-							<th>Hours</th>
-							<th>Notes</th>
-							<th></th>
-						</tr>
-					</thead>
+					<thead><tr><th>Date</th><th>Type</th><th>Hours</th><th>Notes</th><th></th></tr></thead>
 					<tbody>
-						{#each myContributions as c}
+						{#each data.contributions as c (c.id)}
 							<tr>
 								<td>{c.date}</td>
+								<td>{c.type === 'donation' ? `$${c.amount}` : 'Vol'}</td>
 								<td>{c.hours}h</td>
-								<td style="max-width:160px;overflow:hidden;text-overflow:ellipsis;">{c.notes ?? '-'}</td>
+								<td style="max-width:120px;overflow:hidden;text-overflow:ellipsis;">{c.notes ?? '-'}</td>
 								<td>
-									<button
-										type="button"
-										class="btn btn-danger"
-										style="padding:2px 8px;font-size:0.75rem;"
-										onclick={() => handleDelete(c.id)}
-									>
-										Delete
-									</button>
+									<form method="POST" action="?/deleteContribution" use:enhance style="display:inline;">
+										<input type="hidden" name="id" value={c.id} />
+										<button type="submit" class="btn btn-danger" style="padding:2px 8px;font-size:0.75rem;" onclick={(e) => { if (!confirm('Delete?')) e.preventDefault(); }}>Delete</button>
+									</form>
 								</td>
 							</tr>
 						{/each}
