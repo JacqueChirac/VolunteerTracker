@@ -26,8 +26,13 @@ body {
 	color: var(--text);
 	line-height: 1.6;
 	-webkit-text-size-adjust: 100%;
-	background-image: radial-gradient(circle at 10% 20%, rgba(114,185,255,0.04) 0%, transparent 20%),
-		radial-gradient(circle at 90% 80%, rgba(255,158,221,0.04) 0%, transparent 20%);
+
+	/* 背景图片：Washroom.jpeg */
+	background-image: url("Washroom.jpeg");
+	background-size: cover;
+	background-position: center;
+	background-attachment: fixed;
+	background-repeat: no-repeat;
 }
 
 a {
@@ -38,12 +43,10 @@ a:hover {
 	text-decoration: underline;
 }
 
-/* 小装饰 */
 .wave-deco::before { content: "🌊"; margin-right: 6px; }
 .cap-deco::before { content: "🏊‍♀️"; margin-right: 6px; }
 .star-deco::before { content: "✨"; margin-right: 6px; }
 
-/* 只有按钮会 float up */
 button, .btn {
 	display: inline-flex;
 	align-items: center;
@@ -110,7 +113,6 @@ input:focus, select:focus, textarea:focus {
 	position: relative;
 	overflow: hidden;
 }
-/* 卡片小装饰，无动画 */
 .card::after {
 	content: "🌊";
 	position: absolute;
