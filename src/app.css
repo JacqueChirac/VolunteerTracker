@@ -1,61 +1,39 @@
-
-
 :root {
-<<<<<<< HEAD
-	--primary: #1a5276;       /* dark blue — nav bar, primary buttons */
-	--primary-light: #2980b9; /* lighter blue — links, focus rings */
-	--accent: #27ae60;        /* green — "sign up", "log hours" buttons */
-	--danger: #e74c3c;        /* red — delete, error messages */
-	--bg: #f5f7fa;            /* page background */
-	--card: #ffffff;          /* card/panel background */
-	--text: #2c3e50;          /* main text color */
-	--text-light: #7f8c8d;    /* secondary/muted text */
-	--border: #dce1e8;        /* borders and dividers */
-	--radius: 8px;            /* rounded corners everywhere */
+	--primary: #1a5276;
+	--primary-light: #2980b9;
+	--accent: #27ae60;
+	--danger: #e74c3c;
+	--bg: #f5f7fa;
+	--card: #ffffff;
+	--text: #2c3e50;
+	--text-light: #7f8c8d;
+	--border: #dce1e8;
+	--radius: 8px;
 }
 
-/* reset — removes default browser spacing */
 * {
 	margin: 0;
 	padding: 0;
 	box-sizing: border-box;
 }
-=======
-	--primary: #0a3d62;           /* 深海蓝 */
-	--primary-light: #3c91e6;     /* 清澈水蓝 */
-	--accent: #00c9a7;            /* 水感青绿 */
-	--danger: #ff6b6b;
-
-	--bg: linear-gradient(180deg, #eaf6ff 0%, #f8fbff 100%);
-	--card: rgba(255, 255, 255, 0.9);
-
-	--text: #1b2a38;
-	--text-light: #6b7c93;
-	--border: #d6e4f0;
-
-	--radius: 12px;
-}
-
->>>>>>> b9855ef (dfgh)
 
 body {
 	font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 	background: var(--bg);
 	color: var(--text);
 	line-height: 1.6;
+	-webkit-text-size-adjust: 100%;
 }
 
-<<<<<<< HEAD
-/* links */
 a {
 	color: var(--primary-light);
 	text-decoration: none;
 }
+
 a:hover {
 	text-decoration: underline;
 }
 
-/* buttons — used as both <button> and <a class="btn"> */
 button, .btn {
 	display: inline-block;
 	padding: 10px 20px;
@@ -67,15 +45,36 @@ button, .btn {
 	transition: opacity 0.2s;
 	-webkit-tap-highlight-color: transparent;
 }
-button:hover, .btn:hover { opacity: 0.9; }
-button:active, .btn:active { opacity: 0.8; }
 
-.btn-primary { background: var(--primary); color: white; }
-.btn-accent  { background: var(--accent);  color: white; }
-.btn-danger  { background: var(--danger);  color: white; }
-.btn-outline { background: transparent; border: 2px solid var(--primary); color: var(--primary); }
+button:hover, .btn:hover {
+	opacity: 0.9;
+}
 
-/* form inputs */
+button:active, .btn:active {
+	opacity: 0.8;
+}
+
+.btn-primary {
+	background: var(--primary);
+	color: white;
+}
+
+.btn-accent {
+	background: var(--accent);
+	color: white;
+}
+
+.btn-danger {
+	background: var(--danger);
+	color: white;
+}
+
+.btn-outline {
+	background: transparent;
+	border: 2px solid var(--primary);
+	color: var(--primary);
+}
+
 input, select, textarea {
 	width: 100%;
 	padding: 10px 12px;
@@ -84,36 +83,30 @@ input, select, textarea {
 	font-size: 1rem;
 	font-family: inherit;
 }
+
 input:focus, select:focus, textarea:focus {
 	outline: none;
 	border-color: var(--primary-light);
 	box-shadow: 0 0 0 3px rgba(41, 128, 185, 0.1);
 }
-=======
->>>>>>> b9855ef (dfgh)
 
-/* card — the white box used for most content panels */
 .card {
 	background: var(--card);
 	border-radius: var(--radius);
 	padding: 20px;
-	backdrop-filter: blur(10px);
-	box-shadow: 0 8px 25px rgba(10, 61, 98, 0.08);
-	border: 1px solid rgba(255, 255, 255, 0.6);
+	box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
 }
 
-<<<<<<< HEAD
-/* centered container for page content */
 .container {
 	max-width: 1100px;
 	margin: 0 auto;
 	padding: 0 16px;
 }
 
-/* form layout helpers */
 .form-group {
 	margin-bottom: 16px;
 }
+
 .form-group label {
 	display: block;
 	margin-bottom: 4px;
@@ -121,123 +114,105 @@ input:focus, select:focus, textarea:focus {
 	font-size: 0.9rem;
 }
 
-/* error text */
 .error {
 	color: var(--danger);
 	font-size: 0.85rem;
 	margin-top: 4px;
 }
 
-/* tables — horizontally scrollable on small screens */
+/* Responsive tables */
 .table-wrap {
 	overflow-x: auto;
 	-webkit-overflow-scrolling: touch;
 }
+
 table {
 	width: 100%;
 	border-collapse: collapse;
 	min-width: 500px;
 }
+
 th, td {
 	padding: 10px 12px;
 	text-align: left;
 	border-bottom: 1px solid var(--border);
 	white-space: nowrap;
-=======
-/* 按钮更现代 */
-button, .btn {
-	border-radius: 999px; /* 圆润像水滴 */
-	font-weight: 600;
-	transition: all 0.25s ease;
 }
 
-.btn-primary {
-	background: linear-gradient(135deg, #0a3d62, #3c91e6);
-	color: white;
-	box-shadow: 0 4px 12px rgba(60, 145, 230, 0.3);
-}
-
-.btn-primary:hover {
-	transform: translateY(-1px);
-	box-shadow: 0 6px 18px rgba(60, 145, 230, 0.4);
-}
-
-.btn-accent {
-	background: linear-gradient(135deg, #00c9a7, #00e1ff);
-	color: white;
-}
-
-.btn-outline {
-	border: 2px solid var(--primary-light);
-	color: var(--primary-light);
-}
-
-
-input, select, textarea {
-	border-radius: 10px;
-	border: 1px solid var(--border);
-	background: rgba(255, 255, 255, 0.8);
-}
-
-input:focus, select:focus, textarea:focus {
-	border-color: var(--primary-light);
-	box-shadow: 0 0 0 3px rgba(60, 145, 230, 0.15);
->>>>>>> b9855ef (dfgh)
-}
 th {
-	background: rgba(60, 145, 230, 0.08);
-	color: var(--primary);
+	background: var(--bg);
+	font-weight: 600;
+	font-size: 0.85rem;
+	text-transform: uppercase;
+	letter-spacing: 0.5px;
+	color: var(--text-light);
 }
 
-<<<<<<< HEAD
-/* progress bar — shows how many hours completed vs required */
-=======
-td {
-	background: rgba(255, 255, 255, 0.7);
-}
-
-
->>>>>>> b9855ef (dfgh)
 .progress-bar {
-	background: #d6e4f0;
-	border-radius: 999px;
+	width: 100%;
+	height: 24px;
+	background: var(--border);
+	border-radius: 12px;
+	overflow: hidden;
 }
+
 .progress-bar-fill {
-	background: linear-gradient(90deg, #00c9a7, #3c91e6);
-	border-radius: 999px;
+	height: 100%;
+	background: var(--accent);
+	border-radius: 12px;
+	transition: width 0.3s;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	font-size: 0.75rem;
+	color: white;
+	font-weight: 600;
+	min-width: fit-content;
+	padding: 0 8px;
 }
 
-<<<<<<< HEAD
-/* navigation bar */
-=======
-
->>>>>>> b9855ef (dfgh)
+/* Navigation */
 .nav {
-	background: linear-gradient(135deg, #0a3d62, #1e5f9e);
-	box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+	background: var(--primary);
+	padding: 0 24px;
+	display: flex;
+	align-items: center;
+	gap: 0;
+	height: 64px;
+	position: relative;
 }
+
 .nav a {
-	color: rgba(255,255,255,0.85);
+	color: rgba(255, 255, 255, 0.8);
+	padding: 20px 16px;
+	font-size: 1rem;
+	font-weight: 500;
+	text-decoration: none;
+	transition: color 0.2s;
+	white-space: nowrap;
 }
+
 .nav a:hover, .nav a.active {
-	color: #ffffff;
+	color: white;
+	text-decoration: none;
 }
-<<<<<<< HEAD
+
 .nav .brand {
 	font-weight: 700;
 	font-size: 1.2rem;
 	color: white;
 	margin-right: auto;
 }
+
 .nav .spacer {
 	margin-left: auto;
 }
+
 .nav-links {
 	display: flex;
 	align-items: center;
 }
 
-/* hamburger button — only shows on mobile */
 .hamburger {
 	display: none;
 	background: none;
@@ -249,60 +224,101 @@ td {
 	line-height: 1;
 }
 
-/* 2-column grid */
 .grid-2 {
 	display: grid;
 	grid-template-columns: 1fr 1fr;
 	gap: 20px;
 }
 
-/* ==========================================
-   mobile breakpoints
-   ========================================== */
-
+/* Mobile */
 @media (max-width: 768px) {
-	h1 { font-size: 1.5rem; }
-	h2 { font-size: 1.2rem; }
-	.card { padding: 16px; }
-	.grid-2 { grid-template-columns: 1fr; } /* stack columns on mobile */
+	h1 {
+		font-size: 1.5rem;
+	}
 
-	.hamburger { display: block; }
+	h2 {
+		font-size: 1.2rem;
+	}
+
+	.card {
+		padding: 16px;
+	}
+
+	.grid-2 {
+		grid-template-columns: 1fr;
+	}
+
+	.hamburger {
+		display: block;
+	}
+
 	.nav {
 		flex-wrap: wrap;
 		height: auto;
 		min-height: 56px;
 	}
-	.nav .brand { padding: 16px 0; }
+
+	.nav .brand {
+		padding: 16px 0;
+	}
+
 	.nav-links {
 		display: none;
 		flex-direction: column;
 		width: 100%;
 		padding-bottom: 8px;
 	}
-	.nav-links.open { display: flex; }
-	.nav-links a, .nav-links form { width: 100%; }
+
+	.nav-links.open {
+		display: flex;
+	}
+
+	.nav-links a, .nav-links form {
+		width: 100%;
+	}
+
 	.nav-links a {
 		padding: 12px 0;
 		border-top: 1px solid rgba(255, 255, 255, 0.1);
 	}
 
-	button, .btn { padding: 12px 20px; font-size: 1rem; }
-	input, select, textarea { padding: 12px; font-size: 1rem; }
-	table { font-size: 0.85rem; }
-	th, td { padding: 8px 6px; }
-	.progress-bar { height: 28px; }
-	.progress-bar-fill { font-size: 0.8rem; }
+	button, .btn {
+		padding: 12px 20px;
+		font-size: 1rem;
+	}
+
+	input, select, textarea {
+		padding: 12px;
+		font-size: 1rem;
+	}
+
+	table {
+		font-size: 0.85rem;
+	}
+
+	th, td {
+		padding: 8px 6px;
+	}
+
+	.progress-bar {
+		height: 28px;
+	}
+
+	.progress-bar-fill {
+		font-size: 0.8rem;
+	}
 }
 
 @media (max-width: 480px) {
-	.container { padding: 0 12px; }
-	h1 { font-size: 1.3rem; }
-	.card { padding: 14px; }
-}
-=======
+	.container {
+		padding: 0 12px;
+	}
 
-button:hover, .btn:hover {
-	opacity: 1;
-	transform: translateY(-1px);
+	h1 {
+		font-size: 1.3rem;
+	}
+
+	.card {
+		padding: 14px;
+	}
 }
->>>>>>> b9855ef (dfgh)
