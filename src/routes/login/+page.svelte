@@ -38,7 +38,7 @@
 </div>
 
 <style>
-	.login-page { min-height: 100vh; display: flex; align-items: center; justify-content: center; background: linear-gradient(135deg, #1a5276 0%, #2980b9 100%); padding: 20px; }
+	.login-page { min-height: 100vh; display: flex; align-items: center; justify-content: center; background: linear-gradient(135deg, #77b8e0 0%, #2980b9 100%); padding: 20px; }
 	.login-box { width: 100%; max-width: 400px; }
 	h2 { margin-bottom: 20px; text-align: center; }
 	.links { margin-top: 16px; text-align: center; display: flex; justify-content: center; gap: 16px; font-size: 0.9rem; }
