@@ -1,14 +1,17 @@
 :root {
-	--primary: #1a5276;
-	--primary-light: #2980b9;
-	--accent: #27ae60;
-	--danger: #e74c3c;
-	--bg: #f5f7fa;
-	--card: #ffffff;
-	--text: #2c3e50;
-	--text-light: #7f8c8d;
-	--border: #dce1e8;
-	--radius: 8px;
+	--primary: #005A9C;
+	--primary-light: #0077CC;
+	--primary-dark: #00447A;
+	--accent: #00A8E8;
+	--danger: #E63946;
+	--bg: #F0F7FF;
+	--card: #FFFFFF;
+	--text: #1A2B3C;
+	--text-light: #5C7080;
+	--border: #D4E2F0;
+	--radius: 10px;
+	--shadow: 0 4px 12px rgba(0, 90, 156, 0.08);
+	--shadow-hover: 0 6px 16px rgba(0, 90, 156, 0.12);
 }
 
 * {
@@ -36,31 +39,34 @@ a:hover {
 
 button, .btn {
 	display: inline-block;
-	padding: 10px 20px;
+	padding: 11px 22px;
 	border: none;
 	border-radius: var(--radius);
 	font-size: 0.95rem;
 	cursor: pointer;
-	font-weight: 500;
-	transition: opacity 0.2s;
+	font-weight: 600;
+	transition: all 0.25s ease;
 	-webkit-tap-highlight-color: transparent;
+	box-shadow: var(--shadow);
 }
 
 button:hover, .btn:hover {
-	opacity: 0.9;
+	transform: translateY(-1px);
+	box-shadow: var(--shadow-hover);
 }
 
 button:active, .btn:active {
-	opacity: 0.8;
+	transform: translateY(0);
+	opacity: 0.95;
 }
 
 .btn-primary {
-	background: var(--primary);
+	background: linear-gradient(135deg, var(--primary), var(--primary-dark));
 	color: white;
 }
 
 .btn-accent {
-	background: var(--accent);
+	background: linear-gradient(135deg, var(--accent), #0090C8);
 	color: white;
 }
 
@@ -77,24 +83,32 @@ button:active, .btn:active {
 
 input, select, textarea {
 	width: 100%;
-	padding: 10px 12px;
+	padding: 12px 14px;
 	border: 1px solid var(--border);
 	border-radius: var(--radius);
 	font-size: 1rem;
 	font-family: inherit;
+	transition: all 0.2s ease;
+	background: white;
 }
 
 input:focus, select:focus, textarea:focus {
 	outline: none;
 	border-color: var(--primary-light);
-	box-shadow: 0 0 0 3px rgba(41, 128, 185, 0.1);
+	box-shadow: 0 0 0 3px rgba(0, 119, 204, 0.15);
 }
 
 .card {
 	background: var(--card);
 	border-radius: var(--radius);
-	padding: 20px;
-	box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+	padding: 24px;
+	box-shadow: var(--shadow);
+	transition: box-shadow 0.25s ease;
+	border: 1px solid rgba(212, 226, 240, 0.5);
+}
+
+.card:hover {
+	box-shadow: var(--shadow-hover);
 }
 
 .container {
@@ -104,23 +118,23 @@ input:focus, select:focus, textarea:focus {
 }
 
 .form-group {
-	margin-bottom: 16px;
+	margin-bottom: 18px;
 }
 
 .form-group label {
 	display: block;
-	margin-bottom: 4px;
-	font-weight: 500;
+	margin-bottom: 6px;
+	font-weight: 600;
 	font-size: 0.9rem;
+	color: var(--text);
 }
 
 .error {
 	color: var(--danger);
 	font-size: 0.85rem;
-	margin-top: 4px;
+	margin-top: 5px;
 }
 
-/* Responsive tables */
 .table-wrap {
 	overflow-x: auto;
 	-webkit-overflow-scrolling: touch;
@@ -130,37 +144,44 @@ table {
 	width: 100%;
 	border-collapse: collapse;
 	min-width: 500px;
+	background: white;
+	border-radius: var(--radius);
+	overflow: hidden;
 }
 
 th, td {
-	padding: 10px 12px;
+	padding: 14px 16px;
 	text-align: left;
 	border-bottom: 1px solid var(--border);
 	white-space: nowrap;
 }
 
 th {
-	background: var(--bg);
+	background: linear-gradient(to right, #F7FAFF, #F0F7FF);
 	font-weight: 600;
 	font-size: 0.85rem;
 	text-transform: uppercase;
-	letter-spacing: 0.5px;
-	color: var(--text-light);
+	letter-spacing: 0.6px;
+	color: var(--primary);
+}
+
+tr:last-child td {
+	border-bottom: none;
 }
 
 .progress-bar {
 	width: 100%;
-	height: 24px;
+	height: 26px;
 	background: var(--border);
-	border-radius: 12px;
+	border-radius: 13px;
 	overflow: hidden;
 }
 
 .progress-bar-fill {
 	height: 100%;
-	background: var(--accent);
-	border-radius: 12px;
-	transition: width 0.3s;
+	background: linear-gradient(90deg, var(--primary-light), var(--accent));
+	border-radius: 13px;
+	transition: width 0.35s ease;
 	display: flex;
 	align-items: center;
 	justify-content: center;
@@ -168,40 +189,42 @@ th {
 	color: white;
 	font-weight: 600;
 	min-width: fit-content;
-	padding: 0 8px;
+	padding: 0 10px;
 }
 
-/* Navigation */
 .nav {
-	background: var(--primary);
-	padding: 0 24px;
+	background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+	padding: 0 28px;
 	display: flex;
 	align-items: center;
 	gap: 0;
-	height: 64px;
+	height: 66px;
 	position: relative;
+	box-shadow: 0 2px 10px rgba(0, 90, 156, 0.15);
 }
 
 .nav a {
-	color: rgba(255, 255, 255, 0.8);
-	padding: 20px 16px;
+	color: rgba(255, 255, 255, 0.85);
+	padding: 22px 18px;
 	font-size: 1rem;
 	font-weight: 500;
 	text-decoration: none;
-	transition: color 0.2s;
+	transition: all 0.2s ease;
 	white-space: nowrap;
 }
 
 .nav a:hover, .nav a.active {
 	color: white;
+	background: rgba(255, 255, 255, 0.1);
 	text-decoration: none;
 }
 
 .nav .brand {
 	font-weight: 700;
-	font-size: 1.2rem;
+	font-size: 1.3rem;
 	color: white;
 	margin-right: auto;
+	letter-spacing: 0.3px;
 }
 
 .nav .spacer {
@@ -218,7 +241,7 @@ th {
 	background: none;
 	border: none;
 	color: white;
-	font-size: 1.5rem;
+	font-size: 1.6rem;
 	padding: 8px;
 	cursor: pointer;
 	line-height: 1;
@@ -227,25 +250,25 @@ th {
 .grid-2 {
 	display: grid;
 	grid-template-columns: 1fr 1fr;
-	gap: 20px;
+	gap: 24px;
 }
 
-/* Mobile */
 @media (max-width: 768px) {
 	h1 {
-		font-size: 1.5rem;
+		font-size: 1.6rem;
 	}
 
 	h2 {
-		font-size: 1.2rem;
+		font-size: 1.3rem;
 	}
 
 	.card {
-		padding: 16px;
+		padding: 20px;
 	}
 
 	.grid-2 {
 		grid-template-columns: 1fr;
+		gap: 20px;
 	}
 
 	.hamburger {
@@ -255,18 +278,19 @@ th {
 	.nav {
 		flex-wrap: wrap;
 		height: auto;
-		min-height: 56px;
+		min-height: 60px;
+		padding: 0 20px;
 	}
 
 	.nav .brand {
-		padding: 16px 0;
+		padding: 18px 0;
 	}
 
 	.nav-links {
 		display: none;
 		flex-direction: column;
 		width: 100%;
-		padding-bottom: 8px;
+		padding-bottom: 10px;
 	}
 
 	.nav-links.open {
@@ -278,17 +302,17 @@ th {
 	}
 
 	.nav-links a {
-		padding: 12px 0;
-		border-top: 1px solid rgba(255, 255, 255, 0.1);
+		padding: 14px 0;
+		border-top: 1px solid rgba(255, 255, 255, 0.12);
 	}
 
 	button, .btn {
-		padding: 12px 20px;
+		padding: 13px 22px;
 		font-size: 1rem;
 	}
 
 	input, select, textarea {
-		padding: 12px;
+		padding: 13px;
 		font-size: 1rem;
 	}
 
@@ -297,11 +321,11 @@ th {
 	}
 
 	th, td {
-		padding: 8px 6px;
+		padding: 12px 10px;
 	}
 
 	.progress-bar {
-		height: 28px;
+		height: 30px;
 	}
 
 	.progress-bar-fill {
@@ -311,14 +335,14 @@ th {
 
 @media (max-width: 480px) {
 	.container {
-		padding: 0 12px;
+		padding: 0 14px;
 	}
 
 	h1 {
-		font-size: 1.3rem;
+		font-size: 1.4rem;
 	}
 
 	.card {
-		padding: 14px;
+		padding: 18px;
 	}
 }
