@@ -1,17 +1,17 @@
 :root {
-	--primary: #005A9C;
-	--primary-light: #0077CC;
-	--primary-dark: #00447A;
-	--accent: #00A8E8;
-	--danger: #E63946;
-	--bg: #F0F7FF;
-	--card: #FFFFFF;
-	--text: #1A2B3C;
-	--text-light: #5C7080;
-	--border: #D4E2F0;
-	--radius: 10px;
-	--shadow: 0 4px 12px rgba(0, 90, 156, 0.08);
-	--shadow-hover: 0 6px 16px rgba(0, 90, 156, 0.12);
+	--primary: #4287f5;
+	--primary-light: #6ba6ff;
+	--primary-dark: #3066cc;
+	--accent: #f56fa8;
+	--danger: #ff6b6b;
+	--bg: #f8fcff;
+	--card: #ffffff;
+	--text: #3d4451;
+	--text-light: #8b95a7;
+	--border: #e0eeff;
+	--radius: 20px;
+	--shadow: 0 8px 22px rgba(66, 135, 245, 0.08);
+	--shadow-hover: 0 12px 28px rgba(66, 135, 245, 0.14);
 }
 
 * {
@@ -34,30 +34,30 @@ a {
 }
 
 a:hover {
-	text-decoration: underline;
+	text-decoration: none;
+	transform: scale(1.03);
 }
 
 button, .btn {
 	display: inline-block;
-	padding: 11px 22px;
+	padding: 12px 26px;
 	border: none;
 	border-radius: var(--radius);
 	font-size: 0.95rem;
 	cursor: pointer;
 	font-weight: 600;
-	transition: all 0.25s ease;
+	transition: all 0.3s ease;
 	-webkit-tap-highlight-color: transparent;
 	box-shadow: var(--shadow);
 }
 
 button:hover, .btn:hover {
-	transform: translateY(-1px);
+	transform: translateY(-3px) scale(1.03);
 	box-shadow: var(--shadow-hover);
 }
 
 button:active, .btn:active {
 	transform: translateY(0);
-	opacity: 0.95;
 }
 
 .btn-primary {
@@ -66,7 +66,7 @@ button:active, .btn:active {
 }
 
 .btn-accent {
-	background: linear-gradient(135deg, var(--accent), #0090C8);
+	background: linear-gradient(135deg, var(--accent), #f891c0);
 	color: white;
 }
 
@@ -83,31 +83,33 @@ button:active, .btn:active {
 
 input, select, textarea {
 	width: 100%;
-	padding: 12px 14px;
+	padding: 14px 16px;
 	border: 1px solid var(--border);
-	border-radius: var(--radius);
+	border-radius: 16px;
 	font-size: 1rem;
 	font-family: inherit;
-	transition: all 0.2s ease;
+	transition: all 0.3s ease;
 	background: white;
 }
 
 input:focus, select:focus, textarea:focus {
 	outline: none;
 	border-color: var(--primary-light);
-	box-shadow: 0 0 0 3px rgba(0, 119, 204, 0.15);
+	box-shadow: 0 0 0 4px rgba(107, 166, 255, 0.18);
+	transform: scale(1.015);
 }
 
 .card {
 	background: var(--card);
-	border-radius: var(--radius);
-	padding: 24px;
+	border-radius: 24px;
+	padding: 26px;
 	box-shadow: var(--shadow);
-	transition: box-shadow 0.25s ease;
-	border: 1px solid rgba(212, 226, 240, 0.5);
+	transition: all 0.3s ease;
+	border: 1px solid var(--border);
 }
 
 .card:hover {
+	transform: translateY(-4px);
 	box-shadow: var(--shadow-hover);
 }
 
@@ -118,12 +120,12 @@ input:focus, select:focus, textarea:focus {
 }
 
 .form-group {
-	margin-bottom: 18px;
+	margin-bottom: 20px;
 }
 
 .form-group label {
 	display: block;
-	margin-bottom: 6px;
+	margin-bottom: 8px;
 	font-weight: 600;
 	font-size: 0.9rem;
 	color: var(--text);
@@ -132,7 +134,7 @@ input:focus, select:focus, textarea:focus {
 .error {
 	color: var(--danger);
 	font-size: 0.85rem;
-	margin-top: 5px;
+	margin-top: 6px;
 }
 
 .table-wrap {
@@ -145,23 +147,23 @@ table {
 	border-collapse: collapse;
 	min-width: 500px;
 	background: white;
-	border-radius: var(--radius);
+	border-radius: 20px;
 	overflow: hidden;
 }
 
 th, td {
-	padding: 14px 16px;
+	padding: 16px 18px;
 	text-align: left;
 	border-bottom: 1px solid var(--border);
 	white-space: nowrap;
 }
 
 th {
-	background: linear-gradient(to right, #F7FAFF, #F0F7FF);
+	background: linear-gradient(to right, #f0f7ff, #f8fcff);
 	font-weight: 600;
 	font-size: 0.85rem;
 	text-transform: uppercase;
-	letter-spacing: 0.6px;
+	letter-spacing: 0.8px;
 	color: var(--primary);
 }
 
@@ -171,60 +173,63 @@ tr:last-child td {
 
 .progress-bar {
 	width: 100%;
-	height: 26px;
+	height: 28px;
 	background: var(--border);
-	border-radius: 13px;
+	border-radius: 14px;
 	overflow: hidden;
 }
 
 .progress-bar-fill {
 	height: 100%;
 	background: linear-gradient(90deg, var(--primary-light), var(--accent));
-	border-radius: 13px;
-	transition: width 0.35s ease;
+	border-radius: 14px;
+	transition: width 0.4s ease;
 	display: flex;
 	align-items: center;
 	justify-content: center;
-	font-size: 0.75rem;
+	font-size: 0.8rem;
 	color: white;
 	font-weight: 600;
 	min-width: fit-content;
-	padding: 0 10px;
+	padding: 0 12px;
 }
 
 .nav {
 	background: linear-gradient(135deg, var(--primary), var(--primary-dark));
-	padding: 0 28px;
+	padding: 0 32px;
 	display: flex;
 	align-items: center;
 	gap: 0;
-	height: 66px;
+	height: 70px;
 	position: relative;
-	box-shadow: 0 2px 10px rgba(0, 90, 156, 0.15);
+	box-shadow: 0 6px 18px rgba(66, 135, 245, 0.15);
+	border-radius: 0 0 24px 24px;
 }
 
 .nav a {
-	color: rgba(255, 255, 255, 0.85);
-	padding: 22px 18px;
+	color: rgba(255, 255, 255, 0.9);
+	padding: 24px 20px;
 	font-size: 1rem;
 	font-weight: 500;
 	text-decoration: none;
-	transition: all 0.2s ease;
+	transition: all 0.3s ease;
 	white-space: nowrap;
+	border-radius: 16px;
 }
 
 .nav a:hover, .nav a.active {
 	color: white;
-	background: rgba(255, 255, 255, 0.1);
+	background: rgba(255, 255, 255, 0.15);
+	transform: scale(1.05);
 	text-decoration: none;
 }
 
 .nav .brand {
 	font-weight: 700;
-	font-size: 1.3rem;
+	font-size: 1.4rem;
 	color: white;
 	margin-right: auto;
-	letter-spacing: 0.3px;
+	letter-spacing: 0.5px;
 }
 
 .nav .spacer {
@@ -241,7 +246,7 @@ tr:last-child td {
 	background: none;
 	border: none;
 	color: white;
-	font-size: 1.6rem;
+	font-size: 1.7rem;
 	padding: 8px;
 	cursor: pointer;
 	line-height: 1;
@@ -250,25 +255,25 @@ tr:last-child td {
 .grid-2 {
 	display: grid;
 	grid-template-columns: 1fr 1fr;
-	gap: 24px;
+	gap: 26px;
 }
 
 @media (max-width: 768px) {
 	h1 {
-		font-size: 1.6rem;
+		font-size: 1.7rem;
 	}
 
 	h2 {
-		font-size: 1.3rem;
+		font-size: 1.4rem;
 	}
 
 	.card {
-		padding: 20px;
+		padding: 22px;
 	}
 
 	.grid-2 {
 		grid-template-columns: 1fr;
-		gap: 20px;
+		gap: 22px;
 	}
 
 	.hamburger {
@@ -278,19 +283,20 @@ tr:last-child td {
 	.nav {
 		flex-wrap: wrap;
 		height: auto;
-		min-height: 60px;
-		padding: 0 20px;
+		min-height: 64px;
+		padding: 0 22px;
+		border-radius: 0 0 20px 20px;
 	}
 
 	.nav .brand {
-		padding: 18px 0;
+		padding: 20px 0;
 	}
 
 	.nav-links {
 		display: none;
 		flex-direction: column;
 		width: 100%;
-		padding-bottom: 10px;
+		padding-bottom: 12px;
 	}
 
 	.nav-links.open {
@@ -302,17 +308,17 @@ tr:last-child td {
 	}
 
 	.nav-links a {
-		padding: 14px 0;
-		border-top: 1px solid rgba(255, 255, 255, 0.12);
+		padding: 16px 0;
+		border-top: 1px solid rgba(255,255,255,0.15);
 	}
 
 	button, .btn {
-		padding: 13px 22px;
+		padding: 14px 24px;
 		font-size: 1rem;
 	}
 
 	input, select, textarea {
-		padding: 13px;
+		padding: 14px;
 		font-size: 1rem;
 	}
 
@@ -321,15 +327,15 @@ tr:last-child td {
 	}
 
 	th, td {
-		padding: 12px 10px;
+		padding: 14px 12px;
 	}
 
 	.progress-bar {
-		height: 30px;
+		height: 32px;
 	}
 
 	.progress-bar-fill {
-		font-size: 0.8rem;
+		font-size: 0.85rem;
 	}
 }
 
@@ -339,10 +345,10 @@ tr:last-child td {
 	}
 
 	h1 {
-		font-size: 1.4rem;
+		font-size: 1.5rem;
 	}
 
 	.card {
-		padding: 18px;
+		padding: 20px;
 	}
 }
