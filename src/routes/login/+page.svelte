@@ -1,12 +1,17 @@
+<!-- login page -->
+<!-- reads ?role=organizer or ?role=volunteer from the URL to show the right heading -->
+<!-- on submit, checks credentials against the store and redirects to the right dashboard -->
 <script lang="ts">
 	import { goto } from '$app/navigation';
 	import { page } from '$app/state';
 	import { store } from '$lib/store.svelte';
 
+	// form fields — $state makes them reactive (Svelte re-renders when they change)
 	let username = $state('');
 	let password = $state('');
 	let error = $state<string | null>(null);
 
+	// figure out which role they're logging in as from the URL (?role=organizer)
 	const rawRole = $derived(page.url.searchParams.get('role') || 'volunteer');
 	const role = $derived(rawRole === 'organizer' ? 'organizer' : 'volunteer');
 
@@ -19,11 +24,14 @@
 			return;
 		}
 
+		// try to log in — store.login returns the user if credentials match, null if not
 		const user = store.login(username.trim(), password);
 		if (!user) {
 			error = 'Invalid username or password.';
 			return;
 		}
+
+		// send them to the right dashboard
 		goto(user.role === 'volunteer' ? '/volunteer' : '/organizer');
 	}
 </script>
@@ -55,6 +63,7 @@
 			<a href="/">Back to home</a>
 		</div>
 
+		<!-- show the demo credentials so testers know what to type -->
 		<p class="hint">
 			{#if role === 'organizer'}
 				Demo: <strong>admin / admin123</strong>

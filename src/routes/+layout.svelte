@@ -1,3 +1,5 @@
+<!-- root layout — wraps every page in the app -->
+<!-- loads global CSS, sets the page title, and initializes our store -->
 <script lang="ts">
 	import '../app.css';
 	import favicon from '$lib/assets/favicon.svg';
@@ -5,7 +7,7 @@
 
 	let { children } = $props();
 
-	// Hydrate the paper-prototype store from localStorage on first mount.
+	// load saved data from localStorage on first page load
 	store.init();
 </script>
 

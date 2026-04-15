@@ -1,3 +1,4 @@
+<!-- logout page — clears the session and sends user back to the landing page -->
 <script lang="ts">
 	import { onMount } from 'svelte';
 	import { goto } from '$app/navigation';

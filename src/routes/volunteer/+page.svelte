@@ -1,3 +1,4 @@
+<!-- volunteer home page — quick links to the main sections -->
 <script lang="ts">
 	import { store } from '$lib/store.svelte';
 
@@ -13,11 +14,7 @@
 	<div class="card" style="display:flex;flex-direction:column;gap:12px;max-width:420px;">
 		<a href="/volunteer/events" class="btn btn-primary" style="text-align:center;">View Events</a>
 		<a href="/volunteer/log" class="btn btn-accent" style="text-align:center;">Log Hours</a>
-		<a href="/volunteer/account" class="btn btn-outline" style="text-align:center;"
-			>My Account & Children</a
-		>
-		<a href="/volunteer/tutorial" class="btn btn-outline" style="text-align:center;"
-			>How to Use This Site</a
-		>
+		<a href="/volunteer/account" class="btn btn-outline" style="text-align:center;">My Account & Children</a>
+		<a href="/volunteer/tutorial" class="btn btn-outline" style="text-align:center;">How to Use This Site</a>
 	</div>
 {/if}

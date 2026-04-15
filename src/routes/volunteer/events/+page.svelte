@@ -1,8 +1,10 @@
+<!-- events list — volunteers can see upcoming events and sign up / cancel -->
 <script lang="ts">
 	import { store } from '$lib/store.svelte';
 
 	const today = new Date().toISOString().split('T')[0];
 
+	// upcoming events sorted soonest first, with signup info attached
 	const upcomingEvents = $derived(
 		[...store.events]
 			.filter((e) => e.date >= today)
@@ -45,9 +47,7 @@
 	<div style="display:flex;flex-direction:column;gap:12px;">
 		{#each upcomingEvents as event}
 			<div class="card">
-				<div
-					style="display:flex;justify-content:space-between;align-items:start;gap:16px;flex-wrap:wrap;"
-				>
+				<div style="display:flex;justify-content:space-between;align-items:start;gap:16px;flex-wrap:wrap;">
 					<div style="flex:1;">
 						<h3><a href="/volunteer/events/{event.id}">{event.title}</a></h3>
 						<p style="font-size:0.9rem;color:var(--text-light);">
@@ -66,6 +66,7 @@
 							{/if}
 						</p>
 					</div>
+					<!-- sign up or cancel button -->
 					<div>
 						{#if event.signedUp}
 							<button type="button" class="btn btn-danger" onclick={() => handleCancel(event.id)}>

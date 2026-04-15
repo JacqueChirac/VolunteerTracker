@@ -1,6 +1,9 @@
+<!-- log hours page — volunteers enter their hours here -->
+<!-- also shows their recent contribution history -->
 <script lang="ts">
 	import { store } from '$lib/store.svelte';
 
+	// form defaults to today's date
 	let date = $state(new Date().toISOString().split('T')[0]);
 	let hours = $state('');
 	let notes = $state('');
@@ -9,6 +12,8 @@
 	let successMessage = $state<string | null>(null);
 
 	const user = $derived(store.currentUser);
+
+	// show the 20 most recent contributions
 	const myContributions = $derived.by(() => {
 		if (!user) return [];
 		return store.getUserContributions(user.id).slice(0, 20);
@@ -18,6 +23,7 @@
 		e.preventDefault();
 		error = null;
 		successMessage = null;
+
 		if (!date || !hours) {
 			error = 'Date and hours are required.';
 			return;
@@ -27,6 +33,7 @@
 			error = 'Hours must be a positive number.';
 			return;
 		}
+
 		store.logHoursForCurrentUser({ date, hours: hoursNum, notes });
 		successMessage = `Logged ${hoursNum} volunteer hours.`;
 		hours = '';
@@ -60,6 +67,7 @@
 {/if}
 
 <div class="grid-2">
+	<!-- left: log form -->
 	<div class="card">
 		<h2>Log Volunteer Hours</h2>
 		<form onsubmit={handleLogHours} style="margin-top:16px;">
@@ -79,6 +87,7 @@
 		</form>
 	</div>
 
+	<!-- right: recent history -->
 	<div>
 		<h2>Recent Contributions</h2>
 		{#if myContributions.length === 0}
@@ -101,10 +110,7 @@
 							<tr>
 								<td>{c.date}</td>
 								<td>{c.hours}h</td>
-								<td
-									style="max-width:160px;overflow:hidden;text-overflow:ellipsis;"
-									>{c.notes ?? '-'}</td
-								>
+								<td style="max-width:160px;overflow:hidden;text-overflow:ellipsis;">{c.notes ?? '-'}</td>
 								<td>
 									<button
 										type="button"

@@ -1,3 +1,6 @@
+<!-- tutorial page — step-by-step guide for new volunteers -->
+<!-- no script needed, this is pure static content -->
+
 <h1>How to Use This Site</h1>
 <p style="color:var(--text-light);margin-bottom:24px;">
 	A step-by-step guide to getting started as a volunteer.
@@ -71,6 +74,7 @@
 		</p>
 	</div>
 
+	<!-- FAQ section -->
 	<div class="card" style="background:var(--bg);border:2px solid var(--border);">
 		<h2>Frequently Asked Questions</h2>
 		<div style="margin-top:12px;">

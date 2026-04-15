@@ -1,22 +1,30 @@
+<!-- organizer events dashboard -->
+<!-- shows stats at the top, then upcoming and past events -->
+<!-- organizers can delete events from here -->
 <script lang="ts">
 	import { store } from '$lib/store.svelte';
 
 	const today = new Date().toISOString().split('T')[0];
 
+	// all events sorted newest first, with signup counts attached
 	const allEvents = $derived(
 		[...store.events]
 			.sort((a, b) => b.date.localeCompare(a.date))
 			.map((e) => ({ ...e, signupCount: store.getEventSignupCount(e.id) }))
 	);
+
+	// split into upcoming vs past
 	const upcomingEvents = $derived(allEvents.filter((e) => e.date >= today));
 	const pastEvents = $derived(allEvents.filter((e) => e.date < today));
 
+	// summary stats for the top cards
 	const stats = $derived.by(() => {
 		const totalVolunteers = store.users.filter((u) => u.role === 'volunteer').length;
 		const totalHours = store.contributions.reduce(
 			(sum, c) => sum + parseFloat(c.hours || '0'),
 			0
 		);
+		// count how many children have met their hour requirement
 		let childrenMet = 0;
 		for (const child of store.children) {
 			if (store.getChildTotalHours(child.id) >= store.getHoursRequired(child.status)) {
@@ -39,6 +47,7 @@
 
 <h1>Events Dashboard</h1>
 
+<!-- stat cards -->
 <div style="display:flex;gap:12px;margin:16px 0 24px;flex-wrap:wrap;">
 	<div class="card" style="flex:1;min-width:120px;text-align:center;">
 		<p style="font-size:1.8rem;font-weight:700;">{stats.totalVolunteers}</p>
@@ -61,6 +70,7 @@
 		<p style="color:var(--text-light);">No events yet.</p>
 	</div>
 {:else}
+	<!-- upcoming events -->
 	<h2 style="margin-bottom:12px;">Upcoming Events ({upcomingEvents.length})</h2>
 	{#if upcomingEvents.length === 0}
 		<div class="card" style="margin-bottom:24px;">
@@ -69,9 +79,7 @@
 	{/if}
 	{#each upcomingEvents as event (event.id)}
 		<div class="card" style="margin-bottom:12px;">
-			<div
-				style="display:flex;justify-content:space-between;align-items:start;gap:16px;flex-wrap:wrap;"
-			>
+			<div style="display:flex;justify-content:space-between;align-items:start;gap:16px;flex-wrap:wrap;">
 				<div style="flex:1;">
 					<h3>{event.title}</h3>
 					<p style="font-size:0.9rem;color:var(--text-light);">
@@ -100,6 +108,7 @@
 		</div>
 	{/each}
 
+	<!-- past events (slightly faded) -->
 	<h2 style="margin-top:32px;margin-bottom:12px;">Past Events ({pastEvents.length})</h2>
 	{#if pastEvents.length === 0}
 		<div class="card">
@@ -108,9 +117,7 @@
 	{/if}
 	{#each pastEvents as event (event.id)}
 		<div class="card" style="margin-bottom:12px;opacity:0.75;">
-			<div
-				style="display:flex;justify-content:space-between;align-items:start;gap:16px;flex-wrap:wrap;"
-			>
+			<div style="display:flex;justify-content:space-between;align-items:start;gap:16px;flex-wrap:wrap;">
 				<div style="flex:1;">
 					<h3>{event.title}</h3>
 					<p style="font-size:0.9rem;color:var(--text-light);">

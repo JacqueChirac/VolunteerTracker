@@ -1,6 +1,9 @@
+<!-- landing page — the first thing users see -->
+<!-- shows login buttons if not logged in, or a "go to dashboard" link if they are -->
 <script lang="ts">
 	import { store } from '$lib/store.svelte';
 
+	// reactively tracks the logged-in user (null if nobody is logged in)
 	const user = $derived(store.currentUser);
 </script>
 
@@ -11,6 +14,7 @@
 		<p class="subtitle">Click the appropriate login to get started.</p>
 
 		{#if user}
+			<!-- already logged in — just show a link to their dashboard -->
 			<div class="logged-in">
 				<p>Welcome back, {user.firstName}!</p>
 				{#if user.role === 'volunteer'}
@@ -20,6 +24,7 @@
 				{/if}
 			</div>
 		{:else}
+			<!-- not logged in — show the two login options -->
 			<div class="login-options">
 				<a href="/login?role=volunteer" class="btn btn-primary login-card">
 					<span class="login-icon">👤</span>

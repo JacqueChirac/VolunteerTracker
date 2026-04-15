@@ -1,7 +1,10 @@
+<!-- registration page — creates a new volunteer account -->
+<!-- only volunteers can register here (organizers are created in the seed/admin) -->
 <script lang="ts">
 	import { goto } from '$app/navigation';
 	import { store } from '$lib/store.svelte';
 
+	// form fields
 	let firstName = $state('');
 	let lastName = $state('');
 	let username = $state('');
@@ -13,6 +16,7 @@
 		e.preventDefault();
 		error = null;
 
+		// basic validation
 		if (!firstName || !lastName || !username || !password) {
 			error = 'All fields are required.';
 			return;
@@ -26,6 +30,7 @@
 			return;
 		}
 
+		// try to register — will fail if username already taken
 		const result = store.register({
 			username: username.trim(),
 			password,
@@ -38,6 +43,7 @@
 			return;
 		}
 
+		// auto-login and go to the volunteer dashboard
 		goto('/volunteer');
 	}
 </script>

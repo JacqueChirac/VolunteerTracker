@@ -1,17 +1,19 @@
+<!-- manage page — organizer can change site settings and reset demo data -->
 <script lang="ts">
 	import { store } from '$lib/store.svelte';
 
-	// Local editable copies of settings, keyed by setting key. Synced from store
-	// whenever the store changes and this key hasn't been touched locally yet.
+	// local copies of each setting's value, so we can edit without saving immediately
 	let settingInputs = $state<Record<string, string>>({});
 	let settingsSuccess = $state(false);
 
+	// when the store loads, populate our local inputs with current values
 	$effect(() => {
 		for (const s of store.siteSettings) {
 			if (!(s.key in settingInputs)) settingInputs[s.key] = s.value;
 		}
 	});
 
+	// save all settings at once
 	function handleSaveSettings(e: Event) {
 		e.preventDefault();
 		for (const [key, value] of Object.entries(settingInputs)) {
@@ -21,6 +23,7 @@
 		setTimeout(() => (settingsSuccess = false), 2500);
 	}
 
+	// wipes localStorage and reloads seed data
 	function handleResetData() {
 		if (!confirm('Reset ALL local data and reseed? This wipes your paper prototype state.'))
 			return;
@@ -31,6 +34,7 @@
 <h1>Manage</h1>
 <p style="color:var(--text-light);margin-bottom:24px;">Site settings and data reset.</p>
 
+<!-- settings form -->
 <h2>Settings</h2>
 <div class="card" style="margin-top:12px;">
 	{#if settingsSuccess}
@@ -60,6 +64,7 @@
 	</form>
 </div>
 
+<!-- reset button -->
 <h2 style="margin-top:32px;">Reset Demo Data</h2>
 <div class="card" style="margin-top:12px;max-width:520px;">
 	<p style="font-size:0.9rem;color:var(--text-light);margin-bottom:12px;">

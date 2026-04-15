@@ -1,12 +1,14 @@
+<!-- volunteer layout — wraps all /volunteer/* pages -->
+<!-- shows the blue nav bar and redirects non-volunteers to the login page -->
 <script lang="ts">
 	import { page } from '$app/state';
 	import { goto } from '$app/navigation';
 	import { store } from '$lib/store.svelte';
 
 	let { children } = $props();
-	let menuOpen = $state(false);
+	let menuOpen = $state(false); // mobile hamburger menu toggle
 
-	// Redirect to the volunteer login if not authenticated as a volunteer.
+	// if you're not logged in as a volunteer, kick back to login
 	$effect(() => {
 		const user = store.currentUser;
 		if (!user || user.role !== 'volunteer') {
@@ -14,6 +16,7 @@
 		}
 	});
 
+	// highlights the current nav link
 	function isActive(path: string) {
 		return page.url.pathname === path || page.url.pathname.startsWith(path + '/');
 	}
@@ -35,31 +38,11 @@
 			{menuOpen ? '\u2715' : '\u2630'}
 		</button>
 		<div class="nav-links" class:open={menuOpen}>
-			<a
-				href="/volunteer"
-				class:active={page.url.pathname === '/volunteer'}
-				onclick={closeMenu}>Home</a
-			>
-			<a
-				href="/volunteer/events"
-				class:active={isActive('/volunteer/events')}
-				onclick={closeMenu}>Events</a
-			>
-			<a
-				href="/volunteer/log"
-				class:active={isActive('/volunteer/log')}
-				onclick={closeMenu}>Log</a
-			>
-			<a
-				href="/volunteer/account"
-				class:active={isActive('/volunteer/account')}
-				onclick={closeMenu}>Account</a
-			>
-			<a
-				href="/volunteer/tutorial"
-				class:active={isActive('/volunteer/tutorial')}
-				onclick={closeMenu}>Tutorial</a
-			>
+			<a href="/volunteer" class:active={page.url.pathname === '/volunteer'} onclick={closeMenu}>Home</a>
+			<a href="/volunteer/events" class:active={isActive('/volunteer/events')} onclick={closeMenu}>Events</a>
+			<a href="/volunteer/log" class:active={isActive('/volunteer/log')} onclick={closeMenu}>Log</a>
+			<a href="/volunteer/account" class:active={isActive('/volunteer/account')} onclick={closeMenu}>Account</a>
+			<a href="/volunteer/tutorial" class:active={isActive('/volunteer/tutorial')} onclick={closeMenu}>Tutorial</a>
 			<button
 				type="button"
 				onclick={handleLogout}

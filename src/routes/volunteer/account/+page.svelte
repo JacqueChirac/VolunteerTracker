@@ -1,10 +1,12 @@
+<!-- account page — manage children (add/link/unlink) and change password -->
 <script lang="ts">
 	import { store, type ChildStatus } from '$lib/store.svelte';
 
+	// --- toggle which form is showing ---
 	let showAddChild = $state(false);
 	let showLinkChild = $state(false);
 
-	// Add child form state
+	// --- add child form ---
 	let newFirstName = $state('');
 	let newLastName = $state('');
 	let newLevel = $state('');
@@ -12,14 +14,14 @@
 	let addChildError = $state<string | null>(null);
 	let addChildSuccess = $state(false);
 
-	// Link child form state
+	// --- link existing child form ---
 	let linkChildId = $state<number | ''>('');
 	let linkError = $state<string | null>(null);
 	let linkSuccess = $state(false);
 
 	let unlinkSuccess = $state(false);
 
-	// Password change
+	// --- password change ---
 	let currentPassword = $state('');
 	let newPassword = $state('');
 	let passwordError = $state<string | null>(null);
@@ -27,6 +29,7 @@
 
 	const user = $derived(store.currentUser);
 
+	// children linked to this user, with their hour progress
 	const myChildren = $derived.by(() => {
 		if (!user) return [];
 		return store.getLinkedChildren(user.id).map((child) => ({
@@ -36,8 +39,10 @@
 		}));
 	});
 
+	// children that exist but aren't linked to this user (for the "link existing" dropdown)
 	const unlinkedChildren = $derived(store.getUnlinkedChildrenForCurrentUser());
 
+	// clear all success/error messages
 	function clearFlashes() {
 		addChildError = null;
 		addChildSuccess = false;
@@ -46,6 +51,7 @@
 		unlinkSuccess = false;
 	}
 
+	// create a new child and link to this user
 	function handleAddChild(e: Event) {
 		e.preventDefault();
 		clearFlashes();
@@ -59,6 +65,7 @@
 			level: newLevel.trim(),
 			status: newStatus
 		});
+		// reset form
 		newFirstName = '';
 		newLastName = '';
 		newLevel = '';
@@ -67,6 +74,7 @@
 		showAddChild = false;
 	}
 
+	// link an already-existing child to this user
 	function handleLinkChild(e: Event) {
 		e.preventDefault();
 		clearFlashes();
@@ -84,6 +92,7 @@
 		showLinkChild = false;
 	}
 
+	// remove the link between a child and this user
 	function handleUnlink(childId: number, firstName: string) {
 		if (!confirm(`Unlink ${firstName} from your account?`)) return;
 		clearFlashes();
@@ -112,62 +121,44 @@
 </p>
 
 <div class="grid-2">
+	<!-- left column: children -->
 	<div>
-		<div
-			style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;flex-wrap:wrap;gap:8px;"
-		>
+		<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;flex-wrap:wrap;gap:8px;">
 			<h2>My Children</h2>
 			<div style="display:flex;gap:6px;">
 				<button
 					class="btn btn-accent"
 					style="font-size:0.85rem;padding:6px 14px;"
-					onclick={() => {
-						showLinkChild = !showLinkChild;
-						showAddChild = false;
-					}}
+					onclick={() => { showLinkChild = !showLinkChild; showAddChild = false; }}
 				>
 					{showLinkChild ? 'Cancel' : 'Link Existing'}
 				</button>
 				<button
 					class="btn btn-primary"
 					style="font-size:0.85rem;padding:6px 14px;"
-					onclick={() => {
-						showAddChild = !showAddChild;
-						showLinkChild = false;
-					}}
+					onclick={() => { showAddChild = !showAddChild; showLinkChild = false; }}
 				>
 					{showAddChild ? 'Cancel' : '+ New Child'}
 				</button>
 			</div>
 		</div>
 
+		<!-- success/error messages -->
 		{#if addChildSuccess}
-			<div
-				class="card"
-				style="background:#d4edda;border:1px solid #c3e6cb;margin-bottom:12px;"
-			>
+			<div class="card" style="background:#d4edda;border:1px solid #c3e6cb;margin-bottom:12px;">
 				<p style="color:#155724;">Child added successfully.</p>
 			</div>
 		{/if}
-
 		{#if unlinkSuccess}
-			<div
-				class="card"
-				style="background:#d4edda;border:1px solid #c3e6cb;margin-bottom:12px;"
-			>
+			<div class="card" style="background:#d4edda;border:1px solid #c3e6cb;margin-bottom:12px;">
 				<p style="color:#155724;">Child unlinked from your account.</p>
 			</div>
 		{/if}
-
 		{#if linkSuccess}
-			<div
-				class="card"
-				style="background:#d4edda;border:1px solid #c3e6cb;margin-bottom:12px;"
-			>
+			<div class="card" style="background:#d4edda;border:1px solid #c3e6cb;margin-bottom:12px;">
 				<p style="color:#155724;">Child linked to your account.</p>
 			</div>
 		{/if}
-
 		{#if addChildError}
 			<p class="error" style="margin-bottom:12px;">{addChildError}</p>
 		{/if}
@@ -175,12 +166,11 @@
 			<p class="error" style="margin-bottom:12px;">{linkError}</p>
 		{/if}
 
+		<!-- link existing child form (hidden by default) -->
 		{#if showLinkChild}
 			<div class="card" style="margin-bottom:16px;">
 				<h3>Link an Existing Child</h3>
-				<p
-					style="font-size:0.85rem;color:var(--text-light);margin-top:4px;margin-bottom:12px;"
-				>
+				<p style="font-size:0.85rem;color:var(--text-light);margin-top:4px;margin-bottom:12px;">
 					If another guardian already added your child, select them here to link to your account.
 					Your hours will count toward their goal.
 				</p>
@@ -198,9 +188,7 @@
 									<option value={child.id}>
 										{child.firstName}
 										{child.lastName}
-										{child.level ? ` (${child.level})` : ''} -- {child.status === 'tryout'
-											? 'Tryout'
-											: 'Full Member'}
+										{child.level ? ` (${child.level})` : ''} -- {child.status === 'tryout' ? 'Tryout' : 'Full Member'}
 									</option>
 								{/each}
 							</select>
@@ -211,6 +199,7 @@
 			</div>
 		{/if}
 
+		<!-- add new child form (hidden by default) -->
 		{#if showAddChild}
 			<div class="card" style="margin-bottom:16px;">
 				<h3>Add a New Child</h3>
@@ -225,12 +214,7 @@
 					</div>
 					<div class="form-group">
 						<label for="level">Level</label>
-						<input
-							id="level"
-							type="text"
-							bind:value={newLevel}
-							placeholder="e.g. Beginner, Intermediate, Competitive"
-						/>
+						<input id="level" type="text" bind:value={newLevel} placeholder="e.g. Beginner, Intermediate, Competitive" />
 					</div>
 					<div class="form-group">
 						<label for="status">Status</label>
@@ -244,20 +228,18 @@
 			</div>
 		{/if}
 
+		<!-- list of linked children with progress bars -->
 		{#if myChildren.length === 0}
 			<div class="card">
 				<p style="color:var(--text-light);">
-					No children linked yet. Add a new child or link an existing one to start tracking
-					hours.
+					No children linked yet. Add a new child or link an existing one to start tracking hours.
 				</p>
 			</div>
 		{/if}
 
 		{#each myChildren as child}
 			<div class="card" style="margin-bottom:12px;">
-				<div
-					style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;flex-wrap:wrap;gap:4px;"
-				>
+				<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;flex-wrap:wrap;gap:4px;">
 					<h3>{child.firstName} {child.lastName}</h3>
 					<div style="display:flex;align-items:center;gap:8px;">
 						<span style="font-size:0.85rem;color:var(--text-light);">
@@ -276,10 +258,7 @@
 				<div class="progress-bar">
 					<div
 						class="progress-bar-fill"
-						style="width:{Math.min(
-							100,
-							(child.totalHours / child.requiredHours) * 100
-						)}%;{child.totalHours >= child.requiredHours ? 'background:#27ae60' : ''}"
+						style="width:{Math.min(100, (child.totalHours / child.requiredHours) * 100)}%;{child.totalHours >= child.requiredHours ? 'background:#27ae60' : ''}"
 					>
 						{child.totalHours} / {child.requiredHours} hrs
 					</div>
@@ -295,13 +274,12 @@
 		{/each}
 	</div>
 
+	<!-- right column: change password -->
 	<div>
 		<h2>Change Password</h2>
 		<div class="card" style="margin-top:12px;">
 			{#if passwordSuccess}
-				<div
-					style="background:#d4edda;border:1px solid #c3e6cb;padding:12px;border-radius:8px;margin-bottom:12px;"
-				>
+				<div style="background:#d4edda;border:1px solid #c3e6cb;padding:12px;border-radius:8px;margin-bottom:12px;">
 					<p style="color:#155724;">Password changed successfully.</p>
 				</div>
 			{/if}
