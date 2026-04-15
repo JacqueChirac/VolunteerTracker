@@ -38,12 +38,10 @@ a:hover {
 	text-decoration: underline;
 }
 
-/* 小装饰 */
 .wave-deco::before { content: "🌊"; margin-right: 6px; }
 .cap-deco::before { content: "🏊‍♀️"; margin-right: 6px; }
 .star-deco::before { content: "✨"; margin-right: 6px; }
 
-/* 只有按钮会 float up */
 button, .btn {
 	display: inline-flex;
 	align-items: center;
@@ -110,7 +108,6 @@ input:focus, select:focus, textarea:focus {
 	position: relative;
 	overflow: hidden;
 }
-/* 卡片小装饰，无动画 */
 .card::after {
 	content: "🌊";
 	position: absolute;
