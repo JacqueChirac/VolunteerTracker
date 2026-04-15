@@ -14,7 +14,7 @@
 		"db:seed": "bun run src/lib/server/seed.ts"
 	},
 	"devDependencies": {
-		"@sveltejs/adapter-auto": "^7.0.0",
+		"@sveltejs/adapter-auto": "^7.0.1",
 		"@sveltejs/kit": "^2.50.2",
 		"@sveltejs/vite-plugin-svelte": "^6.2.4",
 		"drizzle-kit": "^0.31.10",
