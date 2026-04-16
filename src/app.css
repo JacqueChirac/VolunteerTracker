@@ -38,9 +38,9 @@ a:hover {
 	text-decoration: underline;
 }
 
-.wave-deco::before { content: ""; margin-right: 6px; }
-.cap-deco::before { content: ""; margin-right: 6px; }
-.star-deco::before { content: ""; margin-right: 6px; }
+.wave-deco::before { content: "🌊"; margin-right: 6px; }
+.cap-deco::before { content: "🏊‍♀️"; margin-right: 6px; }
+.star-deco::before { content: "✨"; margin-right: 6px; }
 
 button, .btn {
 	display: inline-flex;
@@ -109,7 +109,7 @@ input:focus, select:focus, textarea:focus {
 	overflow: hidden;
 }
 .card::after {
-	content: "";
+	content: "🌊";
 	position: absolute;
 	bottom: 10px;
 	right: 14px;
@@ -135,7 +135,7 @@ input:focus, select:focus, textarea:focus {
 	color: var(--text);
 }
 .form-group label::before {
-	content: "";
+	content: "🏷️";
 	margin-right: 6px;
 	font-size: 0.9rem;
 }
@@ -148,7 +148,7 @@ input:focus, select:focus, textarea:focus {
 	align-items: center;
 }
 .error::before {
-	content: "";
+	content: "⚠️";
 	margin-right: 5px;
 	font-size: 0.8rem;
 }
@@ -180,7 +180,7 @@ th {
 	color: var(--primary-dark);
 }
 th:first-child::before {
-	content: "";
+	content: "🏊‍♀️ ";
 	font-size: 0.9rem;
 }
 tr:last-child td {
@@ -209,7 +209,7 @@ tr:last-child td {
 	padding: 0 12px;
 }
 .progress-bar-fill::after {
-	content: "";
+	content: " 🌊";
 }
 
 .nav {
@@ -244,7 +244,7 @@ tr:last-child td {
 	margin-right: auto;
 }
 .nav .brand::before {
-	content: "";
+	content: "🏊‍♀️ ";
 	margin-right: 6px;
 }
 
