@@ -22,11 +22,11 @@
 		{:else}
 			<div class="login-options">
 				<a href="/login?role=volunteer" class="btn btn-primary login-card">
-					<span class="login-icon">👤</span>
+					<span class="login-icon"></span>
 					<span class="login-label">Volunteer Login</span>
 				</a>
 				<a href="/login?role=organizer" class="btn btn-accent login-card">
-					<span class="login-icon">🔧</span>
+					<span class="login-icon"></span>
 					<span class="login-label">Organizer Login</span>
 				</a>
 			</div>
