@@ -21,6 +21,7 @@ export const users = pgTable('users', {
 	role: roleEnum('role').notNull().default('parent'), // parent = parent/relative/friend
 	firstName: text('first_name').notNull(),
 	lastName: text('last_name').notNull(),
+	email: text('email').notNull().unique(),
 	createdAt: timestamp('created_at').defaultNow().notNull()
 });
 
