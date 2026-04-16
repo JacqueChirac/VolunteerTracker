@@ -1,17 +1,17 @@
 :root {
-	--primary: #3A98F7;
-	--primary-light: #72B9FF;
-	--primary-dark: #2578D4;
-	--accent: #FF9EDD;
-	--danger: #FF7676;
-	--bg: #F9FDFF;
-	--card: #ffffff;
-	--text: #384252;
-	--text-light: #8995A9;
-	--border: #E2F0FF;
+	--primary: #4A90C4;        /* Pacific Blue */
+	--primary-light: #A8C8E8;  /* Powder Blue */
+	--primary-dark: #2C4A6E;   /* Charcoal Blue */
+	--accent: #F2D6DA;         /* Powder Blush */
+	--danger: #C0566A;
+	--bg: #F5F3EF;             /* Alabaster Grey */
+	--card: #FDFCFA;           /* Alabaster Grey (lighter) */
+	--text: #2C4A6E;           /* Charcoal Blue */
+	--text-light: #7A92A8;     /* Muted Pacific Blue */
+	--border: #D8E8F2;         /* Powder Blue tint */
 	--radius: 22px;
-	--shadow: 0 4px 12px rgba(58,152,247,0.1);
-	--shadow-hover: 0 8px 20px rgba(58,152,247,0.15);
+	--shadow: 0 4px 12px rgba(44,74,110,0.08);
+	--shadow-hover: 0 8px 20px rgba(44,74,110,0.13);
 }
 
 * {
@@ -26,24 +26,22 @@ body {
 	color: var(--text);
 	line-height: 1.6;
 	-webkit-text-size-adjust: 100%;
-	background-image: radial-gradient(circle at 10% 20%, rgba(114,185,255,0.04) 0%, transparent 20%),
-		radial-gradient(circle at 90% 80%, rgba(255,158,221,0.04) 0%, transparent 20%);
+	background-image: radial-gradient(circle at 10% 20%, rgba(168,200,232,0.05) 0%, transparent 20%),
+		radial-gradient(circle at 90% 80%, rgba(242,214,218,0.05) 0%, transparent 20%);
 }
 
 a {
-	color: var(--primary-light);
+	color: var(--primary);
 	text-decoration: none;
 }
 a:hover {
 	text-decoration: underline;
 }
 
-/* 小装饰 */
-.wave-deco::before { content: "🌊"; margin-right: 6px; }
-.cap-deco::before { content: "🏊‍♀️"; margin-right: 6px; }
-.star-deco::before { content: "✨"; margin-right: 6px; }
+.wave-deco::before { margin-right: 6px; }
+.cap-deco::before { margin-right: 6px; }
+.star-deco::before { margin-right: 6px; }
 
-/* 只有按钮会 float up */
 button, .btn {
 	display: inline-flex;
 	align-items: center;
@@ -72,8 +70,8 @@ button:active, .btn:active {
 	color: white;
 }
 .btn-accent {
-	background: linear-gradient(135deg, var(--accent), #FFBEEF);
-	color: white;
+	background: linear-gradient(135deg, var(--accent), #F5E4E7);
+	color: var(--primary-dark);
 }
 .btn-danger {
 	background: var(--danger);
@@ -98,7 +96,7 @@ input, select, textarea {
 input:focus, select:focus, textarea:focus {
 	outline: none;
 	border-color: var(--primary-light);
-	box-shadow: 0 0 0 4px rgba(114,185,255,0.15);
+	box-shadow: 0 0 0 4px rgba(168,200,232,0.2);
 }
 
 .card {
@@ -109,15 +107,6 @@ input:focus, select:focus, textarea:focus {
 	border: 1px solid var(--border);
 	position: relative;
 	overflow: hidden;
-}
-/* 卡片小装饰，无动画 */
-.card::after {
-	content: "🌊";
-	position: absolute;
-	bottom: 10px;
-	right: 14px;
-	font-size: 1.2rem;
-	opacity: 0.15;
 }
 
 .container {
@@ -138,7 +127,6 @@ input:focus, select:focus, textarea:focus {
 	color: var(--text);
 }
 .form-group label::before {
-	content: "🏷️";
 	margin-right: 6px;
 	font-size: 0.9rem;
 }
@@ -151,7 +139,6 @@ input:focus, select:focus, textarea:focus {
 	align-items: center;
 }
 .error::before {
-	content: "⚠️";
 	margin-right: 5px;
 	font-size: 0.8rem;
 }
@@ -175,16 +162,12 @@ th, td {
 	white-space: nowrap;
 }
 th {
-	background: linear-gradient(to right, #F0F7FF, #F9FDFF);
+	background: linear-gradient(to right, #EBF3FA, #F5F3EF);
 	font-weight: 600;
 	font-size: 0.85rem;
 	text-transform: uppercase;
 	letter-spacing: 0.8px;
-	color: var(--primary);
-}
-th:first-child::before {
-	content: "🏊‍♀️ ";
-	font-size: 0.9rem;
+	color: var(--primary-dark);
 }
 tr:last-child td {
 	border-bottom: none;
@@ -206,13 +189,10 @@ tr:last-child td {
 	align-items: center;
 	justify-content: center;
 	font-size: 0.8rem;
-	color: white;
+	color: var(--primary-dark);
 	font-weight: 600;
 	min-width: fit-content;
 	padding: 0 12px;
-}
-.progress-bar-fill::after {
-	content: " 🌊";
 }
 
 .nav {
@@ -222,7 +202,7 @@ tr:last-child td {
 	align-items: center;
 	height: 70px;
 	position: relative;
-	box-shadow: 0 4px 12px rgba(58,152,247,0.12);
+	box-shadow: 0 4px 12px rgba(44,74,110,0.15);
 	border-radius: 0 0 28px 28px;
 }
 .nav a {
@@ -245,10 +225,6 @@ tr:last-child td {
 	font-size: 1.4rem;
 	color: white;
 	margin-right: auto;
-}
-.nav .brand::before {
-	content: "🏊‍♀️ ";
-	margin-right: 6px;
 }
 
 .nav-links { display: flex; align-items: center; }
