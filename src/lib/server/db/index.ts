@@ -6,6 +6,9 @@ import { drizzle } from 'drizzle-orm/neon-http';
 import * as schema from './schema';
 import { DATABASE_URL } from '$env/static/private';
 
+console.log('[DB] DATABASE_URL exists:', !!DATABASE_URL);
+console.log('[DB] DATABASE_URL starts with:', DATABASE_URL?.substring(0, 30));
+
 // neon() gives us a serverless-friendly SQL connection
 const sql = neon(DATABASE_URL);
 
