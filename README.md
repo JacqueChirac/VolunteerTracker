@@ -2,30 +2,31 @@
 
 Swim team volunteer hours tracker. Volunteers log hours/donations, organizers manage events and see who's contributed.
 
-Currently a **paper prototype** — everything runs client-side with localStorage (no real database yet). Backend files (drizzle schema, auth, seed) are included for when we switch to a real database.
-
 ## Stack
 
 - **SvelteKit** (Svelte 5 w/ runes) — frontend + routing
 - **Bun** — package manager + runtime
-- **localStorage** — fake database for the prototype
-- **Drizzle + Neon** — real database (ready to wire up, not active yet)
+- **Drizzle + Neon** — PostgreSQL database
 
 ## Setup
 
 ```sh
 bun install
+bun run db:push
+bun run db:seed
 bun run dev --open
 ```
 
 ## Test accounts
 
-| Username | Password | Role |
-|----------|----------|------|
-| admin | admin123 | organizer |
-| raymond | password | volunteer |
+| Email | Password | Role |
+|-------|----------|------|
+| admin@example.com | admin123 | organizer |
+| raymond@example.com | password | volunteer |
+| mary@example.com | password | volunteer |
+| zilin@example.com | password | volunteer |
 
-These are seeded automatically on first load. Use **Manage > Reset All Local Data** to re-seed.
+Login uses email (no username).
 
 ## Project structure
 
@@ -36,8 +37,7 @@ src/
 ├── app.d.ts                     # TypeScript type declarations
 ├── hooks.server.ts              # session middleware (not active in prototype)
 ├── lib/
-│   ├── store.svelte.ts          # THE BIG FILE — all state + localStorage persistence
-│   └── server/                  # backend code (not active in prototype)
+│   └── server/
 │       ├── auth.ts              # login, register, sessions
 │       ├── settings.ts          # site-wide settings
 │       ├── seed.ts              # test data seeder
@@ -45,8 +45,8 @@ src/
 │           ├── index.ts         # database connection
 │           └── schema.ts        # table definitions
 └── routes/
-    ├── +layout.svelte           # root layout (loads CSS, inits store)
-    ├── +layout.ts               # disables SSR for prototype mode
+    ├── +layout.svelte           # root layout
+    ├── +layout.server.ts        # passes user to all pages
     ├── +page.svelte             # landing page with login buttons
     ├── login/                   # login page
     ├── register/                # registration page
@@ -67,7 +67,7 @@ src/
 |---------|-------------|
 | `bun run dev` | Start dev server |
 | `bun run build` | Production build |
-| `bun run db:push` | Sync schema.ts to the database (when using real backend) |
-| `bun run db:seed` | Seed test data (when using real backend) |
+| `bun run db:push` | Sync schema.ts to the database |
+| `bun run db:seed` | Seed test data |
 | `bun run check` | TypeScript type checking |
 ```

@@ -13,16 +13,16 @@ export const load: PageServerLoad = async ({ locals }) => {
 export const actions: Actions = {
 	default: async ({ request, cookies }) => {
 		const formData = await request.formData();
-		const username = formData.get('username')?.toString().trim() ?? '';
+		const email = formData.get('email')?.toString().trim() ?? '';
 		const password = formData.get('password')?.toString() ?? '';
 
-		if (!username || !password) {
-			return fail(400, { error: 'Username and password are required.', username });
+		if (!email || !password) {
+			return fail(400, { error: 'Email and password are required.', email });
 		}
 
-		const user = await verifyUser(username, password);
+		const user = await verifyUser(email, password);
 		if (!user) {
-			return fail(400, { error: 'Invalid username or password.', username });
+			return fail(400, { error: 'Invalid email or password.', email });
 		}
 
 		// set session cookie (lasts 30 days)

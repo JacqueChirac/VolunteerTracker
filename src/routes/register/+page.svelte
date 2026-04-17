@@ -24,12 +24,8 @@
 				<input id="lastName" name="lastName" type="text" value={form?.lastName ?? ''} required />
 			</div>
 			<div class="form-group">
-				<label for="username">Username</label>
-				<input id="username" name="username" type="text" value={form?.username ?? ''} required />
-			</div>
-			<div class="form-group">
 				<label for="email">Email</label>
-				<input id="email" name="email" type="text" value={form?.email ?? ''} required />
+				<input id="email" name="email" type="email" value={form?.email ?? ''} required />
 			</div>
 			<div class="form-group">
 				<label for="password">Password</label>

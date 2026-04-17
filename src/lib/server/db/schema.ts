@@ -16,7 +16,6 @@ export const importanceEnum = pgEnum('importance', ['low', 'medium', 'high']);
 // who can log in — parents, relatives, friends, and organizers
 export const users = pgTable('users', {
 	id: serial('id').primaryKey(),
-	username: text('username').notNull().unique(),
 	passwordHash: text('password_hash').notNull(),
 	role: roleEnum('role').notNull().default('parent'), // parent = parent/relative/friend
 	firstName: text('first_name').notNull(),

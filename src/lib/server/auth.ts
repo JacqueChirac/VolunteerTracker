@@ -12,7 +12,6 @@ const SESSION_COOKIE = "session";
 
 // creates a new user and hashes their password before saving
 export async function createUser(
-  username: string,
   password: string,
   firstName: string,
   lastName: string,
@@ -23,7 +22,6 @@ export async function createUser(
   const [user] = await db
     .insert(users)
     .values({
-      username,
       passwordHash,
       firstName,
       lastName,
@@ -34,12 +32,12 @@ export async function createUser(
   return user;
 }
 
-// checks username + password, returns the user if correct, null if not
-export async function verifyUser(username: string, password: string) {
+// checks email + password, returns the user if correct, null if not
+export async function verifyUser(email: string, password: string) {
   const [user] = await db
     .select()
     .from(users)
-    .where(eq(users.username, username));
+    .where(eq(users.email, email));
   if (!user) return null;
   if (!compareSync(password, user.passwordHash)) return null;
   return user;

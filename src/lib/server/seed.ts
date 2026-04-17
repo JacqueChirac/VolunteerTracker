@@ -18,7 +18,6 @@ async function seed() {
   await db
     .insert(schema.users)
     .values({
-      username: "admin",
       passwordHash: adminPassword,
       role: "organizer",
       firstName: "Admin",
@@ -26,25 +25,22 @@ async function seed() {
       email: "admin@example.com",
     })
     .onConflictDoNothing();
-  console.log("Admin account created (username: admin, password: admin123)");
+  console.log("Admin account created (email: admin@example.com, password: admin123)");
 
   // a few parent accounts to test with
   const volunteerPassword = hashSync("password", 10);
   const volunteers = [
     {
-      username: "raymond",
       firstName: "Raymond",
       lastName: "Liu",
       email: "raymond@example.com",
     },
     {
-      username: "mary",
       firstName: "Mary",
       lastName: "Liu",
       email: "mary@example.com",
     },
     {
-      username: "zilin",
       firstName: "Zilin",
       lastName: "Liu",
       email: "zilin@example.com",

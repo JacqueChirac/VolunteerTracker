@@ -9,7 +9,7 @@ import { getAllSettings, updateSetting, getDonationRate } from '$lib/server/sett
 export const load: PageServerLoad = async () => {
 	const activities = await db.select().from(activityTypes);
 	const news = await db.select().from(announcements).orderBy(desc(announcements.createdAt));
-	const parents = await db.select({ id: users.id, firstName: users.firstName, lastName: users.lastName, username: users.username }).from(users).where(eq(users.role, 'parent'));
+	const parents = await db.select({ id: users.id, firstName: users.firstName, lastName: users.lastName, email: users.email }).from(users).where(eq(users.role, 'parent'));
 	const archives = await db.select().from(seasonArchives).orderBy(desc(seasonArchives.archivedAt));
 	const settings = await getAllSettings();
 	const donationRate = await getDonationRate();
@@ -89,7 +89,7 @@ export const actions: Actions = {
 		const allContributions = await db.select().from(contributions);
 		const allChildren = await db.select().from(children);
 		const allLinks = await db.select().from(childParentLinks);
-		const allParents = await db.select({ id: users.id, firstName: users.firstName, lastName: users.lastName, username: users.username }).from(users).where(eq(users.role, 'parent'));
+		const allParents = await db.select({ id: users.id, firstName: users.firstName, lastName: users.lastName, email: users.email }).from(users).where(eq(users.role, 'parent'));
 
 		const snapshot = JSON.stringify({ contributions: allContributions, children: allChildren, links: allLinks, parents: allParents });
 		await db.insert(seasonArchives).values({ label, data: snapshot });

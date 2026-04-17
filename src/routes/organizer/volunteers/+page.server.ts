@@ -13,7 +13,7 @@ export const load: PageServerLoad = async ({ url }) => {
 		parents = parents.filter(p =>
 			p.firstName.toLowerCase().includes(search) ||
 			p.lastName.toLowerCase().includes(search) ||
-			p.username.toLowerCase().includes(search)
+			p.email.toLowerCase().includes(search)
 		);
 	}
 
@@ -43,7 +43,7 @@ export const load: PageServerLoad = async ({ url }) => {
 
 		volunteersData.push({
 			id: parent.id, firstName: parent.firstName, lastName: parent.lastName,
-			username: parent.username,
+			email: parent.email,
 			totalHours: Math.round(parentTotalHours * 100) / 100,
 			children: childrenInfo
 		});

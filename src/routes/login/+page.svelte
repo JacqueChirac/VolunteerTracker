@@ -18,8 +18,8 @@
 
 		<form method="POST" use:enhance>
 			<div class="form-group">
-				<label for="username">Username</label>
-				<input id="username" name="username" type="text" value={form?.username ?? ''} required />
+				<label for="email">Email</label>
+				<input id="email" name="email" type="email" value={form?.email ?? ''} required />
 			</div>
 			<div class="form-group">
 				<label for="password">Password</label>
