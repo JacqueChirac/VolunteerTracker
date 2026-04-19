@@ -36,7 +36,7 @@
 </div>
 
 <style>
-	.landing { min-height: 100vh; display: flex; align-items: center; justify-content: center; background: linear-gradient(135deg, #1a5276 0%, #2980b9 100%); color: white; text-align: center; padding: 20px; }
+	.landing { min-height: 100vh; display: flex; align-items: center; justify-content: center; background: linear-gradient(135deg, #373F51 0%, #58A4B0 100%); color: white; text-align: center; padding: 20px; }
 	.landing-content { max-width: 520px; }
 	h1 { font-size: 2.2rem; margin-bottom: 12px; }
 	p { font-size: 1.1rem; opacity: 0.9; }
@@ -50,5 +50,5 @@
 	.register-link a { color: white; text-decoration: underline; }
 	.logged-in { margin-top: 24px; }
 	.logged-in p { margin-bottom: 16px; font-size: 1.2rem; }
-	.logged-in .btn { background: white; color: #1a5276; }
+	.logged-in .btn { background: white; color: #373F51; }
 </style>

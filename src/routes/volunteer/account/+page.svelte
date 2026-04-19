@@ -96,7 +96,7 @@
 					</div>
 				</div>
 				<div class="progress-bar">
-					<div class="progress-bar-fill" style="width:{Math.min(100, (child.totalHours / child.requiredHours) * 100)}%;{child.totalHours >= child.requiredHours ? 'background:#27ae60' : ''}">
+					<div class="progress-bar-fill" style="width:{Math.min(100, (child.totalHours / child.requiredHours) * 100)}%;{child.totalHours >= child.requiredHours ? 'background:#58A4B0' : ''}">
 						{child.totalHours} / {child.requiredHours} hrs
 					</div>
 				</div>

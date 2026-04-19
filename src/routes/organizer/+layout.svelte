@@ -13,7 +13,7 @@
 	function closeMenu() { menuOpen = false; }
 </script>
 
-<nav class="nav" style="background:#27ae60;">
+<nav class="nav" style="background:linear-gradient(135deg, #373F51, #4A5568);">
 	<a href="/organizer" class="brand">Volunteer Tracker (Admin)</a>
 	<button class="hamburger" onclick={() => menuOpen = !menuOpen} aria-label="Menu">
 		{menuOpen ? '\u2715' : '\u2630'}
