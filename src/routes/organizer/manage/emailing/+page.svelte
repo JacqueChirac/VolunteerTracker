@@ -17,7 +17,7 @@ function init(){
   },
   limitRate: {
     id: 'app',
-    throttle: 3000, //Cooldown in ms
+    throttle: 3000, //Cool down in ms
   },
 });
 }
