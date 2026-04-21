@@ -1,5 +1,7 @@
 <script lang="ts">
 	import emailjs from '@emailjs/browser';
+  let { data } = $props();
+
 
 	(function () {
 		emailjs.init({
@@ -103,8 +105,7 @@
 {/if}
 
 
-
-
+<pre>{JSON.stringify(data, null, 2)}</pre>
 
 
 <style>
