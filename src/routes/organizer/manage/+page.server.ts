@@ -1,7 +1,7 @@
 // manage page server — settings, activity types, announcements, manual entries, archives
 import type { PageServerLoad, Actions } from './$types';
 import { db } from '$lib/server/db';
-import { activityTypes, announcements, users, contributions, children, childParentLinks, seasonArchives } from '$lib/server/db/schema';
+import { activityTypes, announcements, users, contributions, children, childVolunteerLinks, seasonArchives } from '$lib/server/db/schema';
 import { eq, desc } from 'drizzle-orm';
 import { fail } from '@sveltejs/kit';
 import { getAllSettings, updateSetting, getDonationRate } from '$lib/server/settings';
@@ -9,12 +9,12 @@ import { getAllSettings, updateSetting, getDonationRate } from '$lib/server/sett
 export const load: PageServerLoad = async () => {
 	const activities = await db.select().from(activityTypes);
 	const news = await db.select().from(announcements).orderBy(desc(announcements.createdAt));
-	const parents = await db.select({ id: users.id, firstName: users.firstName, lastName: users.lastName, email: users.email }).from(users).where(eq(users.role, 'parent'));
+	const volunteers = await db.select({ id: users.id, firstName: users.firstName, lastName: users.lastName, email: users.email }).from(users).where(eq(users.role, 'volunteer'));
 	const archives = await db.select().from(seasonArchives).orderBy(desc(seasonArchives.archivedAt));
 	const settings = await getAllSettings();
 	const donationRate = await getDonationRate();
 
-	return { activities, announcements: news, parents, archives, settings, donationRate };
+	return { activities, announcements: news, volunteers, archives, settings, donationRate };
 };
 
 export const actions: Actions = {
@@ -88,10 +88,10 @@ export const actions: Actions = {
 
 		const allContributions = await db.select().from(contributions);
 		const allChildren = await db.select().from(children);
-		const allLinks = await db.select().from(childParentLinks);
-		const allParents = await db.select({ id: users.id, firstName: users.firstName, lastName: users.lastName, email: users.email }).from(users).where(eq(users.role, 'parent'));
+		const allLinks = await db.select().from(childVolunteerLinks);
+		const allVolunteers = await db.select({ id: users.id, firstName: users.firstName, lastName: users.lastName, email: users.email }).from(users).where(eq(users.role, 'volunteer'));
 
-		const snapshot = JSON.stringify({ contributions: allContributions, children: allChildren, links: allLinks, parents: allParents });
+		const snapshot = JSON.stringify({ contributions: allContributions, children: allChildren, links: allLinks, volunteer: allVolunteers });
 		await db.insert(seasonArchives).values({ label, data: snapshot });
 		await db.delete(contributions);
 

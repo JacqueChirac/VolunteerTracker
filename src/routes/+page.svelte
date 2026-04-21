@@ -13,7 +13,7 @@
 		{#if data.user}
 			<div class="logged-in">
 				<p>Welcome back, {data.user.firstName}!</p>
-				{#if data.user.role === 'parent'}
+				{#if data.user.role === 'volunteer'}
 					<a href="/volunteer" class="btn btn-primary">Go to Dashboard</a>
 				{:else}
 					<a href="/organizer" class="btn btn-primary">Go to Dashboard</a>
@@ -50,5 +50,5 @@
 	.register-link a { color: white; text-decoration: underline; }
 	.logged-in { margin-top: 24px; }
 	.logged-in p { margin-bottom: 16px; font-size: 1.2rem; }
-	.logged-in .btn { background: white; color: #373F51; }
+	.logged-in .btn { background: white; color: #1a5276; }
 </style>

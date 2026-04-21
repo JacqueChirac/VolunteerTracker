@@ -27,7 +27,7 @@ async function seed() {
     .onConflictDoNothing();
   console.log("Admin account created (email: admin@example.com, password: admin123)");
 
-  // a few parent accounts to test with
+  // a few volunteer accounts to test with
   const volunteerPassword = hashSync("password", 10);
   const volunteers = [
     {
@@ -52,13 +52,13 @@ async function seed() {
       .values({
         ...v,
         passwordHash: volunteerPassword,
-        role: "parent",
+        role: "volunteer",
       })
       .onConflictDoNothing();
   }
   console.log("Sample volunteers created (password: password)");
 
-  // types of volunteer work parents can log
+  // types of volunteer work volunteers can log
   const activities = [
     "Repair",
     "Trophies",

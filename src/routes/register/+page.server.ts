@@ -1,4 +1,4 @@
-// registration server logic — creates a new parent/volunteer account
+// registration server logic — creates a new volunteer account
 import type { Actions, PageServerLoad } from "./$types";
 import { fail, redirect } from "@sveltejs/kit";
 import {
@@ -14,7 +14,7 @@ export const load: PageServerLoad = async ({ locals }) => {
   if (locals.user) {
     throw redirect(
       302,
-      locals.user.role === "parent" ? "/volunteer" : "/organizer",
+      locals.user.role === "volunteer" ? "/volunteer" : "/organizer",
     );
   }
 };
@@ -72,7 +72,7 @@ export const actions: Actions = {
       firstName,
       lastName,
       email,
-      "parent",
+      "volunteer",
     );
 
     const token = createSessionToken(user.id);

@@ -67,7 +67,7 @@
 					<label for="userId">Volunteer</label>
 					<select id="userId" name="userId" required>
 						<option value="">-- Select volunteer --</option>
-						{#each data.parents as p}<option value={p.id}>{p.firstName} {p.lastName} ({p.email})</option>{/each}
+						{#each data.volunteers as p}<option value={p.id}>{p.firstName} {p.lastName} ({p.email})</option>{/each}
 					</select>
 				</div>
 				<div class="form-group">
