@@ -50,6 +50,5 @@
 	.register-link a { color: white; text-decoration: underline; }
 	.logged-in { margin-top: 24px; }
 	.logged-in p { margin-bottom: 16px; font-size: 1.2rem; }
-	.logged-in .btn { background: white; color: #1a5276; }
-
+	.logged-in .btn { background: white; color: #373F51; }
 </style>

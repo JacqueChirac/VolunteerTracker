@@ -9,7 +9,7 @@
 <p style="color:var(--text-light);margin-bottom:24px;">View all volunteers and their children's progress.</p>
 
 <form method="GET" style="margin-bottom:20px;display:flex;gap:8px;">
-	<input type="text" name="search" placeholder="Search by name or username..." bind:value={search} style="max-width:300px;" />
+	<input type="text" name="search" placeholder="Search by name or email..." bind:value={search} style="max-width:300px;" />
 	<button type="submit" class="btn btn-primary">Search</button>
 	{#if search}<a href="/organizer/volunteers" class="btn btn-outline">Clear</a>{/if}
 </form>
@@ -21,7 +21,7 @@
 		<div class="card" style="margin-bottom:12px;">
 			<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;flex-wrap:wrap;gap:6px;">
 				<h3><a href="/organizer/volunteers/{volunteer.id}">{volunteer.firstName} {volunteer.lastName}</a></h3>
-				<span style="font-size:0.85rem;color:var(--text-light);">@{volunteer.username} &middot; {volunteer.totalHours} hrs</span>
+				<span style="font-size:0.85rem;color:var(--text-light);">{volunteer.email} &middot; {volunteer.totalHours} hrs</span>
 			</div>
 			{#if volunteer.children.length === 0}
 				<p style="font-size:0.9rem;color:var(--text-light);">No children linked.</p>

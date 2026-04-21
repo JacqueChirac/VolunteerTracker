@@ -18,8 +18,8 @@
 
 		<form method="POST" use:enhance>
 			<div class="form-group">
-				<label for="username">Username</label>
-				<input id="username" name="username" type="text" value={form?.username ?? ''} required />
+				<label for="email">Email</label>
+				<input id="email" name="email" type="email" value={form?.email ?? ''} required />
 			</div>
 			<div class="form-group">
 				<label for="password">Password</label>
@@ -38,7 +38,7 @@
 </div>
 
 <style>
-	.login-page { min-height: 100vh; display: flex; align-items: center; justify-content: center; background: linear-gradient(135deg, #77b8e0 0%, #2980b9 100%); padding: 20px; }
+	.login-page { min-height: 100vh; display: flex; align-items: center; justify-content: center; background: linear-gradient(135deg, #A9BCD0 0%, #58A4B0 50%, #373F51 100%); padding: 20px; }
 	.login-box { width: 100%; max-width: 400px; }
 	h2 { margin-bottom: 20px; text-align: center; }
 	.links { margin-top: 16px; text-align: center; display: flex; justify-content: center; gap: 16px; font-size: 0.9rem; }

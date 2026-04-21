@@ -11,7 +11,7 @@
 
 <div style="display:flex;justify-content:space-between;align-items:center;margin-top:12px;flex-wrap:wrap;gap:12px;">
 	<h1>{data.volunteer.firstName} {data.volunteer.lastName}</h1>
-	<span style="color:var(--text-light);font-size:0.9rem;">@{data.volunteer.username}</span>
+	<span style="color:var(--text-light);font-size:0.9rem;">{data.volunteer.email}</span>
 </div>
 
 {#if form?.editChildSuccess}

@@ -5,7 +5,7 @@ declare global {
 		interface Locals {
 			user?: {
 				id: number;
-				username: string;
+				email: string;
 				role: 'parent' | 'organizer';
 				firstName: string;
 				lastName: string;

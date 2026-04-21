@@ -11,7 +11,8 @@
 		"check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
 		"check:watch": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --watch",
 		"db:push": "drizzle-kit push",
-		"db:seed": "bun run src/lib/server/seed.ts"
+		"db:seed": "bun run src/lib/server/seed.ts",
+		"db:migrate-drop-username": "bun run src/lib/server/migrate-drop-username.ts"
 	},
 	"devDependencies": {
 		"@sveltejs/adapter-auto": "^7.0.1",
@@ -24,6 +25,7 @@
 		"vite": "^7.3.1"
 	},
 	"dependencies": {
+		"@emailjs/browser": "^4.4.1",
 		"@neondatabase/serverless": "^1.0.2",
 		"bcrypt-ts": "^8.0.1",
 		"drizzle-orm": "^0.45.2",

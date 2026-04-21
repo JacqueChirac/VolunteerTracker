@@ -1,17 +1,17 @@
 :root {
-	--primary: #4A90C4;        /* Pacific Blue */
-	--primary-light: #A8C8E8;  /* Powder Blue */
-	--primary-dark: #2C4A6E;   /* Charcoal Blue */
-	--accent: #F2D6DA;         /* Powder Blush */
+	--primary: #58A4B0;        /* Pacific Blue */
+	--primary-light: #A9BCD0;  /* Powder Blue */
+	--primary-dark: #373F51;   /* Charcoal Blue */
+	--accent: #DAA49A;         /* Powder Blush */
 	--danger: #C0566A;
-	--bg: #F5F3EF;             /* Alabaster Grey */
-	--card: #FDFCFA;           /* Alabaster Grey (lighter) */
-	--text: #2C4A6E;           /* Charcoal Blue */
-	--text-light: #7A92A8;     /* Muted Pacific Blue */
-	--border: #D8E8F2;         /* Powder Blue tint */
+	--bg: #D8DBE2;             /* Alabaster Grey */
+	--card: #ECEEF2;
+	--text: #373F51;           /* Charcoal Blue */
+	--text-light: #5C6478;
+	--border: #C2C7D1;
 	--radius: 22px;
-	--shadow: 0 4px 12px rgba(44,74,110,0.08);
-	--shadow-hover: 0 8px 20px rgba(44,74,110,0.13);
+	--shadow: 0 4px 12px rgba(55,63,81,0.08);
+	--shadow-hover: 0 8px 20px rgba(55,63,81,0.13);
 }
 
 * {
@@ -26,8 +26,8 @@ body {
 	color: var(--text);
 	line-height: 1.6;
 	-webkit-text-size-adjust: 100%;
-	background-image: radial-gradient(circle at 10% 20%, rgba(168,200,232,0.05) 0%, transparent 20%),
-		radial-gradient(circle at 90% 80%, rgba(242,214,218,0.05) 0%, transparent 20%);
+	background-image: radial-gradient(circle at 10% 20%, rgba(88,164,176,0.06) 0%, transparent 20%),
+		radial-gradient(circle at 90% 80%, rgba(218,164,154,0.06) 0%, transparent 20%);
 }
 
 a {
@@ -70,7 +70,7 @@ button:active, .btn:active {
 	color: white;
 }
 .btn-accent {
-	background: linear-gradient(135deg, var(--accent), #F5E4E7);
+	background: linear-gradient(135deg, var(--accent), #E8C0B8);
 	color: var(--primary-dark);
 }
 .btn-danger {
@@ -96,7 +96,7 @@ input, select, textarea {
 input:focus, select:focus, textarea:focus {
 	outline: none;
 	border-color: var(--primary-light);
-	box-shadow: 0 0 0 4px rgba(168,200,232,0.2);
+	box-shadow: 0 0 0 4px rgba(169,188,208,0.25);
 }
 
 .card {
@@ -172,7 +172,7 @@ th, td {
 	white-space: nowrap;
 }
 th {
-	background: linear-gradient(to right, #EBF3FA, #F5F3EF);
+	background: linear-gradient(to right, #C2C7D1, #D8DBE2);
 	font-weight: 600;
 	font-size: 0.85rem;
 	text-transform: uppercase;
@@ -219,7 +219,7 @@ tr:last-child td {
 	align-items: center;
 	height: 70px;
 	position: relative;
-	box-shadow: 0 4px 12px rgba(44,74,110,0.15);
+	box-shadow: 0 4px 12px rgba(55,63,81,0.15);
 	border-radius: 0 0 28px 28px;
 }
 .nav a {

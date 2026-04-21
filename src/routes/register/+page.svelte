@@ -24,12 +24,8 @@
 				<input id="lastName" name="lastName" type="text" value={form?.lastName ?? ''} required />
 			</div>
 			<div class="form-group">
-				<label for="username">Username</label>
-				<input id="username" name="username" type="text" value={form?.username ?? ''} required />
-			</div>
-			<div class="form-group">
 				<label for="email">Email</label>
-				<input id="email" name="email" type="text" value={form?.email ?? ''} required />
+				<input id="email" name="email" type="email" value={form?.email ?? ''} required />
 			</div>
 			<div class="form-group">
 				<label for="password">Password</label>
@@ -50,7 +46,7 @@
 </div>
 
 <style>
-	.register-page { min-height: 100vh; display: flex; align-items: center; justify-content: center; background: linear-gradient(135deg, #1a5276 0%, #2980b9 100%); padding: 20px; }
+	.register-page { min-height: 100vh; display: flex; align-items: center; justify-content: center; background: linear-gradient(135deg, #373F51 0%, #58A4B0 50%, #A9BCD0 100%); padding: 20px; }
 	.register-box { width: 100%; max-width: 400px; }
 	h2 { margin-bottom: 20px; text-align: center; }
 	.links { margin-top: 16px; text-align: center; display: flex; flex-direction: column; gap: 8px; font-size: 0.9rem; }

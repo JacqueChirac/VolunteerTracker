@@ -6,6 +6,7 @@ import { error } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
 import { getHoursRequired } from '$lib/server/settings';
 
+//It's an api to handle csv export
 export const GET: RequestHandler = async ({ locals }) => {
 	if (!locals.user || locals.user.role !== 'organizer') throw error(403, 'Unauthorized');
 

@@ -34,7 +34,7 @@ export const load: PageServerLoad = async ({ params }) => {
 	const totalHours = contribs.reduce((sum, c) => sum + parseFloat(c.hours ?? '0'), 0);
 
 	return {
-		volunteer: { id: volunteer.id, firstName: volunteer.firstName, lastName: volunteer.lastName, username: volunteer.username },
+		volunteer: { id: volunteer.id, firstName: volunteer.firstName, lastName: volunteer.lastName, email: volunteer.email },
 		contributions: contributionsWithActivity,
 		children: childrenData,
 		totalHours: Math.round(totalHours * 100) / 100

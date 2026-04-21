@@ -67,7 +67,7 @@
 					<label for="userId">Volunteer</label>
 					<select id="userId" name="userId" required>
 						<option value="">-- Select volunteer --</option>
-						{#each data.parents as p}<option value={p.id}>{p.firstName} {p.lastName} (@{p.username})</option>{/each}
+						{#each data.parents as p}<option value={p.id}>{p.firstName} {p.lastName} ({p.email})</option>{/each}
 					</select>
 				</div>
 				<div class="form-group">
@@ -112,6 +112,7 @@
 		<div>
 			<h2>Export & Archive</h2>
 			<div class="card" style="margin-top:12px;">
+				<a href="/organizer/manage/emailing" class="btn btn-accent" style="display:block;text-align:center;margin-bottom:16px;">Manage Emailing</a>
 				<a href="/api/export" class="btn btn-primary" style="display:block;text-align:center;margin-bottom:16px;">Export All Data as CSV</a>
 				<hr style="border:none;border-top:1px solid var(--border);margin:16px 0;" />
 				<h3>Archive Season</h3>
