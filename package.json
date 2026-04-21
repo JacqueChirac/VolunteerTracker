@@ -26,6 +26,7 @@
 	"dependencies": {
 		"@neondatabase/serverless": "^1.0.2",
 		"bcrypt-ts": "^8.0.1",
-		"drizzle-orm": "^0.45.2"
+		"drizzle-orm": "^0.45.2",
+		"lucide-svelte": "^1.0.1"
 	}
 }
