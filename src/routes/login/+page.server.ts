@@ -6,7 +6,7 @@ import { verifyUser, createSessionToken, SESSION_COOKIE } from '$lib/server/auth
 export const load: PageServerLoad = async ({ locals }) => {
 	// already logged in? redirect to their dashboard
 	if (locals.user) {
-		throw redirect(302, locals.user.role === 'parent' ? '/volunteer' : '/organizer');
+		throw redirect(302, locals.user.role === 'volunteer' ? '/volunteer' : '/organizer');
 	}
 };
 
@@ -34,6 +34,6 @@ export const actions: Actions = {
 			maxAge: 60 * 60 * 24 * 30
 		});
 
-		throw redirect(302, user.role === 'parent' ? '/volunteer' : '/organizer');
+		throw redirect(302, user.role === 'volunteer' ? '/volunteer' : '/organizer');
 	}
 };

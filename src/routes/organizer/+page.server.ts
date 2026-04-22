@@ -1,7 +1,7 @@
 // organizer events dashboard — loads events, stats, handles add/edit/delete
 import type { PageServerLoad, Actions } from './$types';
 import { db } from '$lib/server/db';
-import { events, eventSignups, users, children, childParentLinks, contributions } from '$lib/server/db/schema';
+import { events, eventSignups, users, children, childVolunteerLinks, contributions } from '$lib/server/db/schema';
 import { desc, eq } from 'drizzle-orm';
 import { fail } from '@sveltejs/kit';
 import { getHoursRequired } from '$lib/server/settings';
@@ -17,10 +17,10 @@ export const load: PageServerLoad = async () => {
 	}
 
 	// dashboard stats
-	const allVolunteers = await db.select().from(users).where(eq(users.role, 'parent'));
+	const allVolunteers = await db.select().from(users).where(eq(users.role, 'volunteer'));
 	const allContributions = await db.select().from(contributions);
 	const allChildren = await db.select().from(children);
-	const allLinks = await db.select().from(childParentLinks);
+	const allLinks = await db.select().from(childVolunteerLinks);
 
 	const totalHours = allContributions.reduce((sum, c) => sum + parseFloat(c.hours ?? '0'), 0);
 

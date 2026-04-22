@@ -1,7 +1,7 @@
 // account page — manage children (add/link/unlink) + change password
 import type { PageServerLoad, Actions } from './$types';
 import { db } from '$lib/server/db';
-import { children, childParentLinks, contributions, users } from '$lib/server/db/schema';
+import { children, childVolunteerLinks, contributions, users } from '$lib/server/db/schema';
 import { eq, sql } from 'drizzle-orm';
 import { fail } from '@sveltejs/kit';
 import { hashSync, compareSync } from 'bcrypt-ts';
@@ -9,7 +9,7 @@ import { getHoursRequired } from '$lib/server/settings';
 
 export const load: PageServerLoad = async ({ locals }) => {
 	const userId = locals.user!.id;
-	const links = await db.select().from(childParentLinks).where(eq(childParentLinks.userId, userId));
+	const links = await db.select().from(childVolunteerLinks).where(eq(childVolunteerLinks.userId, userId));
 	const childIds = links.map(l => l.childId);
 
 	let childrenWithProgress: Array<{
@@ -22,11 +22,11 @@ export const load: PageServerLoad = async ({ locals }) => {
 			.where(sql`${children.id} IN (${sql.join(childIds.map(id => sql`${id}`), sql`, `)})`);
 
 		for (const child of childRecords) {
-			const allLinks = await db.select().from(childParentLinks).where(eq(childParentLinks.childId, child.id));
+			const allLinks = await db.select().from(childVolunteerLinks).where(eq(childVolunteerLinks.childId, child.id));
 			let totalHours = 0;
 			for (const l of allLinks) {
-				const parentContribs = await db.select().from(contributions).where(eq(contributions.userId, l.userId));
-				for (const c of parentContribs) totalHours += parseFloat(c.hours ?? '0');
+				const volunteerContribs = await db.select().from(contributions).where(eq(contributions.userId, l.userId));
+				for (const c of volunteerContribs) totalHours += parseFloat(c.hours ?? '0');
 			}
 			childrenWithProgress.push({
 				id: child.id, firstName: child.firstName, lastName: child.lastName,
@@ -54,7 +54,7 @@ export const actions: Actions = {
 		if (!firstName || !lastName) return fail(400, { error: 'First and last name are required.' });
 
 		const [child] = await db.insert(children).values({ firstName, lastName, level: level || null, status: status || 'full_member' }).returning();
-		await db.insert(childParentLinks).values({ childId: child.id, userId: locals.user!.id });
+		await db.insert(childVolunteerLinks).values({ childId: child.id, userId: locals.user!.id });
 		return { success: true };
 	},
 
@@ -62,9 +62,9 @@ export const actions: Actions = {
 		const fd = await request.formData();
 		const childId = Number(fd.get('childId'));
 		if (!childId) return fail(400, { error: 'Invalid child.' });
-		const links = await db.select().from(childParentLinks).where(eq(childParentLinks.userId, locals.user!.id));
+		const links = await db.select().from(childVolunteerLinks).where(eq(childVolunteerLinks.userId, locals.user!.id));
 		const link = links.find(l => l.childId === childId);
-		if (link) await db.delete(childParentLinks).where(eq(childParentLinks.id, link.id));
+		if (link) await db.delete(childVolunteerLinks).where(eq(childVolunteerLinks.id, link.id));
 		return { unlinkSuccess: true };
 	},
 
@@ -72,9 +72,9 @@ export const actions: Actions = {
 		const fd = await request.formData();
 		const childId = Number(fd.get('childId'));
 		if (!childId) return fail(400, { error: 'Please select a child.' });
-		const existing = await db.select().from(childParentLinks).where(eq(childParentLinks.userId, locals.user!.id));
+		const existing = await db.select().from(childVolunteerLinks).where(eq(childVolunteerLinks.userId, locals.user!.id));
 		if (existing.some(l => l.childId === childId)) return fail(400, { error: 'Already linked.' });
-		await db.insert(childParentLinks).values({ childId, userId: locals.user!.id });
+		await db.insert(childVolunteerLinks).values({ childId, userId: locals.user!.id });
 		return { linkSuccess: true };
 	},
 

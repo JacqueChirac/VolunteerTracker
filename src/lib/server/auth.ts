@@ -16,7 +16,7 @@ export async function createUser(
   firstName: string,
   lastName: string,
   email: string,
-  role: "parent" | "organizer" = "parent",
+  role: "volunteer" | "organizer" = "volunteer",
 ) {
   const passwordHash = hashSync(password, 10);
   const [user] = await db

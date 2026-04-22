@@ -6,18 +6,18 @@ import { pgTable, serial, text, integer, boolean, date, timestamp, decimal, pgEn
 
 // -- enums (dropdown-style columns with fixed options) --
 
-export const roleEnum = pgEnum('role', ['parent', 'organizer']);
+export const roleEnum = pgEnum('role', ['volunteer', 'organizer']);
 export const childStatusEnum = pgEnum('child_status', ['full_member', 'tryout']);
 export const contributionTypeEnum = pgEnum('contribution_type', ['volunteering', 'donation']);
 export const importanceEnum = pgEnum('importance', ['low', 'medium', 'high']);
 
 // -- tables --
 
-// who can log in — parents, relatives, friends, and organizers
+// who can log in — parents, relatives, friends, (As volunteers) and organizers
 export const users = pgTable('users', {
 	id: serial('id').primaryKey(),
 	passwordHash: text('password_hash').notNull(),
-	role: roleEnum('role').notNull().default('parent'), // parent = parent/relative/friend
+	role: roleEnum('role').notNull().default('volunteer'), // volunteer = parent/relative/friend
 	firstName: text('first_name').notNull(),
 	lastName: text('last_name').notNull(),
 	email: text('email').notNull().unique(),
@@ -34,8 +34,8 @@ export const children = pgTable('children', {
 	createdAt: timestamp('created_at').defaultNow().notNull()
 });
 
-// links children to their parent accounts (a kid can have multiple parents listed)
-export const childParentLinks = pgTable('child_parent_links', {
+// links children to their volunteer (whoever is doing hours for them) accounts (a kid can have multiple volunteers listed)
+export const childVolunteerLinks = pgTable('child_volunteer_links', {
 	id: serial('id').primaryKey(),
 	childId: integer('child_id').notNull().references(() => children.id, { onDelete: 'cascade' }),
 	userId: integer('user_id').notNull().references(() => users.id, { onDelete: 'cascade' })
@@ -56,7 +56,7 @@ export const events = pgTable('events', {
 	createdAt: timestamp('created_at').defaultNow().notNull()
 });
 
-// tracks which parents signed up for which events
+// tracks which volunteers signed up for which events
 export const eventSignups = pgTable('event_signups', {
 	id: serial('id').primaryKey(),
 	eventId: integer('event_id').notNull().references(() => events.id, { onDelete: 'cascade' }),
@@ -64,7 +64,7 @@ export const eventSignups = pgTable('event_signups', {
 	signedUpAt: timestamp('signed_up_at').defaultNow().notNull()
 });
 
-// logged hours or donations from parents
+// logged hours or donations from volunteers
 export const contributions = pgTable('contributions', {
 	id: serial('id').primaryKey(),
 	userId: integer('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
