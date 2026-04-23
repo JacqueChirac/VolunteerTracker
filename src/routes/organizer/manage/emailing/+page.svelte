@@ -1,19 +1,27 @@
 <script lang="ts">
   import emailjs from "@emailjs/browser";
+  import { singlestoreDatabase } from "drizzle-orm/singlestore-core";
+   let { data } = $props(); //Imported data from server.ts
 
+   const badEmails = data.badEmails;  //Bad emails as [] strings
+
+//Call init
   (function () {
     emailjs.init({
       publicKey: "InRSRMYq3D8DEYnU9",
     });
   })();
+  
 
+
+//Service provider functions. I don't know what it is and what it does---DO NOT TOUCH uncommented lines
   function init() {
     emailjs.init({
       publicKey: "InRSRMYq3D8DEYnU9",
       blockHeadless: true,
       blockList: {
-        list: [], // Currently none
-        watchVariable: "userEmail", // This variable contains the email address
+        list: [], // Blocklist
+        watchVariable: "userEmail", 
       },
       limitRate: {
         id: "app",
@@ -22,7 +30,10 @@
     });
   }
 
-  let singleSendParams = $state({
+  //Parameters seperated
+
+
+  let messageParams = $state({
     // Parameters defined in the template
     subject: "Morning!",
     name: "Kelp",
@@ -31,6 +42,8 @@
     recipient: "liuzilin375@gmail.com",
   });
 
+
+  //Email logics
   function SendEmail(params: any) {
     emailjs.send("service_tni7nrg", "template_s341t4v", params).then(
       (response) => {
@@ -41,6 +54,29 @@
       },
     );
   }
+
+  function selectGroup(group: number){
+    switch (group) {
+      case 2: loadGroup(badEmails)
+      defualt: break;
+  }
+}
+function loadGroup(emails: string[]) {
+  // To array, split by comma
+  const existing = messageParams.recipient
+    ? messageParams.recipient.split(",").map(e => e.trim())
+    : [];
+
+  // combine to kill duplicates via a Set
+  const combined = [...new Set([...existing, ...emails])];
+
+  messageParams.recipient = combined.join(", ");
+}
+
+
+
+  
+    
 
   import { createEventDispatcher } from "svelte";
 
@@ -76,29 +112,49 @@
 {#if selected === "message"}
   <div>
     <label for="recipient">Recipient</label>
-    <input type="text" id="recipient" bind:value={singleSendParams.recipient} />
+    <input type="text" id="recipient" bind:value={messageParams.recipient} />
+
+    <div class="group-select">
+  <label>Select Group</label>
+
+  <div class="group-buttons">
+    <button class="group-btn">All Volunteers</button>
+    <button class="group-btn" onclick={() => selectGroup(2)}>Under Criteria</button>
+    <button class="group-btn">Custom Group</button>
+  </div>
+</div>
 
     <textarea
       rows="8"
       placeholder="Type your message here..."
-      bind:value={singleSendParams.message}
+      bind:value={messageParams.message}
       style="width: 100%; padding: 0.5rem; font-size: 1rem; resize: vertical;"
     ></textarea>
 
-    <button onclick={() => SendEmail(singleSendParams)}>Send Email</button>
+    <button onclick={() => SendEmail(messageParams)}>Send Email</button>
   </div>
 {:else if selected === "reminder"}
   <div>
     <label for="recipient">Recipient</label>
-    <input type="text" id="recipient" bind:value={singleSendParams.recipient} />
-    <button onclick={() => SendEmail(singleSendParams)}>Send Email</button>
+    <input type="text" id="recipient" bind:value={messageParams.recipient} />
+    <button onclick={() => SendEmail(messageParams)}>Send Email</button>
   </div>
+
+  <div class="group-select">
+  <label>Select Group</label>
+
+  <div class="group-buttons">
+    <button class="group-btn">All Volunteers</button>
+    <button class="group-btn" onclick={() => selectGroup(2)}>Under Criteria</button>
+    <button class="group-btn">Custom Group</button>
+  </div>
+</div>
 {/if}
 
 
 <pre>{JSON.stringify(data, null, 2)}</pre>
 
-
+//Boring css stuff
 <style>
   .top-toggle {
     width: 100%;
