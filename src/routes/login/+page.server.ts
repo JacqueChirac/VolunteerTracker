@@ -25,13 +25,13 @@ export const actions: Actions = {
 			return fail(400, { error: 'Invalid email or password.', email });
 		}
 
-		// set session cookie (lasts 30 days)
+		// set session cookie (lasts 1 day)
 		const token = createSessionToken(user.id);
 		cookies.set(SESSION_COOKIE, token, {
 			path: '/',
 			httpOnly: true,
 			sameSite: 'lax',
-			maxAge: 60 * 60 * 24 * 30
+			maxAge: 60 * 60 * 24
 		});
 
 		throw redirect(302, user.role === 'volunteer' ? '/volunteer' : '/organizer');
