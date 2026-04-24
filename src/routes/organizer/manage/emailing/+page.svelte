@@ -4,14 +4,13 @@
    let { data } = $props(); //Imported data from server.ts
 
    const badEmails = data.badEmails;  //Bad emails as [] strings
-
+   const volunteers = data.volunteers;
 //Call init
   (function () {
     emailjs.init({
       publicKey: "InRSRMYq3D8DEYnU9",
     });
   })();
-  
 
 
 //Service provider functions. I don't know what it is and what it does---DO NOT TOUCH uncommented lines
@@ -41,6 +40,31 @@
     time: 2008,
     recipient: "liuzilin375@gmail.com",
   });
+
+  //FInd Matches
+  async function Prompt(input: string) {
+  const q = input.toLowerCase().trim();
+
+  const results = volunteers
+    .filter(v => {
+      const fullName = `${v.first_name} ${v.last_name}`.toLowerCase();
+      const initials = `${v.first_name[0]}${v.last_name[0]}`.toLowerCase();
+      const email = v.email.toLowerCase();
+
+      return (
+        fullName.includes(q) ||
+        email.includes(q) ||
+        initials === q
+      );
+    })
+    .map(v => ({
+      name: `${v.first_name} ${v.last_name}`,
+      email: v.email
+    }));
+
+  return results;
+}
+
 
 
   //Email logics
@@ -153,8 +177,6 @@ function loadGroup(emails: string[]) {
 
 
 <pre>{JSON.stringify(data, null, 2)}</pre>
-
-//Boring css stuff
 <style>
   .top-toggle {
     width: 100%;

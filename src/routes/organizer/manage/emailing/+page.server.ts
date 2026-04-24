@@ -6,21 +6,21 @@ import { check } from 'drizzle-orm/gel-core';
 
 const sql = neon(DATABASE_URL);
 const children = await sql`SELECT * FROM children`
-  const users = await sql`SELECT * FROM users`
+const users = await sql`SELECT * FROM users`
+let volunteers = await sql`SELECT * FROM users WHERE role = 'volunteer'`
 
 
 export async function load() {
-  
-  const children = await sql`
+   const children = await sql`
     SELECT * FROM child_volunteer_links
   `;
-
   const badEmails = await getBadEmails();
 
 
 
   return {
-    badEmails
+    badEmails, 
+    volunteers
   };
 }
 
@@ -83,6 +83,7 @@ async function getMail(parentID:number) {
 
   return null
 }
+
 
 
 
