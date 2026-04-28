@@ -9,7 +9,6 @@ import { pgTable, serial, text, integer, boolean, date, timestamp, decimal, pgEn
 export const roleEnum = pgEnum('role', ['volunteer', 'organizer']);
 export const childStatusEnum = pgEnum('child_status', ['full_member', 'tryout']);
 export const contributionTypeEnum = pgEnum('contribution_type', ['volunteering', 'donation']);
-export const importanceEnum = pgEnum('importance', ['low', 'medium', 'high']);
 
 // -- tables --
 
@@ -52,7 +51,7 @@ export const events = pgTable('events', {
 	description: text('description'),
 	// volunteersNeeded: integer('volunteers_needed'), // not needed for now
 	budget: decimal('budget', { precision: 10, scale: 2 }), // probably not needed, keeping just in case
-	importance: importanceEnum('importance').default('medium'), // depends if we want to show priority
+	type: text('type').default('other'),
 	createdAt: timestamp('created_at').defaultNow().notNull()
 });
 
@@ -77,7 +76,7 @@ export const contributions = pgTable('contributions', {
 	createdAt: timestamp('created_at').defaultNow().notNull()
 });
 
-// types of volunteer work (organizer can add/remove these)
+// types of volunteer work / events (organizer can add/remove these)
 export const activityTypes = pgTable('activity_types', {
 	id: serial('id').primaryKey(),
 	name: text('name').notNull(),

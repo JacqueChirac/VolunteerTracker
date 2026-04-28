@@ -14,8 +14,8 @@
 	{#if data.event.location}<p style="margin-top:4px;">Location: <strong>{data.event.location}</strong></p>{/if}
 	{#if data.event.description}<p style="margin-top:12px;">{data.event.description}</p>{/if}
 
-	{#if data.event.importance}
-		<div style="margin-top:16px;padding:8px 16px;background:var(--bg);border-radius:6px;display:inline-block;">Priority: <strong>{data.event.importance}</strong></div>
+	{#if data.event.type}
+		<div style="margin-top:16px;padding:8px 16px;background:var(--bg);border-radius:6px;display:inline-block;">Type: <strong>{data.event.type}</strong></div>
 	{/if}
 
 	{#if form?.error}<p class="error" style="margin-top:12px;">{form.error}</p>{/if}

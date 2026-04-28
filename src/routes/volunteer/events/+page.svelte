@@ -22,7 +22,7 @@
 						<h3><a href="/volunteer/events/{event.id}">{event.title}</a></h3>
 						<p style="font-size:0.9rem;color:var(--text-light);">{event.date} at {event.startTime}{event.endTime ? ` - ${event.endTime}` : ''}{#if event.location} &middot; {event.location}{/if}</p>
 						{#if event.description}<p style="margin-top:8px;">{event.description}</p>{/if}
-						<p style="font-size:0.85rem;color:var(--text-light);margin-top:4px;">{event.signupCount} volunteers signed up{#if event.importance} &middot; {event.importance}{/if}</p>
+						<p style="font-size:0.85rem;color:var(--text-light);margin-top:4px;">{event.signupCount} volunteers signed up{#if event.type} &middot; {event.type}{/if}</p>
 					</div>
 					<div>
 						{#if event.signedUp}
