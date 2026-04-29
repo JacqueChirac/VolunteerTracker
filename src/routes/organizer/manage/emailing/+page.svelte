@@ -1,19 +1,46 @@
 <script lang="ts">
+//Imports
   import emailjs from "@emailjs/browser";
   import { singlestoreDatabase } from "drizzle-orm/singlestore-core";
-   let { data } = $props(); //Imported data from server.ts
+  let { data } = $props(); //Imported data from server.ts
 
-   const badEmails = data.badEmails;  //Bad emails as [] strings
-   const volunteers = data.volunteers;
-//Call init
+//Variables Declare
+   const badEmails = $derived(data.badEmails);  //Bad emails as [] strings
+   const allMails = $derived(data.allMails);  //All emails as [] strings
+   const volunteers = $derived(data.volunteers);
+   let selected = $state("message");
+   let messageParams = $state({
+    // Parameters defined in the template
+    subject: "Morning!",
+    name: "Kelp",
+    message: "I send you a message!",
+    time: 2008,
+    recipient: "liuzilin375@gmail.com",
+  });
+
+    let inputElement: HTMLInputElement;
+    let focus = $state(0);
+
+   let wordSelected = $derived.by(() => {
+	 const text = messageParams.recipient;
+	 const cursor = focus;
+
+	 const start = text.lastIndexOf(",", cursor - 1) + 1;
+
+ 	 const endIndex = text.indexOf(",", cursor);
+  	const end = endIndex === -1 ? text.length : endIndex;
+
+	return text.slice(start, end).trim();
+});
+
+
+//Service provider functions. 
   (function () {
     emailjs.init({
       publicKey: "InRSRMYq3D8DEYnU9",
     });
   })();
 
-
-//Service provider functions. I don't know what it is and what it does---DO NOT TOUCH uncommented lines
   function init() {
     emailjs.init({
       publicKey: "InRSRMYq3D8DEYnU9",
@@ -29,46 +56,59 @@
     });
   }
 
-  //Parameters seperated
+//Page logic
+    function select(option: string) {
+    selected = option;
+  }
 
-
-  let messageParams = $state({
-    // Parameters defined in the template
-    subject: "Morning!",
-    name: "Kelp",
-    message: "I send you a message!",
-    time: 2008,
-    recipient: "liuzilin375@gmail.com",
-  });
-
-  //FInd Matches
-  async function Prompt(input: string) {
-  const q = input.toLowerCase().trim();
-
-  const results = volunteers
-    .filter(v => {
-      const fullName = `${v.first_name} ${v.last_name}`.toLowerCase();
-      const initials = `${v.first_name[0]}${v.last_name[0]}`.toLowerCase();
-      const email = v.email.toLowerCase();
-
-      return (
-        fullName.includes(q) ||
-        email.includes(q) ||
-        initials === q
-      );
-    })
-    .map(v => ({
-      name: `${v.first_name} ${v.last_name}`,
-      email: v.email
-    }));
-
-  return results;
+  //Autofill logic (Quality of life)
+function updateCursorPosition() {
+	focus = inputElement?.selectionStart ?? 0;
 }
+
+function handleClick(): void {
+	updateCursorPosition();
+  
+}
+
+function handleInput(): void {
+	updateCursorPosition();
+}
+
+function findMatch(): string[] {
+	const query = (wordSelected ?? "").toLowerCase().trim();
+	if (!query) return [];
+
+	const list = [...(data.allMails ?? []), ...(data.allNames ?? [])];
+
+	return list.filter(item =>
+		item.toLowerCase().includes(query)
+	);
+}
+
+function findWord() {
+	const text = messageParams.recipient;
+	const cursor = inputElement?.selectionStart ?? 0;
+
+	const start = text.lastIndexOf(",", cursor - 1) + 1;
+
+	const endIndex = text.indexOf(",", cursor);
+	const end = endIndex === -1 ? text.length : endIndex;
+
+	const word = text.slice(start, end).trim();
+
+	wordSelected = word;
+	return word;
+}
+
+
+
 
 
 
   //Email logics
   function SendEmail(params: any) {
+    if(selected==="message"){
     emailjs.send("service_tni7nrg", "template_s341t4v", params).then(
       (response) => {
         console.log("SUCCESS!", response.status, response.text);
@@ -77,14 +117,32 @@
         console.log("FAILED...", error);
       },
     );
+    }
+
+    //!Unfishied
+    else {
+        emailjs.send("service_tni7nrg", "newTemplate", newparams).then(
+      (response) => {
+        console.log("SUCCESS!", response.status, response.text);
+      },
+      (error) => {
+        console.log("FAILED...", error);
+      },
+    );
+    }
   }
+
 
   function selectGroup(group: number){
     switch (group) {
-      case 2: loadGroup(badEmails)
+      case 1: loadGroup(allMails);
+      case 2: loadGroup(badEmails);
+      case 3: break;
       defualt: break;
   }
+
 }
+
 function loadGroup(emails: string[]) {
   // To array, split by comma
   const existing = messageParams.recipient
@@ -93,25 +151,10 @@ function loadGroup(emails: string[]) {
 
   // combine to kill duplicates via a Set
   const combined = [...new Set([...existing, ...emails])];
-
   messageParams.recipient = combined.join(", ");
 }
 
 
-
-  
-    
-
-  import { createEventDispatcher } from "svelte";
-
-  const dispatch = createEventDispatcher();
-
-  let selected = $state();
-  selected = "message";
-
-  function select(option: string) {
-    selected = option;
-  }
 </script>
 
 <div class="top-toggle">
@@ -133,50 +176,45 @@ function loadGroup(emails: string[]) {
   </div>
 </div>
 
-{#if selected === "message"}
   <div>
     <label for="recipient">Recipient</label>
-    <input type="text" id="recipient" bind:value={messageParams.recipient} />
+<input
+	type="text"
+	id="recipient"
+	bind:this={inputElement}
+	bind:value={messageParams.recipient}
+	onclick={handleClick}
+	oninput={handleInput}
+/>
 
     <div class="group-select">
-  <label>Select Group</label>
+  <h4>Quick Select</h4>
 
   <div class="group-buttons">
-    <button class="group-btn">All Volunteers</button>
+    <button class="group-btn" onclick={() => selectGroup(1)}>All Volunteers</button>
     <button class="group-btn" onclick={() => selectGroup(2)}>Under Criteria</button>
     <button class="group-btn">Custom Group</button>
+    <button class="group-btn">Clear All</button>
   </div>
 </div>
 
+{#if selected === "message"}
     <textarea
       rows="8"
       placeholder="Type your message here..."
       bind:value={messageParams.message}
       style="width: 100%; padding: 0.5rem; font-size: 1rem; resize: vertical;"
     ></textarea>
-
-    <button onclick={() => SendEmail(messageParams)}>Send Email</button>
-  </div>
-{:else if selected === "reminder"}
-  <div>
-    <label for="recipient">Recipient</label>
-    <input type="text" id="recipient" bind:value={messageParams.recipient} />
-    <button onclick={() => SendEmail(messageParams)}>Send Email</button>
-  </div>
-
-  <div class="group-select">
-  <label>Select Group</label>
-
-  <div class="group-buttons">
-    <button class="group-btn">All Volunteers</button>
-    <button class="group-btn" onclick={() => selectGroup(2)}>Under Criteria</button>
-    <button class="group-btn">Custom Group</button>
-  </div>
-</div>
 {/if}
+    <button onclick={() => SendEmail(messageParams)}>Send Email</button>
+  </div>
+
+
 
 
 <pre>{JSON.stringify(data, null, 2)}</pre>
+
+<pre> {focus}, {wordSelected} </pre>
 <style>
   .top-toggle {
     width: 100%;
