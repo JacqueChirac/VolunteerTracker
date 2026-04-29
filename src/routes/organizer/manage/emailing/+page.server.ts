@@ -16,14 +16,24 @@ export async function load() {
   `;
   const badEmails = await getBadEmails();
 
+  const allMails = await getAllMails();
 
-
+  const allNames = await getNames();
   return {
+    allNames,
+    allMails,
     badEmails, 
     volunteers
   };
 }
-
+  async function getAllMails() {
+    let allMails = [];
+      for(let i=0; i<volunteers.length; i++){
+    allMails.push(volunteers[i].email);
+    }
+    return allMails;
+  }
+  
 async function getBadEmails() {
   const badChildrenIDs = await badChildren();
   const badEmails = [];
@@ -83,6 +93,15 @@ async function getMail(parentID:number) {
 
   return null
 }
+
+function getNames(){
+  let names = [];
+  for(let i=0; i<volunteers.length; i++){
+    names.push(volunteers[i].first_name + " " + volunteers[i].last_name);
+  }
+  return names;
+}
+
 
 
 
