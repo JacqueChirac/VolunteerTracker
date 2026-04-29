@@ -52,6 +52,7 @@
 				</div>
 			{/each}
 		</div>
+
 	</div>
 
 	<!-- manual entry -->

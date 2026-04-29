@@ -1,7 +1,7 @@
 // organizer events dashboard — loads events, stats, handles add/edit/delete
 import type { PageServerLoad, Actions } from './$types';
 import { db } from '$lib/server/db';
-import { events, eventSignups, users, children, childVolunteerLinks, contributions } from '$lib/server/db/schema';
+import { events, eventSignups, activityTypes, users, children, childVolunteerLinks, contributions } from '$lib/server/db/schema';
 import { desc, eq } from 'drizzle-orm';
 import { fail } from '@sveltejs/kit';
 import { getHoursRequired } from '$lib/server/settings';
@@ -37,8 +37,11 @@ export const load: PageServerLoad = async () => {
 		if (childHours >= required) childrenMet++;
 	}
 
+	const activeActivities = await db.select().from(activityTypes).where(eq(activityTypes.active, true));
+
 	return {
 		events: allEvents.map(e => ({ ...e, signupCount: signupCounts[e.id] || 0 })),
+		activityTypes: activeActivities,
 		stats: {
 			totalVolunteers: allVolunteers.length,
 			totalHours: Math.round(totalHours * 100) / 100,
@@ -57,7 +60,7 @@ export const actions: Actions = {
 		const endTime = fd.get('endTime')?.toString() ?? '';
 		const location = fd.get('location')?.toString().trim() ?? '';
 		const description = fd.get('description')?.toString().trim() ?? '';
-		const importance = fd.get('importance')?.toString() as 'low' | 'medium' | 'high' ?? 'medium';
+		const type = fd.get('type')?.toString() ?? 'other';
 
 		if (!title || !date || !startTime) {
 			return fail(400, { error: 'Title, date, and start time are required.' });
@@ -68,7 +71,7 @@ export const actions: Actions = {
 			endTime: endTime || null,
 			location: location || null,
 			description: description || null,
-			importance: importance || 'medium'
+			type: type || 'other'
 		});
 
 		return { success: true };

@@ -50,8 +50,13 @@
 				<div class="form-group"><label for="add_start">Start Time</label><input id="add_start" name="startTime" type="time" required /></div>
 				<div class="form-group"><label for="add_end">End Time</label><input id="add_end" name="endTime" type="time" /></div>
 				<div class="form-group"><label for="add_loc">Location</label><input id="add_loc" name="location" type="text" /></div>
-				<div class="form-group"><label for="add_imp">Importance</label>
-					<select id="add_imp" name="importance"><option value="low">Low</option><option value="medium" selected>Medium</option><option value="high">High</option></select>
+				<div class="form-group"><label for="add_type">Event Type</label>
+					<select id="add_type" name="type">
+							<option value="other" selected>Other</option>
+							{#each data.activityTypes as at}
+								<option value={at.name}>{at.name}</option>
+							{/each}
+						</select>
 				</div>
 			</div>
 			<div class="form-group"><label for="add_desc">Description</label><textarea id="add_desc" name="description" rows="3"></textarea></div>
@@ -71,7 +76,7 @@
 					<h3>{event.title}</h3>
 					<p style="font-size:0.9rem;color:var(--text-light);">{event.date} at {event.startTime}{event.endTime ? ` - ${event.endTime}` : ''}{#if event.location} &middot; {event.location}{/if}</p>
 					{#if event.description}<p style="margin-top:4px;font-size:0.9rem;">{event.description}</p>{/if}
-					<p style="font-size:0.85rem;color:var(--text-light);margin-top:4px;">{event.signupCount} volunteers{#if event.importance} &middot; {event.importance}{/if}</p>
+					<p style="font-size:0.85rem;color:var(--text-light);margin-top:4px;">{event.signupCount} volunteers{#if event.type} &middot; {event.type}{/if}</p>
 				</div>
 				<form method="POST" action="?/deleteEvent" use:enhance style="display:inline;">
 					<input type="hidden" name="eventId" value={event.id} />
@@ -89,7 +94,7 @@
 					<h3>{event.title}</h3>
 					<p style="font-size:0.9rem;color:var(--text-light);">{event.date} at {event.startTime}{event.endTime ? ` - ${event.endTime}` : ''}{#if event.location} &middot; {event.location}{/if}</p>
 					{#if event.description}<p style="margin-top:4px;font-size:0.9rem;">{event.description}</p>{/if}
-					<p style="font-size:0.85rem;color:var(--text-light);margin-top:4px;">{event.signupCount} volunteers{#if event.importance} &middot; {event.importance}{/if}</p>
+					<p style="font-size:0.85rem;color:var(--text-light);margin-top:4px;">{event.signupCount} volunteers{#if event.type} &middot; {event.type}{/if}</p>
 				</div>
 				<form method="POST" action="?/deleteEvent" use:enhance style="display:inline;">
 					<input type="hidden" name="eventId" value={event.id} />
