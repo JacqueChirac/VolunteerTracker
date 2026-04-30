@@ -13,12 +13,14 @@
 	function closeMenu() { menuOpen = false; }
 </script>
 
-<nav class="nav">
+<a class="skip-link" href="#main-content">Skip to main content</a>
+
+<nav class="nav" aria-label="Volunteer">
 	<a href="/volunteer" class="brand">Volunteer Tracker</a>
-	<button class="hamburger" onclick={() => menuOpen = !menuOpen} aria-label="Menu">
+	<button class="hamburger" onclick={() => menuOpen = !menuOpen} aria-label={menuOpen ? 'Close menu' : 'Open menu'} aria-expanded={menuOpen} aria-controls="volunteer-nav-links">
 		{#if menuOpen}<X size={20} />{:else}<Menu size={20} />{/if}
 	</button>
-	<div class="nav-links" class:open={menuOpen}>
+	<div id="volunteer-nav-links" class="nav-links" class:open={menuOpen}>
 		<a href="/volunteer" class:active={page.url.pathname === '/volunteer'} onclick={closeMenu}><House size={16} />Home</a>
 		<a href="/volunteer/events" class:active={isActive('/volunteer/events')} onclick={closeMenu}><Calendar size={16} />Events</a>
 		<a href="/volunteer/log" class:active={isActive('/volunteer/log')} onclick={closeMenu}><ClipboardList size={16} />Log</a>
@@ -30,6 +32,6 @@
 	</div>
 </nav>
 
-<main class="container" style="padding-top:20px;padding-bottom:40px;">
+<main id="main-content" class="container" style="padding-top:20px;padding-bottom:40px;" tabindex="-1">
 	{@render children()}
 </main>
