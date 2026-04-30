@@ -7,6 +7,7 @@
 //Variables Declare
    const badEmails = $derived(data.badEmails);  //Bad emails as [] strings
    const allMails = $derived(data.allMails);  //All emails as [] strings
+   const allNames = $derived(data.allNames);  //All names as [] strings
    const volunteers = $derived(data.volunteers);
    let selected = $state("message");
    let messageParams = $state({
@@ -17,21 +18,56 @@
     time: 2008,
     recipient: "liuzilin375@gmail.com",
   });
-
     let inputElement: HTMLInputElement;
     let focus = $state(0);
 
-   let wordSelected = $derived.by(() => {
+   let wordSelected = $derived.by(() => { 
 	 const text = messageParams.recipient;
 	 const cursor = focus;
-
 	 const start = text.lastIndexOf(",", cursor - 1) + 1;
-
  	 const endIndex = text.indexOf(",", cursor);
-  	const end = endIndex === -1 ? text.length : endIndex;
-
+   const end = endIndex === -1 ? text.length : endIndex;
 	return text.slice(start, end).trim();
 });
+
+let recipientPrompted = $derived.by(() => {
+  console.log("ran with " + wordSelected )
+	const keyword = (wordSelected ?? "").toLowerCase().trim();
+	if (!keyword) return [];
+  let candidateIDs = [];
+	for(let i = 0; i < data.allMails.length; i++){
+    console.log(data.allMails[i].toLowerCase())
+   if (data.allMails[i].toLowerCase().includes(keyword)) {
+     candidateIDs.push(i);
+     continue;
+   }
+   if(data.allNames[i].toLowerCase().includes(keyword)){
+     candidateIDs.push(i);
+   }
+  }
+  
+  console.log("Found" + candidateIDs + ".")
+  return candidateIDs;
+});
+
+  let promptWord = $derived.by(() => {
+	const text = messageParams.recipient;
+	const cursor = inputElement?.selectionStart ?? 0;
+
+	const start = text.lastIndexOf(",", cursor - 1) + 1;
+
+	const endIndex = text.indexOf(",", cursor);
+	const end = endIndex === -1 ? text.length : endIndex;
+
+	const word = text.slice(start, end).trim();
+
+	return word;
+});
+
+
+
+
+
 
 
 //Service provider functions. 
@@ -66,39 +102,36 @@ function updateCursorPosition() {
 	focus = inputElement?.selectionStart ?? 0;
 }
 
-function handleClick(): void {
+let showDropdown = $state(false);
+
+function handleInput() {
 	updateCursorPosition();
-  
+	if (messageParams.recipient.trim().length > 0) {
+		showDropdown = true;
+	} else {
+		showDropdown = false;
+	}
 }
 
-function handleInput(): void {
+function handleClick() {
 	updateCursorPosition();
+  showDropdown = true;
 }
 
-function findMatch(): string[] {
-	const query = (wordSelected ?? "").toLowerCase().trim();
-	if (!query) return [];
-
-	const list = [...(data.allMails ?? []), ...(data.allNames ?? [])];
-
-	return list.filter(item =>
-		item.toLowerCase().includes(query)
-	);
-}
-
-function findWord() {
-	const text = messageParams.recipient;
-	const cursor = inputElement?.selectionStart ?? 0;
-
-	const start = text.lastIndexOf(",", cursor - 1) + 1;
-
-	const endIndex = text.indexOf(",", cursor);
-	const end = endIndex === -1 ? text.length : endIndex;
-
-	const word = text.slice(start, end).trim();
-
-	wordSelected = word;
-	return word;
+function selectRecipient(index : number) {
+   const text = messageParams.recipient;
+	 const cursor = focus;
+	 const start = text.lastIndexOf(",", cursor - 1) + 1;
+ 	 const endIndex = text.indexOf(",", cursor);
+   const end = endIndex === -1 ? text.length : endIndex;
+   const firstPart = text.slice(0, start);
+   const middlePart = volunteers[recipientPrompted[index]].email
+   const lastPart = text.slice(end);
+ if(lastPart)
+  messageParams.recipient = firstPart + middlePart +", " + lastPart;
+ else
+  messageParams.recipient = firstPart + middlePart;
+  showDropdown = false;
 }
 
 
@@ -118,19 +151,20 @@ function findWord() {
       },
     );
     }
+  }
 
     //!Unfishied
-    else {
-        emailjs.send("service_tni7nrg", "newTemplate", newparams).then(
-      (response) => {
-        console.log("SUCCESS!", response.status, response.text);
-      },
-      (error) => {
-        console.log("FAILED...", error);
-      },
-    );
-    }
-  }
+  //   else {
+  //       emailjs.send("service_tni7nrg", "newTemplate", newParams).then(
+  //     (response) => {
+  //       console.log("SUCCESS!", response.status, response.text);
+  //     },
+  //     (error) => {
+  //       console.log("FAILED...", error);
+  //     },
+  //   );
+  //   }
+  // }
 
 
   function selectGroup(group: number){
@@ -153,7 +187,6 @@ function loadGroup(emails: string[]) {
   const combined = [...new Set([...existing, ...emails])];
   messageParams.recipient = combined.join(", ");
 }
-
 
 </script>
 
@@ -178,14 +211,55 @@ function loadGroup(emails: string[]) {
 
   <div>
     <label for="recipient">Recipient</label>
-<input
-	type="text"
-	id="recipient"
-	bind:this={inputElement}
-	bind:value={messageParams.recipient}
-	onclick={handleClick}
-	oninput={handleInput}
-/>
+
+ <!-- Autofill Suggestions -->
+<div class="recipient-wrapper">
+
+	<input
+		class="recipient-input"
+		type="text"
+    id="recipient"
+		bind:value={messageParams.recipient}
+		bind:this={inputElement}
+		oninput={handleInput}
+		onclick={handleClick}
+	/>
+
+<div class="dropdown-wrapper">
+	<!-- your input or trigger element here -->
+
+	{#if showDropdown === true && recipientPrompted.length > 0}
+				<div class="dropdown">
+
+			<div class="dropdown-header">
+				<span>Suggestions</span>
+				<button
+					type="button"
+					class="close-btn"
+					onclick={() => showDropdown = false}
+				>
+					×
+				</button>
+			</div>
+
+			<div class="dropdown-list">
+        {#each Array(6) as _, i}
+           <button
+            type="button"
+            class="dropdown-item"
+            onclick={() => selectRecipient(recipientPrompted[i])}
+          >
+            <div class="name">{volunteers[recipientPrompted[i]].name}</div>
+            <div class="email">{volunteers[recipientPrompted[i]].email}</div>
+          </button>
+{/each}
+        
+			</div>
+
+		</div>
+	{/if}
+</div>
+</div>
 
     <div class="group-select">
   <h4>Quick Select</h4>
@@ -209,12 +283,17 @@ function loadGroup(emails: string[]) {
     <button onclick={() => SendEmail(messageParams)}>Send Email</button>
   </div>
 
+<pre> {focus}, {wordSelected}  </pre>
 
+<pre> {recipientPrompted}  </pre>
+
+<pre> {showDropdown}  </pre>
 
 
 <pre>{JSON.stringify(data, null, 2)}</pre>
 
-<pre> {focus}, {wordSelected} </pre>
+
+
 <style>
   .top-toggle {
     width: 100%;
@@ -263,4 +342,94 @@ function loadGroup(emails: string[]) {
     color: white;
     box-shadow: 0 2px 6px rgba(59, 130, 246, 0.3);
   }
+  
+  .dropdown-wrapper {
+	position: relative;
+}
+
+.dropdown {
+	position: absolute;
+	top: 100%;
+	left: 0;
+	z-index: 1000;
+
+	width: 40%;
+	min-width: 260px;
+
+	background: #fff;
+	border: 1px solid #e6e6e6;
+	border-radius: 6px;
+	box-shadow: 0 8px 18px rgba(0, 0, 0, 0.12);
+
+	display: flex;
+	flex-direction: column;
+	overflow: hidden;
+}
+
+.dropdown-header {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+
+	padding: 8px 10px;
+
+	border-bottom: 1px solid #eee;
+	background: #fff;
+
+	position: sticky;
+	top: 0;
+	z-index: 2;
+}
+
+.close-btn {
+	background: transparent;
+	border: none;
+	font-size: 16px;
+	cursor: pointer;
+	line-height: 1;
+	opacity: 0.7;
+}
+
+.close-btn:hover {
+	opacity: 1;
+}
+
+.dropdown-list {
+	display: flex;
+	flex-direction: column;
+
+	max-height: 220px;
+	overflow-y: auto;
+}
+
+.dropdown-item {
+	width: 100%;
+	padding: 8px 10px;
+
+	display: flex;
+	flex-direction: column;
+	align-items: flex-start;
+
+	text-align: left;
+	cursor: pointer;
+
+	border: none;
+	background: transparent;
+}
+
+.dropdown-item:hover {
+	background: #f5f5f5;
+}
+
+.name {
+	font-size: 14px;
+	line-height: 1.2;
+}
+
+.email {
+	font-size: 12px;
+	line-height: 1.2;
+	opacity: 0.6;
+}
+  
 </style>
