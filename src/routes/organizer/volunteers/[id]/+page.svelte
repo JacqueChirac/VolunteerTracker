@@ -2,6 +2,7 @@
 <script lang="ts">
 	import { enhance } from '$app/forms';
 	import type { PageData, ActionData } from './$types';
+	import { swimLevels } from '$lib/swimLevels';
 
 	let { data, form }: { data: PageData; form: ActionData } = $props();
 	let editingChildId = $state<number | null>(null);
@@ -44,7 +45,12 @@
 						<div style="display:flex;gap:8px;flex-wrap:wrap;align-items:end;">
 							<div class="form-group" style="flex:1;min-width:150px;margin-bottom:0;">
 								<label for="level_{child.id}">Level</label>
-								<input id="level_{child.id}" name="level" type="text" value={child.level ?? ''} placeholder="e.g. Beginner" />
+								<select id="level_{child.id}" name="level">
+									<option value="" selected={!child.level}>— None —</option>
+									{#each swimLevels as lvl}
+										<option value={lvl.value} selected={child.level === lvl.value}>{lvl.name}</option>
+									{/each}
+								</select>
 							</div>
 							<div class="form-group" style="min-width:150px;margin-bottom:0;">
 								<label for="status_{child.id}">Status</label>

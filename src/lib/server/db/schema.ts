@@ -50,7 +50,6 @@ export const events = pgTable('events', {
 	location: text('location'),
 	description: text('description'),
 	// volunteersNeeded: integer('volunteers_needed'), // not needed for now
-	budget: decimal('budget', { precision: 10, scale: 2 }), // probably not needed, keeping just in case
 	type: text('type').default('other'),
 	createdAt: timestamp('created_at').defaultNow().notNull()
 });

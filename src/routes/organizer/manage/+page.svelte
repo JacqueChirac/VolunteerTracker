@@ -2,9 +2,26 @@
 <script lang="ts">
 	import { enhance } from '$app/forms';
 	import type { PageData, ActionData } from './$types';
+	import { swimLevels } from '$lib/swimLevels';
 
 	let { data, form }: { data: PageData; form: ActionData } = $props();
 	let manualType = $state<'volunteering' | 'donation'>('volunteering');
+	let childSearch = $state('');
+	let linkPick = $state<Record<number, string>>({});
+	let showAddChildLevelDetails = $state(false);
+
+	let filteredChildren = $derived.by(() => {
+		const q = childSearch.trim().toLowerCase();
+		if (!q) return data.children;
+		return data.children.filter((c) =>
+			`${c.firstName} ${c.lastName}`.toLowerCase().includes(q)
+		);
+	});
+
+	function volunteerName(id: number): string {
+		const v = data.volunteers.find((x) => x.id === id);
+		return v ? `${v.firstName} ${v.lastName}` : '?';
+	}
 </script>
 
 <h1>Manage</h1>
@@ -30,6 +47,153 @@
 		</form>
 	</div>
 </div>
+
+<!-- people: add volunteers + children, manage links -->
+<section style="margin-bottom:32px;">
+	<h2>People</h2>
+	<p style="color:var(--text-light);font-size:0.9rem;margin-bottom:12px;">Create volunteer accounts, add children, and manage the links between them.</p>
+
+	<div class="grid-2">
+		<!-- add volunteer -->
+		<div class="card">
+			<h3 style="margin-bottom:8px;">Add Volunteer</h3>
+			<p style="color:var(--text-light);font-size:0.85rem;margin-bottom:12px;">Creates a login account that the volunteer can use right away.</p>
+			{#if form?.volunteerSuccess}<div class="alert alert-success" role="status">{form.volunteerSuccess}</div>{/if}
+			{#if form?.volunteerError}<p class="error" role="alert">{form.volunteerError}</p>{/if}
+			<form method="POST" action="?/addVolunteer" use:enhance>
+				<div class="grid-2">
+					<div class="form-group"><label for="v_first">First name</label><input id="v_first" name="firstName" type="text" autocomplete="given-name" required /></div>
+					<div class="form-group"><label for="v_last">Last name</label><input id="v_last" name="lastName" type="text" autocomplete="family-name" required /></div>
+				</div>
+				<div class="form-group"><label for="v_email">Email</label><input id="v_email" name="email" type="email" autocomplete="email" required /></div>
+				<div class="form-group">
+					<label for="v_pass">Temporary password</label>
+					<input id="v_pass" name="password" type="text" minlength="4" required aria-describedby="v_pass_help" />
+					<small id="v_pass_help" style="color:var(--text-light);font-size:0.8rem;">Share this with the volunteer; they can change it later.</small>
+				</div>
+				<button type="submit" class="btn btn-primary" style="width:100%;">Create volunteer</button>
+			</form>
+		</div>
+
+		<!-- add child -->
+		<div class="card">
+			<h3 style="margin-bottom:8px;">Add Child</h3>
+			<p style="color:var(--text-light);font-size:0.85rem;margin-bottom:12px;">Optionally link them to a volunteer right away.</p>
+			{#if form?.childSuccess}<div class="alert alert-success" role="status">{form.childSuccess}</div>{/if}
+			{#if form?.childError}<p class="error" role="alert">{form.childError}</p>{/if}
+			<form method="POST" action="?/addChild" use:enhance>
+				<div class="grid-2">
+					<div class="form-group"><label for="c_first">First name</label><input id="c_first" name="firstName" type="text" required /></div>
+					<div class="form-group"><label for="c_last">Last name</label><input id="c_last" name="lastName" type="text" required /></div>
+				</div>
+				<div class="grid-2">
+					<div class="form-group">
+						<label for="c_status">Status</label>
+						<select id="c_status" name="status">
+							<option value="full_member">Full member</option>
+							<option value="tryout">Tryout</option>
+						</select>
+					</div>
+					<div class="form-group">
+						<label for="c_level">Level (optional)</label>
+						<select id="c_level" name="level">
+							<option value="">— Select level —</option>
+							{#each swimLevels as lvl}
+								<option value={lvl.value}>{lvl.name}</option>
+							{/each}
+						</select>
+						<button type="button" style="background:none;border:none;color:var(--primary);cursor:pointer;font-size:0.8rem;padding:4px 0;text-align:left;box-shadow:none;min-height:auto;" onclick={() => showAddChildLevelDetails = !showAddChildLevelDetails}>
+							{showAddChildLevelDetails ? 'Hide level details' : 'More level details'}
+						</button>
+						{#if showAddChildLevelDetails}
+							<div style="margin-top:8px;font-size:0.8rem;color:var(--text-light);max-height:240px;overflow-y:auto;">
+								{#each swimLevels as lvl}
+									<p style="margin-bottom:8px;"><strong>{lvl.name}</strong> — {lvl.description}</p>
+								{/each}
+							</div>
+						{/if}
+					</div>
+				</div>
+				<div class="form-group">
+					<label for="c_link">Link to volunteer (optional)</label>
+					<select id="c_link" name="linkUserId">
+						<option value="">— none —</option>
+						{#each data.volunteers as v}
+							<option value={v.id}>{v.firstName} {v.lastName}</option>
+						{/each}
+					</select>
+				</div>
+				<button type="submit" class="btn btn-primary" style="width:100%;">Add child</button>
+			</form>
+		</div>
+	</div>
+
+	<!-- children + their links -->
+	<div class="card" style="margin-top:16px;">
+		<div style="display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:12px;">
+			<h3 style="margin:0;">Children &amp; Volunteer Links ({data.children.length})</h3>
+			<input
+				type="search"
+				placeholder="Search children..."
+				bind:value={childSearch}
+				aria-label="Search children"
+				style="max-width:260px;"
+			/>
+		</div>
+		{#if form?.linkError}<p class="error" role="alert">{form.linkError}</p>{/if}
+		{#if data.children.length === 0}
+			<p style="color:var(--text-light);">No children added yet.</p>
+		{:else if filteredChildren.length === 0}
+			<p style="color:var(--text-light);">No children match "{childSearch}".</p>
+		{:else}
+			<ul class="link-list">
+				{#each filteredChildren as child (child.id)}
+					<li class="link-row">
+						<div class="link-row-head">
+							<div>
+								<strong>{child.firstName} {child.lastName}</strong>
+								<span class="pill {child.status === 'tryout' ? 'pill-accent' : 'pill-primary'}">{child.status === 'tryout' ? 'Tryout' : 'Member'}</span>
+								{#if child.level}<span style="color:var(--text-light);font-size:0.8rem;margin-left:6px;">· {child.level}</span>{/if}
+							</div>
+							<form method="POST" action="?/deleteChild" use:enhance onsubmit={(e) => { if (!confirm(`Remove ${child.firstName} ${child.lastName}? This will also remove their volunteer links.`)) e.preventDefault(); }}>
+								<input type="hidden" name="childId" value={child.id} />
+								<button type="submit" class="btn btn-danger btn-sm" aria-label="Remove {child.firstName} {child.lastName}">Remove</button>
+							</form>
+						</div>
+						<div class="link-row-body">
+							{#if child.volunteerIds.length === 0}
+								<span style="color:var(--text-light);font-size:0.85rem;">No volunteers linked yet.</span>
+							{:else}
+								<div class="chips">
+									{#each child.volunteerIds as vid}
+										<span class="chip">
+											{volunteerName(vid)}
+											<form method="POST" action="?/unlinkChild" use:enhance style="display:inline;">
+												<input type="hidden" name="childId" value={child.id} />
+												<input type="hidden" name="userId" value={vid} />
+												<button type="submit" class="chip-x" aria-label="Unlink {volunteerName(vid)}">×</button>
+											</form>
+										</span>
+									{/each}
+								</div>
+							{/if}
+							<form method="POST" action="?/linkChild" use:enhance class="link-add">
+								<input type="hidden" name="childId" value={child.id} />
+								<select name="userId" bind:value={linkPick[child.id]} aria-label="Select volunteer to link">
+									<option value="">+ Link volunteer...</option>
+									{#each data.volunteers.filter((v) => !child.volunteerIds.includes(v.id)) as v}
+										<option value={v.id}>{v.firstName} {v.lastName}</option>
+									{/each}
+								</select>
+								<button type="submit" class="btn btn-accent btn-sm" disabled={!linkPick[child.id]}>Link</button>
+							</form>
+						</div>
+					</li>
+				{/each}
+			</ul>
+		{/if}
+	</div>
+</section>
 
 <div class="grid-2">
 	<!-- activity types -->
@@ -71,14 +235,14 @@
 						{#each data.volunteers as p}<option value={p.id}>{p.firstName} {p.lastName} ({p.email})</option>{/each}
 					</select>
 				</div>
-				<div class="form-group">
-					<label>Type</label>
-					<div style="display:flex;gap:8px;">
-						<button type="button" class="btn {manualType === 'volunteering' ? 'btn-primary' : 'btn-outline'}" style="flex:1;text-align:center;" onclick={() => manualType = 'volunteering'}>Hours</button>
-						<button type="button" class="btn {manualType === 'donation' ? 'btn-primary' : 'btn-outline'}" style="flex:1;text-align:center;" onclick={() => manualType = 'donation'}>Donation ($)</button>
+				<fieldset class="form-group" style="border:none;padding:0;margin-bottom:16px;">
+					<legend style="font-weight:600;font-size:0.9rem;margin-bottom:6px;color:var(--text);">Type</legend>
+					<div style="display:flex;gap:8px;" role="radiogroup" aria-label="Entry type">
+						<button type="button" role="radio" aria-checked={manualType === 'volunteering'} class="btn {manualType === 'volunteering' ? 'btn-primary' : 'btn-outline'}" style="flex:1;text-align:center;" onclick={() => manualType = 'volunteering'}>Hours</button>
+						<button type="button" role="radio" aria-checked={manualType === 'donation'} class="btn {manualType === 'donation' ? 'btn-primary' : 'btn-outline'}" style="flex:1;text-align:center;" onclick={() => manualType = 'donation'}>Donation ($)</button>
 					</div>
 					<input type="hidden" name="type" value={manualType} />
-				</div>
+				</fieldset>
 				<div class="form-group"><label for="date">Date</label><input id="date" name="date" type="date" required value={new Date().toISOString().split('T')[0]} /></div>
 				<div class="form-group"><label for="value">{manualType === 'donation' ? 'Amount ($)' : 'Hours'}</label><input id="value" name="value" type="number" step="0.5" min="0.5" required /></div>
 				<div class="form-group"><label for="notes">Notes (optional)</label><input id="notes" name="notes" type="text" /></div>
@@ -139,3 +303,108 @@
 		</div>
 	</div>
 </div>
+
+<style>
+	.alert {
+		padding: 8px 12px;
+		border-radius: 10px;
+		margin-bottom: 12px;
+		font-size: 0.9rem;
+	}
+	.alert-success {
+		background: #DDF1E1;
+		color: #1F5A3A;
+		border: 1px solid #B8E0C2;
+	}
+	.btn-sm {
+		padding: 6px 12px;
+		font-size: 0.8rem;
+		border-radius: 12px;
+	}
+	.pill {
+		display: inline-block;
+		padding: 2px 10px;
+		border-radius: 999px;
+		font-size: 0.72rem;
+		font-weight: 600;
+		text-transform: uppercase;
+		letter-spacing: 0.4px;
+		margin-left: 8px;
+		vertical-align: middle;
+	}
+	.pill-primary { background: rgba(88,164,176,0.18); color: #2E6770; }
+	.pill-accent { background: rgba(218,164,154,0.25); color: #8A4F45; }
+	.link-list {
+		list-style: none;
+		padding: 0;
+		margin: 0;
+		display: flex;
+		flex-direction: column;
+		gap: 10px;
+	}
+	.link-row {
+		background: white;
+		border: 1px solid var(--border);
+		border-radius: 14px;
+		padding: 12px 14px;
+	}
+	.link-row-head {
+		display: flex;
+		justify-content: space-between;
+		align-items: center;
+		gap: 8px;
+		flex-wrap: wrap;
+		margin-bottom: 8px;
+	}
+	.link-row-body {
+		display: flex;
+		justify-content: space-between;
+		align-items: center;
+		gap: 12px;
+		flex-wrap: wrap;
+	}
+	.chips {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 6px;
+	}
+	.chip {
+		display: inline-flex;
+		align-items: center;
+		gap: 4px;
+		background: rgba(88,164,176,0.14);
+		color: #235760;
+		padding: 4px 4px 4px 10px;
+		border-radius: 999px;
+		font-size: 0.85rem;
+		font-weight: 500;
+	}
+	.chip-x {
+		appearance: none;
+		background: transparent;
+		border: none;
+		color: #235760;
+		font-size: 1rem;
+		line-height: 1;
+		padding: 0 6px;
+		cursor: pointer;
+		border-radius: 999px;
+		min-width: 24px;
+		min-height: 24px;
+		box-shadow: none;
+	}
+	.chip-x:hover { background: rgba(88,164,176,0.25); transform: none; box-shadow: none; }
+	.link-add {
+		display: flex;
+		gap: 8px;
+		align-items: center;
+		flex-wrap: wrap;
+	}
+	.link-add select { max-width: 220px; padding: 8px 12px; font-size: 0.9rem; }
+
+	@media (max-width: 600px) {
+		.link-row-head, .link-row-body { flex-direction: column; align-items: stretch; }
+		.link-add select { max-width: 100%; flex: 1; }
+		.link-add { width: 100%; }
+	}
+</style>
