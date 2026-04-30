@@ -1,12 +1,22 @@
 <!-- volunteer list — organizer view -->
 <script lang="ts">
 	import type { PageData } from './$types';
+	import VolunteerChildGraph from '$lib/components/VolunteerChildGraph.svelte';
 	let { data }: { data: PageData } = $props();
 	let search = $derived(data.search ?? '');
+	let showGraph = $state(true);
 </script>
 
 <h1>Volunteers</h1>
-<p style="color:var(--text-light);margin-bottom:24px;">View all volunteers and their children's progress.</p>
+<p style="color:var(--text-light);margin-bottom:16px;">View all volunteers and their children's progress.</p>
+
+<button type="button" class="btn btn-outline" style="margin-bottom:16px;" onclick={() => (showGraph = !showGraph)}>
+	{showGraph ? 'Hide' : 'Show'} connection map
+</button>
+
+{#if showGraph}
+	<VolunteerChildGraph volunteers={data.volunteers} />
+{/if}
 
 <form method="GET" style="margin-bottom:20px;display:flex;gap:8px;">
 	<input type="text" name="search" placeholder="Search by name or email..." bind:value={search} style="max-width:300px;" />
