@@ -11,7 +11,7 @@
 		<h2>Create Volunteer Account</h2>
 
 		{#if form?.error}
-			<p class="error">{form.error}</p>
+			<p class="error" role="alert" aria-live="assertive">{form.error}</p>
 		{/if}
 
 		<form method="POST" use:enhance>
