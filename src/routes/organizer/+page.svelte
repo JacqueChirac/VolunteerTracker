@@ -3,7 +3,8 @@
 	import { enhance } from '$app/forms';
 	import type { PageData, ActionData } from './$types';
 
-	let { data, form }: { data: PageData; form: ActionData } = $props();
+	type OrganizerPageData = PageData & { activityTypes: Array<{ name: string }> };
+	let { data, form }: { data: OrganizerPageData; form: ActionData } = $props();
 	let showAddEvent = $state(false);
 
 	const today = new Date().toISOString().split('T')[0];
@@ -30,19 +31,18 @@
 </div>
 
 {#if form?.success}
-	<div class="card" style="background:#d4edda;border:1px solid #c3e6cb;margin-bottom:16px;">
+	<div class="card" style="background:#d4edda;border:1px solid #c3e6cb;margin-bottom:16px;" role="status" aria-live="polite">
 		<p style="color:#155724;">Event saved successfully.</p>
 	</div>
 {/if}
 
-<button class="btn btn-accent" style="margin-bottom:16px;" onclick={() => showAddEvent = !showAddEvent}>
+<button class="btn btn-accent" style="margin-bottom:16px;" onclick={() => showAddEvent = !showAddEvent} aria-expanded={showAddEvent} aria-controls="add-event-panel">
 	{showAddEvent ? 'Cancel' : '+ Add New Event'}
 </button>
 
-{#if showAddEvent}
-	<div class="card" style="margin-bottom:20px;">
+<div id="add-event-panel" class="card" style="margin-bottom:20px;" hidden={!showAddEvent}>
 		<h2>Add New Event</h2>
-		{#if form?.error}<p class="error">{form.error}</p>{/if}
+		{#if form?.error}<p class="error" role="alert" aria-live="assertive">{form.error}</p>{/if}
 		<form method="POST" action="?/addEvent" use:enhance style="margin-top:12px;">
 			<div class="grid-2">
 				<div class="form-group"><label for="add_title">Title</label><input id="add_title" name="title" type="text" required /></div>
@@ -63,7 +63,6 @@
 			<button type="submit" class="btn btn-primary">Create Event</button>
 		</form>
 	</div>
-{/if}
 
 {#if data.events.length === 0}
 	<div class="card"><p style="color:var(--text-light);">No events yet. Create one above.</p></div>
@@ -80,7 +79,7 @@
 				</div>
 				<form method="POST" action="?/deleteEvent" use:enhance style="display:inline;">
 					<input type="hidden" name="eventId" value={event.id} />
-					<button type="submit" class="btn btn-danger" style="padding:4px 10px;font-size:0.8rem;" onclick={(e) => { if (!confirm('Delete this event?')) e.preventDefault(); }}>Delete</button>
+					<button type="submit" class="btn btn-danger" style="padding:4px 10px;font-size:0.8rem;" aria-label={"Delete event " + event.title} onclick={(e) => { if (!confirm('Delete this event?')) e.preventDefault(); }}>Delete</button>
 				</form>
 			</div>
 		</div>
@@ -98,7 +97,7 @@
 				</div>
 				<form method="POST" action="?/deleteEvent" use:enhance style="display:inline;">
 					<input type="hidden" name="eventId" value={event.id} />
-					<button type="submit" class="btn btn-danger" style="padding:4px 10px;font-size:0.8rem;" onclick={(e) => { if (!confirm('Delete?')) e.preventDefault(); }}>Delete</button>
+					<button type="submit" class="btn btn-danger" style="padding:4px 10px;font-size:0.8rem;" aria-label={"Delete event " + event.title} onclick={(e) => { if (!confirm('Delete?')) e.preventDefault(); }}>Delete</button>
 				</form>
 			</div>
 		</div>
