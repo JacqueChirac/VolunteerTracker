@@ -6,8 +6,8 @@
 
 //Variables Declare
    const badEmails = $derived(data.badEmails);  //Bad emails as [] strings
-   const allMails = $derived(data.allMails);  //All emails as [] strings
-   const allNames = $derived(data.allNames);  //All names as [] strings
+   const allMails = (data.allMails);  //All emails as [] strings
+   const allNames = (data.allNames);  //All names as [] strings
    const volunteers = $derived(data.volunteers);
    let selected = $state("message");
    let messageParams = $state({
@@ -31,12 +31,10 @@
 });
 
 let recipientPrompted = $derived.by(() => {
-  console.log("ran with " + wordSelected )
 	const keyword = (wordSelected ?? "").toLowerCase().trim();
 	if (!keyword) return [];
   let candidateIDs = [];
 	for(let i = 0; i < data.allMails.length; i++){
-    console.log(data.allMails[i].toLowerCase())
    if (data.allMails[i].toLowerCase().includes(keyword)) {
      candidateIDs.push(i);
      continue;
@@ -46,7 +44,6 @@ let recipientPrompted = $derived.by(() => {
    }
   }
   
-  console.log("Found" + candidateIDs + ".")
   return candidateIDs;
 });
 
@@ -125,7 +122,7 @@ function selectRecipient(index : number) {
  	 const endIndex = text.indexOf(",", cursor);
    const end = endIndex === -1 ? text.length : endIndex;
    const firstPart = text.slice(0, start);
-   const middlePart = volunteers[recipientPrompted[index]].email
+   const middlePart = allMails[recipientPrompted[index]]
    const lastPart = text.slice(end);
  if(lastPart)
   messageParams.recipient = firstPart + middlePart +", " + lastPart;
@@ -133,6 +130,7 @@ function selectRecipient(index : number) {
   messageParams.recipient = firstPart + middlePart;
   showDropdown = false;
 }
+
 
 
 
@@ -216,8 +214,10 @@ function loadGroup(emails: string[]) {
 <div class="recipient-wrapper">
 
 	<input
+  
 		class="recipient-input"
-		type="text"
+		type="text" 
+    autocomplete="off"
     id="recipient"
 		bind:value={messageParams.recipient}
 		bind:this={inputElement}
@@ -229,34 +229,7 @@ function loadGroup(emails: string[]) {
 	<!-- your input or trigger element here -->
 
 	{#if showDropdown === true && recipientPrompted.length > 0}
-				<div class="dropdown">
-
-			<div class="dropdown-header">
-				<span>Suggestions</span>
-				<button
-					type="button"
-					class="close-btn"
-					onclick={() => showDropdown = false}
-				>
-					×
-				</button>
-			</div>
-
-			<div class="dropdown-list">
-        {#each Array(6) as _, i}
-           <button
-            type="button"
-            class="dropdown-item"
-            onclick={() => selectRecipient(recipientPrompted[i])}
-          >
-            <div class="name">{volunteers[recipientPrompted[i]].name}</div>
-            <div class="email">{volunteers[recipientPrompted[i]].email}</div>
-          </button>
-{/each}
-        
-			</div>
-
-		</div>
+				{@render promptList(recipientPrompted)}
 	{/if}
 </div>
 </div>
@@ -292,7 +265,51 @@ function loadGroup(emails: string[]) {
 
 <pre>{JSON.stringify(data, null, 2)}</pre>
 
+{#snippet promptList(storedPrompts: number[])}
+				<div class="dropdown">
 
+			<div class="dropdown-header">
+				<span>Suggestions</span>
+				<button
+					type="button"
+					class="close-btn"
+					onclick={() => showDropdown = false}
+				>
+					×
+				</button>
+			</div>
+
+			<div class="dropdown-list">
+        {#each Array(6) as _, i}
+           {#if storedPrompts.length >= i}
+           {@render promptBox({order: i, storedPrompts})}
+           {/if}
+{/each}
+
+        
+			</div>
+
+		</div>
+{/snippet}
+  
+
+{#snippet promptBox({order, storedPrompts}: {
+    order: number, 
+    storedPrompts: number[]
+})} 
+<article>
+    <button
+     type="button"
+     class="dropdown-item"
+     onclick={() => selectRecipient(storedPrompts[order])}
+    >
+      <div class="name">{data.allNames[storedPrompts[order]]}</div>
+       <div class="email">{data.allMails[storedPrompts[order]]}</div>
+     </button>
+
+
+</article>
+{/snippet}
 
 <style>
   .top-toggle {
