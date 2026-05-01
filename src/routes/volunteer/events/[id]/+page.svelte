@@ -4,6 +4,7 @@
 	import type { PageData, ActionData } from './$types';
 
 	let { data, form }: { data: PageData; form: ActionData } = $props();
+	
 </script>
 
 <a href="/volunteer/events" style="font-size:0.9rem;">&larr; Back to Events</a>

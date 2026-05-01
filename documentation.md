@@ -16,4 +16,5 @@ By the requests of Ms. Gilby during the Grade 12 level senior Computer Science (
 ---Volunteer lists
 --Events (currently placed under the main page of organizer, will make a new main page for admin soon)
 
-The discussion with Ms. Gilby went on smoothly except for the fact we discussed for half an hour on the possibility that a has multiple parents and family (original vs. reunited family) and volunteers
+The discussion with Ms. Gilby went on smoothly except for the fact we discussed for half an hour on the possibility that a has multiple parents and family (original vs. reunited family) and volunteers. 
+

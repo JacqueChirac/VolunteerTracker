@@ -2,19 +2,21 @@
 <script lang="ts">
   import { enhance } from "$app/forms";
   import type { PageData, ActionData } from "./$types";
+	// For swim team level dropdown when creating child
   import { swimLevels } from "$lib/swimLevels";
 
   let { data, form }: { data: PageData; form: ActionData } = $props();
   let showAddChild = $state(false);
   let showLinkChild = $state(false);
   let showLevelDetails = $state(false);
-
 </script>
 
 <h1>My Account</h1>
 <p style="color:var(--text-light);margin-bottom:24px;">
   Manage your children and account settings.
 </p>
+
+<!-- Display conversion rate between money and hours  -->
 <p style="font-size: 48px; color:var(--text-light);margin-bottom:48px;">
   1 hour = ${data.donationRate}
 </p>
@@ -24,6 +26,7 @@
     <div
       style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;flex-wrap:wrap;gap:8px;"
     >
+      <!-- Handles button click besides "My children" -->
       <h2>My Children</h2>
       <div style="display:flex;gap:6px;">
         <button
@@ -33,6 +36,7 @@
             showLinkChild = !showLinkChild;
             showAddChild = false;
           }}
+          // If user press on showLinkCHild display cancel other display link existing, same below
         >
           {showLinkChild ? "Cancel" : "Link Existing"}
         </button>
@@ -57,6 +61,7 @@
         <p style="color:#155724;">Child added successfully.</p>
       </div>
     {/if}
+		<!-- If unlinkSuccess in server.ts is true then display "child unlinked" -->
     {#if form?.unlinkSuccess}
       <div
         class="card"
@@ -84,7 +89,7 @@
         <p
           style="font-size:0.85rem;color:var(--text-light);margin-top:4px;margin-bottom:12px;"
         >
-          If another guardian already added your child, select them here.
+          If another volunteer/guardian/relatives already added your child, select them here.
         </p>
         {#if data.allChildren.length === 0}
           <p style="color:var(--text-light);">
@@ -149,13 +154,22 @@
                 <option value={lvl.value}>{lvl.name}</option>
               {/each}
             </select>
-            <button type="button" style="background:none;border:none;color:var(--primary);cursor:pointer;font-size:0.8rem;padding:4px 0;text-align:left;" onclick={() => showLevelDetails = !showLevelDetails}>
+            <button
+              type="button"
+              style="background:none;border:none;color:var(--primary);cursor:pointer;font-size:0.8rem;padding:4px 0;text-align:left;"
+              onclick={() => (showLevelDetails = !showLevelDetails)}
+            >
               {showLevelDetails ? "Hide Details" : "More Details"}
             </button>
             {#if showLevelDetails}
-              <div style="margin-top:8px;font-size:0.8rem;color:var(--text-light);max-height:300px;overflow-y:auto;">
+              <div
+                style="margin-top:8px;font-size:0.8rem;color:var(--text-light);max-height:300px;overflow-y:auto;"
+              >
+							<!-- Options for level come from swimLevels file under lib -->
                 {#each swimLevels as lvl}
-                  <p style="margin-bottom:8px;"><strong>{lvl.name}</strong> — {lvl.description}</p>
+                  <p style="margin-bottom:8px;">
+                    <strong>{lvl.name}</strong> — {lvl.description}
+                  </p>
                 {/each}
               </div>
             {/if}
@@ -199,7 +213,9 @@
               use:enhance
               style="display:inline;"
             >
+						<!-- Auto loads child ID in the unlink form -->
               <input type="hidden" name="childId" value={child.id} />
+							<!-- Confirm before unlink child -->
               <button
                 type="submit"
                 class="btn btn-danger"

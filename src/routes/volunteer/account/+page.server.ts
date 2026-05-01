@@ -12,6 +12,7 @@ import { fail } from "@sveltejs/kit";
 import { hashSync, compareSync } from "bcrypt-ts";
 import { getHoursRequired, getDonationRate } from "$lib/server/settings";
 
+//Run on page load and load the variables
 export const load: PageServerLoad = async ({ locals }) => {
   const userId = locals.user!.id;
   const links = await db
@@ -31,6 +32,7 @@ export const load: PageServerLoad = async ({ locals }) => {
   }> = [];
 
   if (childIds.length > 0) {
+		//if childId exists check for children connected with users
     const childRecords = await db
       .select()
       .from(children)
@@ -42,10 +44,12 @@ export const load: PageServerLoad = async ({ locals }) => {
       );
 
     for (const child of childRecords) {
+			//Get all parents/children links
       const allLinks = await db
         .select()
         .from(childVolunteerLinks)
         .where(eq(childVolunteerLinks.childId, child.id));
+				//Adds up all hours from all volunteers and add it to the children they connected
       let totalHours = 0;
       for (const l of allLinks) {
         const volunteerContribs = await db
@@ -78,6 +82,7 @@ export const load: PageServerLoad = async ({ locals }) => {
 };
 
 export const actions: Actions = {
+	//Add children data from form
   addChild: async ({ request, locals }) => {
     const fd = await request.formData();
     const firstName = fd.get("firstName")?.toString().trim() ?? "";
@@ -105,6 +110,7 @@ export const actions: Actions = {
     return { success: true };
   },
 
+	//Unlink child from user when user press unlink button
   unlinkChild: async ({ request, locals }) => {
     const fd = await request.formData();
     const childId = Number(fd.get("childId"));
@@ -121,6 +127,7 @@ export const actions: Actions = {
     return { unlinkSuccess: true };
   },
 
+//Link children
   linkChild: async ({ request, locals }) => {
     const fd = await request.formData();
     const childId = Number(fd.get("childId"));
@@ -143,11 +150,12 @@ export const actions: Actions = {
     const newPassword = fd.get("newPassword")?.toString() ?? "";
     if (!currentPassword || !newPassword)
       return fail(400, { passwordError: "Both fields are required." });
-    if (newPassword.length < 4)
+    if (newPassword.length < 6)
       return fail(400, {
         passwordError: "New password must be at least 4 characters.",
       });
 
+			//Needs to be changed to add forgot password below change password
     const [user] = await db
       .select()
       .from(users)
