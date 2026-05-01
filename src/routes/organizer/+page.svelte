@@ -3,7 +3,8 @@
 	import { enhance } from '$app/forms';
 	import type { PageData, ActionData } from './$types';
 
-	let { data, form }: { data: PageData; form: ActionData } = $props();
+	type OrganizerPageData = PageData & { activityTypes: Array<{ name: string }> };
+	let { data, form }: { data: OrganizerPageData; form: ActionData } = $props();
 	let showAddEvent = $state(false);
 
 	const today = new Date().toISOString().split('T')[0];
