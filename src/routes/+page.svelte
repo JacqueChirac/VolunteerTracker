@@ -39,7 +39,7 @@
 <style>
 	.landing { min-height: 100vh; display: flex; align-items: center; justify-content: center; background: linear-gradient(135deg, #1a5276 0%, #2980b9 100%); color: white; text-align: center; padding: 20px; }
 	.landing-content { max-width: 520px; }
-	.team-logo { width: 200px; margin-bottom: 20px; filter: brightness(0) invert(1); }
+	.team-logo { width: 200px; margin-bottom: 20px; }
 	h1 { font-size: 2.2rem; margin-bottom: 12px; }
 	p { font-size: 1.1rem; opacity: 0.9; }
 	.subtitle { font-size: 0.95rem; opacity: 0.7; margin-bottom: 36px; }

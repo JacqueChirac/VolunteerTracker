@@ -40,5 +40,5 @@
 </main>
 
 <style>
-	.brand-logo { height: 28px; filter: brightness(0) invert(1); vertical-align: middle; }
+	.brand-logo { height: 28px; vertical-align: middle; border-radius: 4px; }
 </style>
