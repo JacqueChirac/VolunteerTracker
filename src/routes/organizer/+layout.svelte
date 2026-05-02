@@ -17,7 +17,10 @@
 <a class="skip-link" href="#main-content">Skip to main content</a>
 
 <nav class="nav" aria-label="Admin">
-	<a href="/organizer" class="brand">Volunteer Tracker</a>
+	<a href="/organizer" class="brand">
+		<img src="/CPWD.png" alt="CPWD" class="brand-logo" />
+		Volunteer Tracker
+	</a>
 	<button class="hamburger" onclick={() => menuOpen = !menuOpen} aria-label={menuOpen ? 'Close menu' : 'Open menu'} aria-expanded={menuOpen} aria-controls="admin-nav-links">
 		{#if menuOpen}<X size={20} />{:else}<Menu size={20} />{/if}
 	</button>
@@ -36,6 +39,7 @@
 </main>
 
 <style>
+	.brand-logo { height: 28px; filter: brightness(0) invert(1); vertical-align: middle; }
 	.nav-logout {
 		display: inline-flex;
 		align-items: center;
