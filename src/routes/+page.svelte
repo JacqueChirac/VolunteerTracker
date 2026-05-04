@@ -6,6 +6,7 @@
 
 <div class="landing">
 	<div class="landing-content">
+		<img src="/CPWD.png" alt="CPWD Swim Team" class="team-logo" />
 		<h1>Volunteer Tracker</h1>
 		<p>Track volunteer hours, donations, and events for your organization.</p>
 		<p class="subtitle">Click the appropriate login to get started.</p>
@@ -38,6 +39,7 @@
 <style>
 	.landing { min-height: 100vh; display: flex; align-items: center; justify-content: center; background: linear-gradient(135deg, #1a5276 0%, #2980b9 100%); color: white; text-align: center; padding: 20px; }
 	.landing-content { max-width: 520px; }
+	.team-logo { width: 200px; margin-bottom: 20px; }
 	h1 { font-size: 2.2rem; margin-bottom: 12px; }
 	p { font-size: 1.1rem; opacity: 0.9; }
 	.subtitle { font-size: 0.95rem; opacity: 0.7; margin-bottom: 36px; }
