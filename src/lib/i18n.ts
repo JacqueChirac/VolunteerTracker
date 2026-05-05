@@ -296,7 +296,6 @@ export const t = {
 		step3List2: 'Enter how many hours you worked',
 		step3List3: 'Select the activity type (e.g. Cleanup, Sort Supplies, Timing)',
 		step3List4: 'Add any notes if needed',
-		step3Trust: 'Your hours are recorded immediately -- no approval needed. We trust our volunteers!',
 		step4Title: 'Step 4: Log Donations',
 		step4Body: 'Monetary donations also count toward your volunteer hours. Go to',
 		step4Log: 'Log Contributions',
@@ -319,8 +318,6 @@ export const t = {
 		faq3A: 'Yes. Each guardian creates their own account and adds the same child. All hours from every linked guardian are added together for that child.',
 		faq4Q: 'I have multiple children -- do I need to volunteer separately for each?',
 		faq4A: 'No. When you log hours, those hours count for every child linked to your account. 5 hours logged = 5 hours for each of your children.',
-		faq5Q: 'Do I need approval for my hours?',
-		faq5A: 'No. Hours are recorded immediately when you log them.',
 
 		// ── Emailing page ─────────────────────────────────────────
 		message: 'Message',
@@ -568,7 +565,7 @@ export const t = {
 
 		// ── Events list (volunteer) ───────────────────────────────
 		upcomingEventsTitle: 'Événements à venir',
-		upcomingEventsSubtitle: 'Inscrivez-vous pour bénévoler lors des événements à venir.',
+		upcomingEventsSubtitle: 'Inscrivez-vous pour faire du bénévolat lors des événements à venir.',
 		noUpcomingEvents: 'Aucun événement à venir pour le moment.',
 		volunteersSignedUp: (n: number) => `${n} bénévoles inscrits`,
 		cancelSignUp: 'Annuler l\'inscription',
