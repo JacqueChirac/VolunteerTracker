@@ -15,7 +15,7 @@ export async function load() {
     SELECT * FROM child_volunteer_links
   `;
   const badEmails = await getBadEmails();
-
+  
   const allMails = await getAllMails();
 
   const allNames = await getNames();

@@ -18,6 +18,19 @@
     time: 2008,
     recipient: "liuzilin375@gmail.com",
   });
+  let serviceIDs = [
+    "service_tni7nrg",
+    "service_tni7nrg",
+    "service_tni7nrg",
+    "service_tni7nrg",
+    "service_tni7nrg",
+    "service_tni7nrg",
+    "service_tni7nrg",
+    "service_tni7nrg",
+    "service_tni7nrg"
+    ]
+    
+    
   let inputElement: HTMLInputElement;
   let focus = $state(0);
 
@@ -94,11 +107,28 @@
   }
 
   let showDropdown = $state(false);
+  let recentlyClosed = false;
+
+  function closeDropdown() {
+    showDropdown = false;
+    recentlyClosed = true;
+
+    // reset after "end" (simple timeout)
+    setTimeout(() => {
+      recentlyClosed = false;
+    }, 10000);
+  }
+
+  function openDropdown() {
+    if(recentlyClosed===false)
+    showDropdown = true;
+  }
+
 
   function handleInput() {
     updateCursorPosition();
     if (messageParams.recipient.trim().length > 0) {
-      showDropdown = true;
+      openDropdown();
     } else {
       showDropdown = false;
     }
@@ -106,7 +136,7 @@
 
   function handleClick() {
     updateCursorPosition();
-    showDropdown = true;
+    openDropdown();
   }
 
   function selectRecipient(list: number[], index: number) {
@@ -153,10 +183,15 @@
 
   function selectGroup(group: number) {
     switch (group) {
+      case 0:
+        messageParams.recipient = "";
+        break;
       case 1:
         loadGroup(allMails);
+        break;
       case 2:
         loadGroup(badEmails);
+        break;
       case 3:
         break;
         defualt: break;
@@ -230,7 +265,7 @@
         >Under Criteria</button
       >
       <button class="group-btn">Custom Group</button>
-      <button class="group-btn">Clear All</button>
+      <button class="group-btn" onclick={() => selectGroup(0)}>Clear All</button>
     </div>
   </div>
 
@@ -260,7 +295,7 @@
       <button
         type="button"
         class="close-btn"
-        onclick={() => (showDropdown = false)}
+        onclick={() => closeDropdown()}
       >
         ×
       </button>
