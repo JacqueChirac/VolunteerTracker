@@ -20,7 +20,7 @@
 			<p class="error" role="alert" aria-live="assertive">{form.error}</p>
 		{/if}
 
-		<form method="POST" use:enhance>
+		<form method="POST" action="?/login" use:enhance>
 			<div class="form-group">
 				<label for="email">{t[$lang].email}</label>
 				<input id="email" name="email" type="email" value={form?.email ?? ''} required />
