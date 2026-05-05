@@ -10,6 +10,18 @@
 <h1>{t[$lang].welcomeMsg(data.user?.firstName ?? '')}</h1>
 <p style="color:var(--text-light);margin-bottom:24px;">{t[$lang].homeSubtitle}</p>
 
+<!-- //Display volunteer contributions -->
+<div style="display:flex;gap:12px;margin-bottom:24px;flex-wrap:wrap;">
+  <div class="card" style="flex:1;min-width:120px;text-align:center;">
+    <p style="font-size:1.8rem;font-weight:700;">{data.totals.hours}</p>
+    <p style="font-size:0.8rem;color:var(--text-light);">Total Hours</p>
+  </div>
+  <div class="card" style="flex:1;min-width:120px;text-align:center;">
+    <p style="font-size:1.8rem;font-weight:700;">${data.totals.donations}</p>
+    <p style="font-size:0.8rem;color:var(--text-light);">Total Donated</p>
+  </div>
+</div>
+
 <div class="card" style="display:flex;flex-direction:column;gap:12px;max-width:420px;">
 	<a href="/volunteer/events" class="btn btn-primary" style="text-align:center;">{t[$lang].viewEvents}</a>
 	<a href="/volunteer/log" class="btn btn-accent" style="text-align:center;">{t[$lang].logHours}</a>

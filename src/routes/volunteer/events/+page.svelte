@@ -5,18 +5,24 @@
 	import { lang } from '$lib/stores/lang';
 	import { t } from '$lib/i18n';
 
-	let { data, form }: { data: PageData; form: ActionData } = $props();
+  let { data, form }: { data: PageData; form: ActionData } = $props();
 
-	const today = new Date().toISOString().split('T')[0];
-	let upcomingEvents = $derived(data.events.filter((e: typeof data.events[0]) => e.date >= today));
-	let pastEvents = $derived(data.events.filter((e: typeof data.events[0]) => e.date < today));
+  const today = new Date().toISOString().split("T")[0];
+  let upcomingEvents = $derived(
+    data.events.filter((e: (typeof data.events)[0]) => e.date >= today),
+  );
+  let pastEvents = $derived(
+    data.events.filter((e: (typeof data.events)[0]) => e.date < today),
+  );
 </script>
 
 <h1>{t[$lang].upcomingEventsTitle}</h1>
 <p style="color:var(--text-light);margin-bottom:24px;">{t[$lang].upcomingEventsSubtitle}</p>
 
 <!-- Display errors if there's one -->
-{#if form?.error}<p class="error" style="margin-bottom:16px;">{form.error}</p>{/if}
+{#if form?.error}<p class="error" style="margin-bottom:16px;">
+    {form.error}
+  </p>{/if}
 
 {#if upcomingEvents.length === 0}
 	<div class="card"><p style="color:var(--text-light);">{t[$lang].noUpcomingEvents}</p></div>
@@ -44,8 +50,6 @@
 	</div>
 {/if}
 
-
-
 <h1>{t[$lang].pastEventsTitle}</h1>
 <p style="color:var(--text-light);margin-bottom:24px;">{t[$lang].pastEventsSubtitle}</p>
 {#if pastEvents.length === 0}
@@ -59,9 +63,12 @@
 						<h3><a href="/volunteer/events/{event.id}">{event.title}</a></h3>
 						<p style="font-size:0.9rem;color:var(--text-light);">{event.date} at {event.startTime}{event.endTime ? ` - ${event.endTime}` : ''}{#if event.location} &middot; {event.location}{/if}</p>
 						{#if event.description}<p style="margin-top:8px;">{event.description}</p>{/if}
-						<p style="font-size:0.85rem;color:var(--text-light);margin-top:4px;">{t[$lang].volunteersSignedUp(event.signupCount)}{#if event.type} &middot; {event.type}{/if}</p>
+						<p style="font-size:0.85rem;margin-top:8px;">
+							{#if event.signedUp}<span style="color:var(--success,#1a7f37);">✓ You signed up</span>{:else}<span style="color:var(--text-light);">— Did not attend</span>{/if}
+							{#if event.myHours > 0}
+								&middot; <strong>{event.myHours}h</strong> logged{/if}
+						</p>
 					</div>
-
 				</div>
 			</div>
 		{/each}

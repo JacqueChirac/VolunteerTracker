@@ -1,21 +1,31 @@
 <!-- log hours page — volunteer logs hours or donations -->
 <script lang="ts">
+	import { today, daysAgo } from "$lib/dateBounds";
 	import { enhance } from '$app/forms';
 	import type { PageData, ActionData } from './$types';
 	import { lang } from '$lib/stores/lang';
 	import { t } from '$lib/i18n';
 
-	let { data, form }: { data: PageData; form: ActionData } = $props();
-	let tab = $state<'volunteering' | 'donation'>('volunteering');
+  let { data, form }: { data: PageData; form: ActionData } = $props();
+  let tab = $state<"volunteering" | "donation">("volunteering");
+  const dateMax = today();
+  const dateMin = daysAgo(365); //Can't log events more than a year ago
 </script>
 
 <h1>{t[$lang].logHoursTitle}</h1>
 <p style="color:var(--text-light);margin-bottom:24px;">{t[$lang].logHoursSubtitle}</p>
 
 {#if form?.success}
-	<div class="card" style="background:#d4edda;border:1px solid #c3e6cb;margin-bottom:16px;"><p style="color:#155724;">{form.message}</p></div>
+  <div
+    class="card"
+    style="background:#d4edda;border:1px solid #c3e6cb;margin-bottom:16px;"
+  >
+    <p style="color:#155724;">{form.message}</p>
+  </div>
 {/if}
-{#if form?.error}<p class="error" style="margin-bottom:16px;">{form.error}</p>{/if}
+{#if form?.error}<p class="error" style="margin-bottom:16px;">
+    {form.error}
+  </p>{/if}
 
 <div class="grid-2">
 	<!-- left: log form -->
@@ -25,17 +35,38 @@
 			<button class="btn {tab === 'donation' ? 'btn-primary' : 'btn-outline'}" style="flex:1;text-align:center;" onclick={() => tab = 'donation'}>{t[$lang].logDonation}</button>
 		</div>
 
+		<!-- Log events with date constraints -->
 		{#if tab === 'volunteering'}
 			<form method="POST" action="?/volunteering" use:enhance>
-				<div class="form-group"><label for="date">{t[$lang].dateField}</label><input id="date" name="date" type="date" required value={new Date().toISOString().split('T')[0]} /></div>
-				<div class="form-group"><label for="hours">{t[$lang].hoursField}</label><input id="hours" name="hours" type="number" step="0.5" min="0.5" required /></div>
+				<div class="form-group">
+					<label for="event">Event (optional)</label>
+					<select
+						id="event"
+						name="eventId"
+						onchange={(e) => {
+							const ev = data.myEvents.find(
+								(x) => x.id === Number(e.currentTarget.value),
+							);
+							if (ev)
+								(document.getElementById("date") as HTMLInputElement).value =
+									ev.date;
+						}}
+					>
+						<option value="">— Other / general hours —</option>
+						{#each data.myEvents as ev}
+							<option value={ev.id}>{ev.date} — {ev.title}</option>
+						{/each}
+					</select>
+				</div>
+				<div class="form-group"><label for="date">{t[$lang].dateField}</label><input id="date" name="date" type="date" required value={dateMax} min={dateMin} max={dateMax} /></div>
+				<div class="form-group"><label for="hours">{t[$lang].hoursField}</label><input id="hours" name="hours" type="number" step="0.5" min="0.5" max="24" required /></div>
 				<div class="form-group"><label for="notes">{t[$lang].notesField}</label><textarea id="notes" name="notes" rows="2"></textarea></div>
 				<button type="submit" class="btn btn-accent" style="width:100%;">{t[$lang].logHoursSubmit}</button>
 			</form>
 		{:else}
 			<form method="POST" action="?/donation" use:enhance>
 				<p style="font-size:0.85rem;color:var(--text-light);margin-bottom:12px;">{t[$lang].donationRate(data.donationRate)}</p>
-				<div class="form-group"><label for="date2">{t[$lang].dateField}</label><input id="date2" name="date" type="date" required value={new Date().toISOString().split('T')[0]} /></div>
+				<div class="form-group"><label for="date2">{t[$lang].dateField}</label><input id="date2" name="date" type="date" required value={dateMax} min={dateMin} max={dateMax} /></div>
 				<div class="form-group"><label for="amount">{t[$lang].amountField}</label><input id="amount" name="amount" type="number" step="0.01" min="1" required /></div>
 				<div class="form-group"><label for="notes2">{t[$lang].notesField}</label><textarea id="notes2" name="notes" rows="2"></textarea></div>
 				<button type="submit" class="btn btn-accent" style="width:100%;">{t[$lang].logDonationSubmit}</button>

@@ -28,15 +28,11 @@
 			</div>
 		{:else}
 			<div class="login-options">
-				<a href="/login?role=volunteer" class="btn btn-primary login-card">
-					<span class="login-icon"></span>
-					<span class="login-label">{t[$lang].volunteerLogin}</span>
-				</a>
-				<a href="/login?role=organizer" class="btn btn-accent login-card">
-					<span class="login-icon"></span>
-					<span class="login-label">{t[$lang].organizerLogin}</span>
+				<a href="/login" class="btn btn-primary login-card">
+					<span class="login-label">{t[$lang].login}</span>
 				</a>
 			</div>
+
 			<p class="register-link">{t[$lang].newVolunteer} <a href="/register">{t[$lang].createAccount}</a></p>
 		{/if}
 	</div>
@@ -52,7 +48,6 @@
 	.login-options { display: flex; gap: 20px; justify-content: center; margin-bottom: 24px; flex-wrap: wrap; }
 	.login-card { display: flex; flex-direction: column; align-items: center; gap: 8px; padding: 24px 40px; border-radius: 12px; font-size: 1rem; text-decoration: none; transition: transform 0.2s; }
 	.login-card:hover { transform: translateY(-2px); text-decoration: none; }
-	.login-icon { font-size: 2rem; }
 	.login-label { font-weight: 600; }
 	.register-link { font-size: 0.9rem; opacity: 0.8; }
 	.register-link a { color: white; text-decoration: underline; }

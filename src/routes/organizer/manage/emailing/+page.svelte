@@ -9,8 +9,8 @@
 
   //Variables Declare
   const badEmails = $derived(data.badEmails); //Bad emails as [] strings
-  const allMails = data.allMails; //All emails as [] strings
-  const allNames = data.allNames; //All names as [] strings
+  const allMails = $derived(data.allMails); //All emails as [] strings
+  const allNames = $derived(data.allNames); //All names as [] strings
   const volunteers = $derived(data.volunteers);
   let selected = $state("message");
   let messageParams = $state({

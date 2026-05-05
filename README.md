@@ -12,8 +12,8 @@ Swim team volunteer hours tracker. Volunteers log hours/donations, organizers ma
 
 ```sh
 bun install
-bun run db:push
-bun run db:seed
+bun run db:generate
+bun run db:migrate
 bun run dev --open
 ```
 
