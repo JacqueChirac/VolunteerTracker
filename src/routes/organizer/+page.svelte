@@ -2,14 +2,18 @@
 <script lang="ts">
 	import { enhance } from '$app/forms';
 	import type { PageData, ActionData } from './$types';
+	import { today, daysFromNow } from '$lib/dateBounds';
+
 
 	type OrganizerPageData = PageData & { activityTypes: Array<{ name: string }> };
 	let { data, form }: { data: OrganizerPageData; form: ActionData } = $props();
 	let showAddEvent = $state(false);
 
-	const today = new Date().toISOString().split('T')[0];
-	let upcomingEvents = $derived(data.events.filter((e: typeof data.events[0]) => e.date >= today));
-	let pastEvents = $derived(data.events.filter((e: typeof data.events[0]) => e.date < today));
+	const dateMin = today();
+	const dateMax = daysFromNow(730); // ~2 years
+	//Datemin is just today
+	let upcomingEvents = $derived(data.events.filter((e: typeof data.events[0]) => e.date >= dateMin));
+	let pastEvents = $derived(data.events.filter((e: typeof data.events[0]) => e.date < dateMin));
 </script>
 
 <h1>Events Dashboard</h1>
@@ -46,7 +50,7 @@
 		<form method="POST" action="?/addEvent" use:enhance style="margin-top:12px;">
 			<div class="grid-2">
 				<div class="form-group"><label for="add_title">Title</label><input id="add_title" name="title" type="text" required /></div>
-				<div class="form-group"><label for="add_date">Date</label><input id="add_date" name="date" type="date" required /></div>
+				<div class="form-group"><label for="add_date">Date</label><input id="add_date" name="date" type="date" required min={dateMin} max={dateMax} /></div>
 				<div class="form-group"><label for="add_start">Start Time</label><input id="add_start" name="startTime" type="time" required /></div>
 				<div class="form-group"><label for="add_end">End Time</label><input id="add_end" name="endTime" type="time" /></div>
 				<div class="form-group"><label for="add_loc">Location</label><input id="add_loc" name="location" type="text" /></div>
