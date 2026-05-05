@@ -256,7 +256,7 @@
 				Manage outgoing communications and templates.
 			</p>
 			<a href="/organizer/manage/emailing" class="btn btn-accent" style="display:block;text-align:center;margin-bottom:12px;">Go to Emailing</a>
-			<a href="/organizer/manage/emailing/settings" class="btn btn-outline" style="display:block;text-align:center;">Email settings</a>
+			<a href="/organizer/manage/email_settings" class="btn btn-outline" style="display:block;text-align:center;">Email settings</a>
 		</div>
 	</div>
 </div>
