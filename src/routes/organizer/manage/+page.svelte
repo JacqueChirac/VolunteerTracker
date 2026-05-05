@@ -249,6 +249,15 @@
 				<button type="submit" class="btn btn-primary" style="width:100%;">Add Entry</button>
 			</form>
 		</div>
+
+		<h2 style="margin-top:32px;">Emailing</h2>
+		<div class="card" style="margin-top:12px;">
+			<p style="font-size:0.85rem;color:var(--text-light);margin-bottom:12px;">
+				Manage outgoing communications and templates.
+			</p>
+			<a href="/organizer/manage/emailing" class="btn btn-accent" style="display:block;text-align:center;margin-bottom:12px;">Go to Emailing</a>
+			<a href="/organizer/manage/emailing/settings" class="btn btn-outline" style="display:block;text-align:center;">Email settings</a>
+		</div>
 	</div>
 </div>
 
@@ -273,11 +282,12 @@
 			</div>
 		</div>
 
+		
+
 		<!-- export + archive -->
 		<div>
 			<h2>Export & Archive</h2>
 			<div class="card" style="margin-top:12px;">
-				<a href="/organizer/manage/emailing" class="btn btn-accent" style="display:block;text-align:center;margin-bottom:16px;">Manage Emailing</a>
 				<a href="/api/export" class="btn btn-primary" style="display:block;text-align:center;margin-bottom:16px;">Export All Data as CSV</a>
 				<hr style="border:none;border-top:1px solid var(--border);margin:16px 0;" />
 				<h3>Archive Season</h3>
