@@ -86,7 +86,6 @@ export const actions: Actions = {
     if (!title || !date || !startTime) {
       return fail(400, { error: "Title, date, and start time are required." });
     }
-    //Date constraints for events
     const min = today(),
       max = daysFromNow(730);
     if (date < min)
@@ -105,6 +104,36 @@ export const actions: Actions = {
       description: description || null,
       type: type || "other",
     });
+    return { success: true };
+  },
+
+  editEvent: async ({ request }) => {
+    const fd = await request.formData();
+    const id = Number(fd.get("id"));
+    const title = fd.get("title")?.toString().trim() ?? "";
+    const date = fd.get("date")?.toString() ?? "";
+    const startTime = fd.get("startTime")?.toString() ?? "";
+    const endTime = fd.get("endTime")?.toString() ?? "";
+    const location = fd.get("location")?.toString().trim() ?? "";
+    const description = fd.get("description")?.toString().trim() ?? "";
+    const type = fd.get("type")?.toString() ?? "other";
+
+    if (!id || !title || !date || !startTime) {
+      return fail(400, { error: "Missing required fields." });
+    }
+
+    await db
+      .update(events)
+      .set({
+        title,
+        date,
+        startTime,
+        endTime: endTime || null,
+        location: location || null,
+        description: description || null,
+        type: type || "other",
+      })
+      .where(eq(events.id, id));
 
     return { success: true };
   },

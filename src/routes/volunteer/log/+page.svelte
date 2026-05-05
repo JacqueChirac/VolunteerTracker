@@ -44,9 +44,29 @@
       >
     </div>
 
-		//Log events with date constraints
+    //Log events with date constraints
     {#if tab === "volunteering"}
       <form method="POST" action="?/volunteering" use:enhance>
+        <div class="form-group">
+          <label for="event">Event (optional)</label>
+          <select
+            id="event"
+            name="eventId"
+            onchange={(e) => {
+              const ev = data.myEvents.find(
+                (x) => x.id === Number(e.currentTarget.value),
+              );
+              if (ev)
+                (document.getElementById("date") as HTMLInputElement).value =
+                  ev.date;
+            }}
+          >
+            <option value="">— Other / general hours —</option>
+            {#each data.myEvents as ev}
+              <option value={ev.id}>{ev.date} — {ev.title}</option>
+            {/each}
+          </select>
+        </div>
         <div class="form-group">
           <label for="date">Date</label><input
             id="date"

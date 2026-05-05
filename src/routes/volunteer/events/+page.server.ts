@@ -4,6 +4,7 @@ import { db } from "$lib/server/db";
 import { events, eventSignups } from "$lib/server/db/schema";
 import { eq, asc } from "drizzle-orm";
 import { fail } from "@sveltejs/kit";
+import { contributions } from "$lib/server/db/schema";
 
 // Loads data such as what users signed up for what events and links when page laods
 export const load: PageServerLoad = async ({ locals }) => {
@@ -17,6 +18,17 @@ export const load: PageServerLoad = async ({ locals }) => {
 
   const allSignups = await db.select().from(eventSignups);
   const signupCounts: Record<number, number> = {};
+
+  const myContribs = await db
+    .select()
+    .from(contributions)
+    .where(eq(contributions.userId, locals.user!.id));
+  const hoursByEvent: Record<number, number> = {};
+  for (const c of myContribs) {
+    if (c.eventId)
+      hoursByEvent[c.eventId] =
+        (hoursByEvent[c.eventId] || 0) + parseFloat(c.hours ?? "0");
+  }
   for (const s of allSignups)
     signupCounts[s.eventId] = (signupCounts[s.eventId] || 0) + 1;
 
@@ -24,7 +36,8 @@ export const load: PageServerLoad = async ({ locals }) => {
     events: allEvents.map((e) => ({
       ...e,
       signedUp: signedUpEventIds.has(e.id),
-      signupCount: signupCounts[e.id] || 0,
+      signupCount: signupCounts[e.id] || 0,    
+      myHours: hoursByEvent[e.id] || 0  
     })),
   };
 };

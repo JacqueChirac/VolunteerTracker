@@ -66,6 +66,7 @@ export const eventSignups = pgTable('event_signups', {
 export const contributions = pgTable('contributions', {
 	id: serial('id').primaryKey(),
 	userId: integer('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
+	eventId: integer('event_id').references(() => events.id, { onDelete: 'set null' }), //FOr tying to events, optional
 	type: contributionTypeEnum('type').notNull(),
 	date: date('date').notNull(),
 	hours: decimal('hours', { precision: 6, scale: 2 }),
