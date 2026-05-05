@@ -252,6 +252,37 @@
 	</div>
 </div>
 
+<!-- mark volunteer as meeting requirements -->
+<div style="margin-top:32px;margin-bottom:32px;">
+	<h2>Mark Volunteer as Met</h2>
+	<p style="color:var(--text-light);font-size:0.9rem;margin-bottom:12px;">Adds enough hours so all of a volunteer's linked children meet their requirement.</p>
+	<div class="card" style="margin-top:12px;">
+		{#if form?.markMetSuccess}
+			<div style="background:#d4edda;padding:8px 12px;border-radius:6px;margin-bottom:12px;"><p style="color:#155724;font-size:0.9rem;">Volunteer marked as meeting requirements.</p></div>
+		{/if}
+		{#if form?.markMetError}<p class="error" style="margin-bottom:8px;">{form.markMetError}</p>{/if}
+		<form method="POST" action="?/markMet" use:enhance style="display:flex;gap:8px;align-items:end;flex-wrap:wrap;">
+			<div class="form-group" style="flex:1;min-width:200px;margin-bottom:0;">
+				<label for="markMetUser">Volunteer</label>
+				<select id="markMetUser" name="userId" required>
+					<option value="">-- Select volunteer --</option>
+					{#each data.volunteers as v}
+						<option value={v.id}>{v.firstName} {v.lastName}</option>
+					{/each}
+				</select>
+			</div>
+			<div class="form-group" style="min-width:160px;margin-bottom:0;">
+				<label for="markAs">Requirement</label>
+				<select id="markAs" name="markAs">
+					<option value="full_member">Full Member</option>
+					<option value="tryout">Tryout</option>
+				</select>
+			</div>
+			<button type="submit" class="btn btn-primary" onclick={(e) => { if (!confirm('This will add hours to meet the selected requirement. Continue?')) e.preventDefault(); }}>Mark as Met</button>
+		</form>
+	</div>
+</div>
+
 <div style="margin-top:32px;">
 	<div class="grid-2">
 		<!-- announcements -->
