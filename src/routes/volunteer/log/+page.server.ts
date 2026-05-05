@@ -41,12 +41,6 @@ export const load: PageServerLoad = async ({ locals }) => {
     donationRate: await getDonationRate(),
     myEvents,
   };
-
-  return {
-    activities,
-    contributions: userContributions,
-    donationRate: await getDonationRate(),
-  };
 };
 
 export const actions: Actions = {
@@ -62,6 +56,8 @@ export const actions: Actions = {
     const hoursNum = parseFloat(hours);
     if (isNaN(hoursNum) || hoursNum <= 0)
       return fail(400, { error: "Hours must be a positive number." });
+    if (hoursNum > 24)
+      return fail(400, { error: "Hours cannot exceed 24 per entry." });
 
     //Check if date is out of constraints
     const max = today(),

@@ -80,10 +80,6 @@
     width: 100%;
     max-width: 400px;
   }
-  h2 {
-    margin-bottom: 20px;
-    text-align: center;
-  }
   .links {
     margin-top: 16px;
     text-align: center;

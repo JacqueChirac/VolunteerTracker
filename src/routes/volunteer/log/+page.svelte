@@ -44,7 +44,7 @@
       >
     </div>
 
-    //Log events with date constraints
+    <!-- Log events with date constraints -->
     {#if tab === "volunteering"}
       <form method="POST" action="?/volunteering" use:enhance>
         <div class="form-group">
@@ -80,13 +80,13 @@
         </div>
         <div class="form-group">
           <label for="hours">Hours</label><input
-            id="date"
-            name="date"
-            type="date"
+            id="hours"
+            name="hours"
+            type="number"
+            step="0.5"
+            min="0.5"
+            max="24"
             required
-            value={dateMax}
-            min={dateMin}
-            max={dateMax}
           />
         </div>
         <div class="form-group">
@@ -113,7 +113,9 @@
             name="date"
             type="date"
             required
-            value={new Date().toISOString().split("T")[0]}
+            value={dateMax}
+            min={dateMin}
+            max={dateMax}
           />
         </div>
         <div class="form-group">

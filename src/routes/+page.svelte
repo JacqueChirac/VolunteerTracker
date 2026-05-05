@@ -87,9 +87,6 @@
     transform: translateY(-2px);
     text-decoration: none;
   }
-  .login-icon {
-    font-size: 2rem;
-  }
   .login-label {
     font-weight: 600;
   }
