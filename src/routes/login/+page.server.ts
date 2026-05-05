@@ -22,7 +22,7 @@ export const load: PageServerLoad = async ({ locals }) => {
 };
 
 export const actions: Actions = {
-  default: async ({ request, cookies }) => {
+  login: async ({ request, cookies }) => {
     const formData = await request.formData();
     const email = formData.get("email")?.toString().trim() ?? "";
     const password = formData.get("password")?.toString() ?? "";
