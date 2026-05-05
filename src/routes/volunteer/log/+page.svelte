@@ -2,13 +2,15 @@
 <script lang="ts">
 	import { enhance } from '$app/forms';
 	import type { PageData, ActionData } from './$types';
+	import { lang } from '$lib/stores/lang';
+	import { t } from '$lib/i18n';
 
 	let { data, form }: { data: PageData; form: ActionData } = $props();
 	let tab = $state<'volunteering' | 'donation'>('volunteering');
 </script>
 
-<h1>Log Hours</h1>
-<p style="color:var(--text-light);margin-bottom:24px;">Log your volunteer hours or donations.</p>
+<h1>{t[$lang].logHoursTitle}</h1>
+<p style="color:var(--text-light);margin-bottom:24px;">{t[$lang].logHoursSubtitle}</p>
 
 {#if form?.success}
 	<div class="card" style="background:#d4edda;border:1px solid #c3e6cb;margin-bottom:16px;"><p style="color:#155724;">{form.message}</p></div>
@@ -19,48 +21,48 @@
 	<!-- left: log form -->
 	<div class="card">
 		<div style="display:flex;gap:8px;margin-bottom:16px;">
-			<button class="btn {tab === 'volunteering' ? 'btn-primary' : 'btn-outline'}" style="flex:1;text-align:center;" onclick={() => tab = 'volunteering'}>Log Hours</button>
-			<button class="btn {tab === 'donation' ? 'btn-primary' : 'btn-outline'}" style="flex:1;text-align:center;" onclick={() => tab = 'donation'}>Log Donation</button>
+			<button class="btn {tab === 'volunteering' ? 'btn-primary' : 'btn-outline'}" style="flex:1;text-align:center;" onclick={() => tab = 'volunteering'}>{t[$lang].logHoursBtn}</button>
+			<button class="btn {tab === 'donation' ? 'btn-primary' : 'btn-outline'}" style="flex:1;text-align:center;" onclick={() => tab = 'donation'}>{t[$lang].logDonation}</button>
 		</div>
 
 		{#if tab === 'volunteering'}
 			<form method="POST" action="?/volunteering" use:enhance>
-				<div class="form-group"><label for="date">Date</label><input id="date" name="date" type="date" required value={new Date().toISOString().split('T')[0]} /></div>
-				<div class="form-group"><label for="hours">Hours</label><input id="hours" name="hours" type="number" step="0.5" min="0.5" required /></div>
-				<div class="form-group"><label for="notes">Notes (optional)</label><textarea id="notes" name="notes" rows="2"></textarea></div>
-				<button type="submit" class="btn btn-accent" style="width:100%;">Log Hours</button>
+				<div class="form-group"><label for="date">{t[$lang].dateField}</label><input id="date" name="date" type="date" required value={new Date().toISOString().split('T')[0]} /></div>
+				<div class="form-group"><label for="hours">{t[$lang].hoursField}</label><input id="hours" name="hours" type="number" step="0.5" min="0.5" required /></div>
+				<div class="form-group"><label for="notes">{t[$lang].notesField}</label><textarea id="notes" name="notes" rows="2"></textarea></div>
+				<button type="submit" class="btn btn-accent" style="width:100%;">{t[$lang].logHoursSubmit}</button>
 			</form>
 		{:else}
 			<form method="POST" action="?/donation" use:enhance>
-				<p style="font-size:0.85rem;color:var(--text-light);margin-bottom:12px;">Rate: ${data.donationRate} = 1 volunteer hour</p>
-				<div class="form-group"><label for="date2">Date</label><input id="date2" name="date" type="date" required value={new Date().toISOString().split('T')[0]} /></div>
-				<div class="form-group"><label for="amount">Amount ($)</label><input id="amount" name="amount" type="number" step="0.01" min="1" required /></div>
-				<div class="form-group"><label for="notes2">Notes (optional)</label><textarea id="notes2" name="notes" rows="2"></textarea></div>
-				<button type="submit" class="btn btn-accent" style="width:100%;">Log Donation</button>
+				<p style="font-size:0.85rem;color:var(--text-light);margin-bottom:12px;">{t[$lang].donationRate(data.donationRate)}</p>
+				<div class="form-group"><label for="date2">{t[$lang].dateField}</label><input id="date2" name="date" type="date" required value={new Date().toISOString().split('T')[0]} /></div>
+				<div class="form-group"><label for="amount">{t[$lang].amountField}</label><input id="amount" name="amount" type="number" step="0.01" min="1" required /></div>
+				<div class="form-group"><label for="notes2">{t[$lang].notesField}</label><textarea id="notes2" name="notes" rows="2"></textarea></div>
+				<button type="submit" class="btn btn-accent" style="width:100%;">{t[$lang].logDonationSubmit}</button>
 			</form>
 		{/if}
 	</div>
 
 	<!-- right: recent history -->
 	<div>
-		<h2>Recent Contributions</h2>
+		<h2>{t[$lang].recentContributions}</h2>
 		{#if data.contributions.length === 0}
-			<div class="card" style="margin-top:12px;"><p style="color:var(--text-light);">No contributions logged yet.</p></div>
+			<div class="card" style="margin-top:12px;"><p style="color:var(--text-light);">{t[$lang].noContributions}</p></div>
 		{:else}
 			<div class="table-wrap" style="margin-top:12px;">
 				<table>
-					<thead><tr><th>Date</th><th>Type</th><th>Hours</th><th>Notes</th><th></th></tr></thead>
+					<thead><tr><th>{t[$lang].dateCol}</th><th>{t[$lang].typeCol}</th><th>{t[$lang].hoursCol}</th><th>{t[$lang].notesCol}</th><th></th></tr></thead>
 					<tbody>
 						{#each data.contributions as c (c.id)}
 							<tr>
 								<td>{c.date}</td>
-								<td>{c.type === 'donation' ? `$${c.amount}` : 'Vol'}</td>
+								<td>{c.type === 'donation' ? `$${c.amount}` : t[$lang].vol}</td>
 								<td>{c.hours}h</td>
 								<td style="max-width:120px;overflow:hidden;text-overflow:ellipsis;">{c.notes ?? '-'}</td>
 								<td>
 									<form method="POST" action="?/deleteContribution" use:enhance style="display:inline;">
 										<input type="hidden" name="id" value={c.id} />
-										<button type="submit" class="btn btn-danger" style="padding:2px 8px;font-size:0.75rem;" onclick={(e) => { if (!confirm('Delete?')) e.preventDefault(); }}>Delete</button>
+										<button type="submit" class="btn btn-danger" style="padding:2px 8px;font-size:0.75rem;" onclick={(e) => { if (!confirm(t[$lang].deleteConfirm)) e.preventDefault(); }}>{t[$lang].delete}</button>
 									</form>
 								</td>
 							</tr>

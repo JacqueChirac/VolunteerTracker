@@ -1,3 +1,8 @@
 <!-- shown when the user has no internet connection (if we add PWA/service worker later) -->
-<h1>Offline</h1>
-<p>You're offline. Reconnect to continue.</p>
+<script lang="ts">
+	import { lang } from '$lib/stores/lang';
+	import { t } from '$lib/i18n';
+</script>
+
+<h1>{t[$lang].offline}</h1>
+<p>{t[$lang].offlineMsg}</p>

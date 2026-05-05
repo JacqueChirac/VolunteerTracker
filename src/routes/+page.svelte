@@ -1,44 +1,50 @@
 <!-- landing page — shows login buttons or a dashboard link -->
 <script lang="ts">
 	import type { PageData } from './$types';
+	import { lang } from '$lib/stores/lang';
+	import { t } from '$lib/i18n';
+
 	let { data }: { data: PageData } = $props();
 </script>
 
 <div class="landing">
 	<div class="landing-content">
+		<button onclick={() => lang.update(l => l === 'en' ? 'fr' : 'en')} class="lang-btn">
+			{$lang === 'en' ? 'FR' : 'EN'}
+		</button>
 		<img src="/CPWD.png" alt="CPWD Swim Team" class="team-logo" />
-		<h1>Volunteer Tracker</h1>
-		<p>Track volunteer hours, donations, and events for your organization.</p>
-		<p class="subtitle">Click the appropriate login to get started.</p>
+		<h1>{t[$lang].appTitle}</h1>
+		<p>{t[$lang].appSubtitle}</p>
+		<p class="subtitle">{t[$lang].appCta}</p>
 
 		{#if data.user}
 			<div class="logged-in">
-				<p>Welcome back, {data.user.firstName}!</p>
+				<p>{t[$lang].welcomeBack(data.user.firstName)}</p>
 				{#if data.user.role === 'volunteer'}
-					<a href="/volunteer" class="btn btn-primary">Go to Dashboard</a>
+					<a href="/volunteer" class="btn btn-primary">{t[$lang].goToDashboard}</a>
 				{:else}
-					<a href="/organizer" class="btn btn-primary">Go to Dashboard</a>
+					<a href="/organizer" class="btn btn-primary">{t[$lang].goToDashboard}</a>
 				{/if}
 			</div>
 		{:else}
 			<div class="login-options">
 				<a href="/login?role=volunteer" class="btn btn-primary login-card">
 					<span class="login-icon"></span>
-					<span class="login-label">Volunteer Login</span>
+					<span class="login-label">{t[$lang].volunteerLogin}</span>
 				</a>
 				<a href="/login?role=organizer" class="btn btn-accent login-card">
 					<span class="login-icon"></span>
-					<span class="login-label">Organizer Login</span>
+					<span class="login-label">{t[$lang].organizerLogin}</span>
 				</a>
 			</div>
-			<p class="register-link">New volunteer? <a href="/register">Create an account</a></p>
+			<p class="register-link">{t[$lang].newVolunteer} <a href="/register">{t[$lang].createAccount}</a></p>
 		{/if}
 	</div>
 </div>
 
 <style>
 	.landing { min-height: 100vh; display: flex; align-items: center; justify-content: center; background: linear-gradient(135deg, #1a5276 0%, #2980b9 100%); color: white; text-align: center; padding: 20px; }
-	.landing-content { max-width: 520px; }
+	.landing-content { max-width: 520px; position: relative; }
 	.team-logo { width: 200px; margin-bottom: 20px; }
 	h1 { font-size: 2.2rem; margin-bottom: 12px; }
 	p { font-size: 1.1rem; opacity: 0.9; }
@@ -53,4 +59,21 @@
 	.logged-in { margin-top: 24px; }
 	.logged-in p { margin-bottom: 16px; font-size: 1.2rem; }
 	.logged-in .btn { background: white; color: #1a5276; }
+	.lang-btn {
+		position: absolute;
+		top: 0;
+		right: 0;
+		background: rgba(255,255,255,0.2);
+		color: white;
+		border: 1px solid rgba(255,255,255,0.4);
+		border-radius: 6px;
+		padding: 4px 10px;
+		font-size: 0.85rem;
+		font-weight: 600;
+		cursor: pointer;
+		box-shadow: none;
+		min-height: auto;
+		transition: background 0.2s;
+	}
+	.lang-btn:hover { background: rgba(255,255,255,0.35); transform: none; box-shadow: none; }
 </style>
