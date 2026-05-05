@@ -4,6 +4,8 @@
   import type { PageData, ActionData } from "./$types";
 	// For swim team level dropdown when creating child
   import { swimLevels } from "$lib/swimLevels";
+  import { lang } from '$lib/stores/lang';
+  import { t } from '$lib/i18n';
 
   let { data, form }: { data: PageData; form: ActionData } = $props();
   let showAddChild = $state(false);
@@ -11,14 +13,14 @@
   let showLevelDetails = $state(false);
 </script>
 
-<h1>My Account</h1>
+<h1>{t[$lang].myAccount}</h1>
 <p style="color:var(--text-light);margin-bottom:24px;">
-  Manage your children and account settings.
+  {t[$lang].myAccountSubtitle}
 </p>
 
 <!-- Display conversion rate between money and hours  -->
 <p style="font-size: 48px; color:var(--text-light);margin-bottom:48px;">
-  1 hour = ${data.donationRate}
+  {t[$lang].conversionRate(data.donationRate)}
 </p>
 <div class="grid-2">
   <!-- left column: children -->
@@ -27,7 +29,7 @@
       style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;flex-wrap:wrap;gap:8px;"
     >
       <!-- Handles button click besides "My children" -->
-      <h2>My Children</h2>
+      <h2>{t[$lang].myChildren}</h2>
       <div style="display:flex;gap:6px;">
         <button
           class="btn btn-accent"
@@ -38,7 +40,7 @@
           }}
           // If user press on showLinkCHild display cancel other display link existing, same below
         >
-          {showLinkChild ? "Cancel" : "Link Existing"}
+          {showLinkChild ? t[$lang].cancel : t[$lang].linkExisting}
         </button>
         <button
           class="btn btn-primary"
@@ -48,7 +50,7 @@
             showLinkChild = false;
           }}
         >
-          {showAddChild ? "Cancel" : "+ New Child"}
+          {showAddChild ? t[$lang].cancel : t[$lang].newChild}
         </button>
       </div>
     </div>
@@ -58,7 +60,7 @@
         class="card"
         style="background:#d4edda;border:1px solid #c3e6cb;margin-bottom:12px;"
       >
-        <p style="color:#155724;">Child added successfully.</p>
+        <p style="color:#155724;">{t[$lang].childAddedSuccess}</p>
       </div>
     {/if}
 		<!-- If unlinkSuccess in server.ts is true then display "child unlinked" -->
@@ -67,7 +69,7 @@
         class="card"
         style="background:#d4edda;border:1px solid #c3e6cb;margin-bottom:12px;"
       >
-        <p style="color:#155724;">Child unlinked.</p>
+        <p style="color:#155724;">{t[$lang].childUnlinked}</p>
       </div>
     {/if}
     {#if form?.linkSuccess}
@@ -75,7 +77,7 @@
         class="card"
         style="background:#d4edda;border:1px solid #c3e6cb;margin-bottom:12px;"
       >
-        <p style="color:#155724;">Child linked.</p>
+        <p style="color:#155724;">{t[$lang].childLinked}</p>
       </div>
     {/if}
     {#if form?.error}
@@ -85,35 +87,35 @@
     <!-- link existing child form -->
     {#if showLinkChild}
       <div class="card" style="margin-bottom:16px;">
-        <h3>Link an Existing Child</h3>
+        <h3>{t[$lang].linkExistingChild}</h3>
         <p
           style="font-size:0.85rem;color:var(--text-light);margin-top:4px;margin-bottom:12px;"
         >
-          If another volunteer/guardian/relatives already added your child, select them here.
+          {t[$lang].linkExistingChildDesc}
         </p>
         {#if data.allChildren.length === 0}
           <p style="color:var(--text-light);">
-            No unlinked children available.
+            {t[$lang].noUnlinkedChildren}
           </p>
         {:else}
           <form method="POST" action="?/linkChild" use:enhance>
             <div class="form-group">
-              <label for="childId">Select Child</label>
+              <label for="childId">{t[$lang].selectChild}</label>
               <select id="childId" name="childId" required>
-                <option value="">-- Select --</option>
+                <option value="">{t[$lang].selectChildOption}</option>
                 {#each data.allChildren as child}
                   <option value={child.id}
                     >{child.firstName}
                     {child.lastName}{child.level ? ` (${child.level})` : ""} — {child.status ===
                     "tryout"
-                      ? "Tryout"
-                      : "Full Member"}</option
+                      ? t[$lang].tryoutStatus
+                      : t[$lang].fullMemberStatus}</option
                   >
                 {/each}
               </select>
             </div>
             <button type="submit" class="btn btn-accent" style="width:100%;"
-              >Link Child</button
+              >{t[$lang].linkChildBtn}</button
             >
           </form>
         {/if}
@@ -123,7 +125,7 @@
     <!-- add new child form -->
     {#if showAddChild}
       <div class="card" style="margin-bottom:16px;">
-        <h3>Add a New Child</h3>
+        <h3>{t[$lang].addNewChild}</h3>
         <form
           method="POST"
           action="?/addChild"
@@ -131,7 +133,7 @@
           style="margin-top:12px;"
         >
           <div class="form-group">
-            <label for="firstName">First Name</label><input
+            <label for="firstName">{t[$lang].firstNameField}</label><input
               id="firstName"
               name="firstName"
               type="text"
@@ -139,7 +141,7 @@
             />
           </div>
           <div class="form-group">
-            <label for="lastName">Last Name</label><input
+            <label for="lastName">{t[$lang].lastNameField}</label><input
               id="lastName"
               name="lastName"
               type="text"
@@ -147,9 +149,9 @@
             />
           </div>
           <div class="form-group">
-            <label for="level">Level</label>
+            <label for="level">{t[$lang].levelField}</label>
             <select id="level" name="level">
-              <option value="">-- Select Level --</option>
+              <option value="">{t[$lang].selectLevelOption}</option>
               {#each swimLevels as lvl}
                 <option value={lvl.value}>{lvl.name}</option>
               {/each}
@@ -159,7 +161,7 @@
               style="background:none;border:none;color:var(--primary);cursor:pointer;font-size:0.8rem;padding:4px 0;text-align:left;"
               onclick={() => (showLevelDetails = !showLevelDetails)}
             >
-              {showLevelDetails ? "Hide Details" : "More Details"}
+              {showLevelDetails ? t[$lang].hideDetails : t[$lang].moreDetails}
             </button>
             {#if showLevelDetails}
               <div
@@ -175,14 +177,14 @@
             {/if}
           </div>
           <div class="form-group">
-            <label for="status">Status</label>
+            <label for="status">{t[$lang].statusField}</label>
             <select id="status" name="status"
-              ><option value="full_member">Full Member (30 hrs/year)</option
-              ><option value="tryout">Tryout (4 hrs)</option></select
+              ><option value="full_member">{t[$lang].fullMemberHours}</option
+              ><option value="tryout">{t[$lang].tryoutHours}</option></select
             >
           </div>
           <button type="submit" class="btn btn-primary" style="width:100%;"
-            >Add Child</button
+            >{t[$lang].addChildSubmit}</button
           >
         </form>
       </div>
@@ -191,7 +193,7 @@
     <!-- linked children with progress -->
     {#if data.children.length === 0}
       <div class="card">
-        <p style="color:var(--text-light);">No children linked yet.</p>
+        <p style="color:var(--text-light);">{t[$lang].noChildrenLinkedYet}</p>
       </div>
     {/if}
     {#each data.children as child (child.id)}
@@ -203,8 +205,8 @@
           <div style="display:flex;align-items:center;gap:8px;">
             <span style="font-size:0.85rem;color:var(--text-light);"
               >{child.status === "tryout"
-                ? "Tryout"
-                : "Full Member"}{#if child.level}
+                ? t[$lang].tryoutStatus
+                : t[$lang].fullMemberStatus}{#if child.level}
                 &middot; {child.level}{/if}</span
             >
             <form
@@ -221,9 +223,9 @@
                 class="btn btn-danger"
                 style="padding:2px 8px;font-size:0.75rem;"
                 onclick={(e) => {
-                  if (!confirm(`Unlink ${child.firstName}?`))
+                  if (!confirm(t[$lang].unlinkConfirm(child.firstName)))
                     e.preventDefault();
-                }}>Unlink</button
+                }}>{t[$lang].unlink}</button
               >
             </form>
           </div>
@@ -242,9 +244,7 @@
           </div>
         </div>
         <p style="font-size:0.85rem;color:var(--text-light);margin-top:4px;">
-          {#if child.totalHours >= child.requiredHours}Goal reached!{:else}{(
-              child.requiredHours - child.totalHours
-            ).toFixed(1)} hours remaining{/if}
+          {#if child.totalHours >= child.requiredHours}{t[$lang].goalReached}{:else}{t[$lang].hoursRemaining((child.requiredHours - child.totalHours).toFixed(1))}{/if}
         </p>
       </div>
     {/each}
@@ -252,13 +252,13 @@
 
   <!-- right column: change password -->
   <div>
-    <h2>Change Password</h2>
+    <h2>{t[$lang].changePassword}</h2>
     <div class="card" style="margin-top:12px;">
       {#if form?.passwordSuccess}
         <div
           style="background:#d4edda;border:1px solid #c3e6cb;padding:12px;border-radius:8px;margin-bottom:12px;"
         >
-          <p style="color:#155724;">Password changed.</p>
+          <p style="color:#155724;">{t[$lang].passwordChanged}</p>
         </div>
       {/if}
       {#if form?.passwordError}<p class="error" style="margin-bottom:12px;">
@@ -266,7 +266,7 @@
         </p>{/if}
       <form method="POST" action="?/changePassword" use:enhance>
         <div class="form-group">
-          <label for="currentPassword">Current Password</label><input
+          <label for="currentPassword">{t[$lang].currentPassword}</label><input
             id="currentPassword"
             name="currentPassword"
             type="password"
@@ -274,7 +274,7 @@
           />
         </div>
         <div class="form-group">
-          <label for="newPassword">New Password</label><input
+          <label for="newPassword">{t[$lang].newPassword}</label><input
             id="newPassword"
             name="newPassword"
             type="password"
@@ -282,7 +282,7 @@
           />
         </div>
         <button type="submit" class="btn btn-primary" style="width:100%;"
-          >Change Password</button
+          >{t[$lang].changePasswordBtn}</button
         >
       </form>
     </div>

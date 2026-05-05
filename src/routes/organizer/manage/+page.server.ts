@@ -4,7 +4,7 @@ import { db } from '$lib/server/db';
 import { activityTypes, announcements, users, contributions, children, childVolunteerLinks, seasonArchives } from '$lib/server/db/schema';
 import { eq, desc, asc } from 'drizzle-orm';
 import { fail } from '@sveltejs/kit';
-import { getAllSettings, updateSetting, getDonationRate } from '$lib/server/settings';
+import { getAllSettings, updateSetting, getDonationRate, getHoursRequired } from '$lib/server/settings';
 import { createUser } from '$lib/server/auth';
 
 export const load: PageServerLoad = async () => {
@@ -178,6 +178,36 @@ export const actions: Actions = {
 		if (!childId) return fail(400, { childError: 'Invalid child.' });
 		await db.delete(children).where(eq(children.id, childId));
 		return { childSuccess: 'Child removed.' };
+	},
+
+	markMet: async ({ request }) => {
+		const fd = await request.formData();
+		const userId = Number(fd.get('userId'));
+		if (!userId) return fail(400, { markMetError: 'Invalid volunteer.' });
+
+		const markAs = fd.get('markAs')?.toString() as 'full_member' | 'tryout' ?? 'full_member';
+
+		const allContributions = await db.select().from(contributions).where(eq(contributions.userId, userId));
+		const currentHours = allContributions.reduce((sum, c) => sum + parseFloat(c.hours ?? '0'), 0);
+
+		const maxRequired = await getHoursRequired(markAs);
+
+		const remaining = maxRequired - currentHours;
+		if (remaining <= 0) return fail(400, { markMetError: 'This volunteer already meets requirements.' });
+
+		const today = new Date().toISOString().split('T')[0];
+		await db.insert(contributions).values({
+			userId,
+			eventId: null,
+			type: 'volunteering' as const,
+			date: today,
+			hours: remaining.toFixed(2),
+			amount: null,
+			activityId: null,
+			notes: 'Manually marked as met by organizer'
+		});
+
+		return { markMetSuccess: true };
 	},
 
 	archiveSeason: async ({ request }) => {

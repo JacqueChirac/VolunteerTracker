@@ -2,6 +2,9 @@
   //Imports
   import emailjs from "@emailjs/browser";
   import { singlestoreDatabase } from "drizzle-orm/singlestore-core";
+  import { lang } from '$lib/stores/lang';
+  import { t } from '$lib/i18n';
+
   let { data } = $props(); //Imported data from server.ts
 
   //Variables Declare
@@ -217,20 +220,20 @@
       class:active={selected === "message"}
       onclick={() => select("message")}
     >
-      Message
+      {t[$lang].message}
     </button>
     <button
       class="toggle-option"
       class:active={selected === "reminder"}
       onclick={() => select("reminder")}
     >
-      Reminder
+      {t[$lang].reminder}
     </button>
   </div>
 </div>
 
 <div>
-  <label for="recipient">Recipient</label>
+  <label for="recipient">{t[$lang].recipient}</label>
 
   <!-- Autofill Suggestions -->
   <div class="recipient-wrapper">
@@ -255,29 +258,29 @@
   </div>
 
   <div class="group-select">
-    <h4>Quick Select</h4>
+    <h4>{t[$lang].quickSelect}</h4>
 
     <div class="group-buttons">
       <button class="group-btn" onclick={() => selectGroup(1)}
-        >All Volunteers</button
+        >{t[$lang].allVolunteers}</button
       >
       <button class="group-btn" onclick={() => selectGroup(2)}
-        >Under Criteria</button
+        >{t[$lang].underCriteria}</button
       >
-      <button class="group-btn">Custom Group</button>
-      <button class="group-btn" onclick={() => selectGroup(0)}>Clear All</button>
+      <button class="group-btn" onclick={() => selectGroup(3)}>{t[$lang].customGroup}</button>
+      <button class="group-btn" onclick={() => selectGroup(0)}>{t[$lang].clearAll}</button>
     </div>
   </div>
 
   {#if selected === "message"}
     <textarea
       rows="8"
-      placeholder="Type your message here..."
+      placeholder={t[$lang].typeMessageHere}
       bind:value={messageParams.message}
       style="width: 100%; padding: 0.5rem; font-size: 1rem; resize: vertical;"
     ></textarea>
   {/if}
-  <button onclick={() => SendEmail(messageParams)}>Send Email</button>
+  <button onclick={() => SendEmail(messageParams)}>{t[$lang].sendEmail}</button>
 </div>
 
 <pre> {focus}, {wordSelected}  </pre>
@@ -291,7 +294,7 @@
 {#snippet promptList(storedPrompts: number[])}
   <div class="dropdown">
     <div class="dropdown-header">
-      <span>Suggestions</span>
+      <span>{t[$lang].suggestions}</span>
       <button
         type="button"
         class="close-btn"

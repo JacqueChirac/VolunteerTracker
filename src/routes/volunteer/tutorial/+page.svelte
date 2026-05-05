@@ -1,113 +1,106 @@
 <!-- tutorial page — step-by-step guide for new volunteers -->
-<!-- no script needed, this is pure static content -->
+<script lang="ts">
+	import { lang } from '$lib/stores/lang';
+	import { t } from '$lib/i18n';
+</script>
 
-<h1>How to Use This Site</h1>
+<h1>{t[$lang].tutorialTitle}</h1>
 <p style="color:var(--text-light);margin-bottom:24px;">
-	A step-by-step guide to getting started as a volunteer.
+	{t[$lang].tutorialSubtitle}
 </p>
 
 <div style="display:flex;flex-direction:column;gap:20px;">
 	<div class="card">
-		<h2>Step 1: Add Your Children</h2>
+		<h2>{t[$lang].step1Title}</h2>
 		<p>
-			Go to <a href="/volunteer/account">My Account</a> and click
-			<strong>"+ New Child"</strong>. Fill in your child's name, level, and select their status:
+			{t[$lang].step1Body} <a href="/volunteer/account">{t[$lang].step1MyAccount}</a> {t[$lang].step1And}
+			<strong>{t[$lang].step1NewChild}</strong>{t[$lang].step1Desc}
 		</p>
 		<ul style="margin-top:8px;margin-left:20px;">
-			<li><strong>Full Member</strong> -- requires 30 volunteer hours per year</li>
-			<li><strong>Tryout</strong> -- requires 4 volunteer hours</li>
+			<li><strong>{t[$lang].step1FullMember}</strong> {t[$lang].step1FullMemberDesc}</li>
+			<li><strong>{t[$lang].step1Tryout}</strong> {t[$lang].step1TryoutDesc}</li>
 		</ul>
 		<p style="margin-top:8px;">
-			If your child has multiple guardians who volunteer, each guardian should create their own
-			account and add the same child. All hours from every linked guardian count toward the
-			child's goal.
+			{t[$lang].step1MultiGuardian}
 		</p>
 	</div>
 
 	<div class="card">
-		<h2>Step 2: Sign Up for Events</h2>
+		<h2>{t[$lang].step2Title}</h2>
 		<p>
-			Visit the <a href="/volunteer/events">Events</a> page to see upcoming events that need
-			volunteers. Click <strong>"Sign Up"</strong> on any event you can attend.
+			{t[$lang].step2Body} <a href="/volunteer/events">{t[$lang].step2Events}</a> {t[$lang].step2Desc} <strong>{t[$lang].step2SignUp}</strong> {t[$lang].step2Desc2}
 		</p>
-		<p style="margin-top:8px;">You can cancel your sign-up at any time if your plans change.</p>
+		<p style="margin-top:8px;">{t[$lang].step2Cancel}</p>
 	</div>
 
 	<div class="card">
-		<h2>Step 3: Log Your Volunteer Hours</h2>
+		<h2>{t[$lang].step3Title}</h2>
 		<p>
-			After you volunteer, go to <a href="/volunteer/log">Log Contributions</a> and select
-			<strong>"Log Volunteering"</strong>.
+			{t[$lang].step3Body} <a href="/volunteer/log">{t[$lang].step3Log}</a> {t[$lang].step3And}
+			<strong>{t[$lang].step3LogVol}</strong>.
 		</p>
 		<ul style="margin-top:8px;margin-left:20px;">
-			<li>Pick the date you volunteered</li>
-			<li>Enter how many hours you worked</li>
-			<li>Select the activity type (e.g. Cleanup, Sort Supplies, Timing)</li>
-			<li>Add any notes if needed</li>
+			<li>{t[$lang].step3List1}</li>
+			<li>{t[$lang].step3List2}</li>
+			<li>{t[$lang].step3List3}</li>
+			<li>{t[$lang].step3List4}</li>
 		</ul>
 		<p style="margin-top:8px;">
-			Your hours are recorded immediately -- no approval needed. We trust our volunteers!
+			{t[$lang].step3Trust}
 		</p>
 	</div>
 
 	<div class="card">
-		<h2>Step 4: Log Donations</h2>
+		<h2>{t[$lang].step4Title}</h2>
 		<p>
-			Monetary donations also count toward your volunteer hours. Go to
-			<a href="/volunteer/log">Log Contributions</a> and select <strong>"Log Donation"</strong>.
+			{t[$lang].step4Body} <a href="/volunteer/log">{t[$lang].step4Log}</a> {t[$lang].step4And} <strong>{t[$lang].step4LogDon}</strong>.
 		</p>
 		<p style="margin-top:8px;">
-			The conversion rate is shown on the page (e.g. $10 = 1 hour). Just enter the dollar amount
-			and the hours are calculated automatically.
+			{t[$lang].step4Rate}
 		</p>
 	</div>
 
 	<div class="card">
-		<h2>Step 5: Track Your Progress</h2>
+		<h2>{t[$lang].step5Title}</h2>
 		<p>
-			Go to <a href="/volunteer/account">My Account</a> to see each child's progress bar showing how
-			many hours have been completed out of the required total.
+			{t[$lang].step5Body} <a href="/volunteer/account">{t[$lang].step5Account}</a> {t[$lang].step5Desc}
 		</p>
 		<p style="margin-top:8px;">
-			Remember: if you have multiple children, your hours count for <strong>all</strong> of them.
-			5 hours logged = 5 hours for each child.
+			{t[$lang].step5Multi} <strong>{t[$lang].step5All}</strong> {t[$lang].step5MultiEnd}
 		</p>
 	</div>
 
 	<!-- FAQ section -->
 	<div class="card" style="background:var(--bg);border:2px solid var(--border);">
-		<h2>Frequently Asked Questions</h2>
+		<h2>{t[$lang].faqTitle}</h2>
 		<div style="margin-top:12px;">
-			<p><strong>How many hours do I need?</strong></p>
+			<p><strong>{t[$lang].faq1Q}</strong></p>
 			<p style="color:var(--text-light);">
-				Full members need 30 hours per year. Tryout members need 4 hours. These requirements are
-				set by the organizer and may change.
+				{t[$lang].faq1A}
 			</p>
 		</div>
 		<div style="margin-top:16px;">
-			<p><strong>Do donations count as hours?</strong></p>
+			<p><strong>{t[$lang].faq2Q}</strong></p>
 			<p style="color:var(--text-light);">
-				Yes! The current conversion rate is shown on the Log Contributions page.
+				{t[$lang].faq2A}
 			</p>
 		</div>
 		<div style="margin-top:16px;">
-			<p><strong>I share custody -- do both guardians' hours count?</strong></p>
+			<p><strong>{t[$lang].faq3Q}</strong></p>
 			<p style="color:var(--text-light);">
-				Yes. Each guardian creates their own account and adds the same child. All hours from
-				every linked guardian are added together for that child.
+				{t[$lang].faq3A}
 			</p>
 		</div>
 		<div style="margin-top:16px;">
-			<p><strong>I have multiple children -- do I need to volunteer separately for each?</strong></p>
+			<p><strong>{t[$lang].faq4Q}</strong></p>
 			<p style="color:var(--text-light);">
-				No. When you log hours, those hours count for every child linked to your account. 5 hours
-				logged = 5 hours for each of your children.
+				{t[$lang].faq4A}
 			</p>
 		</div>
 		<div style="margin-top:16px;">
-			<p><strong>Do I need approval for my hours?</strong></p>
+			<p><strong>{t[$lang].faq5Q}</strong></p>
 			<p style="color:var(--text-light);">
-				No. Hours are recorded immediately when you log them.
+				{t[$lang].faq5A}
 			</p>
 		</div>
 	</div>

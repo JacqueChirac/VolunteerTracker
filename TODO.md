@@ -15,4 +15,5 @@ Zilin: 14. Let organizers make events without specific dates (just months, make 
 Raymond: 15. Make an organizer pages that has all kids/volunteers in it, exportable
 Zilin: 16. Archive events automatically at the end of the year (let organizers set years dateframe)
 Zilin: 17. backup data automatically every week or so
-Mary 18. Replace website icons with CPWD icon
+Mary 18. Replace website icons with CPWD icon  (Done)
+Mary 19. French/English Translator 
