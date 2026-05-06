@@ -3,7 +3,8 @@
 // stored in the site_settings table as key-value pairs
 
 import { db } from './db';
-import { siteSettings } from './db/schema';
+import { siteSettings, swimLevelSettings } from './db/schema';
+import { swimLevels as hardcodedLevels } from '$lib/swimLevels';
 import { eq } from 'drizzle-orm';
 
 // fallback values if nothing is in the database yet
@@ -62,4 +63,16 @@ export async function getHoursRequired(status: 'full_member' | 'tryout'): Promis
 // convenience: how many dollars = 1 volunteer hour?
 export async function getDonationRate(): Promise<number> {
 	return Number(await getSetting('donation_to_hour_rate'));
+}
+
+// get swim levels from DB, seeding from hardcoded list if empty
+export async function getSwimLevels() {
+	const rows = await db.select().from(swimLevelSettings).orderBy(swimLevelSettings.displayOrder);
+	if (rows.length > 0) return rows;
+	// seed from hardcoded list on first use
+	for (let i = 0; i < hardcodedLevels.length; i++) {
+		const lvl = hardcodedLevels[i];
+		await db.insert(swimLevelSettings).values({ value: lvl.value, name: lvl.name, description: lvl.description, displayOrder: i }).onConflictDoNothing();
+	}
+	return await db.select().from(swimLevelSettings).orderBy(swimLevelSettings.displayOrder);
 }

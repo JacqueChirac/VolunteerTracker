@@ -92,6 +92,16 @@ export const announcements = pgTable('announcements', {
 	createdAt: timestamp('created_at').defaultNow().notNull()
 });
 
+// swim team levels — editable by organizers
+export const swimLevelSettings = pgTable('swim_level_settings', {
+	id: serial('id').primaryKey(),
+	value: text('value').notNull().unique(),
+	name: text('name').notNull(),
+	description: text('description'),
+	displayOrder: integer('display_order').notNull().default(0),
+	active: boolean('active').notNull().default(true)
+});
+
 // key-value settings the organizer can tweak (hours required, donation rate, etc.)
 export const siteSettings = pgTable('site_settings', {
 	key: text('key').primaryKey(),

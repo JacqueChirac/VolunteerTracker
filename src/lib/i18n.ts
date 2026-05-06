@@ -261,7 +261,7 @@ export const t = {
 		donationRate: (rate: number) => `Rate: $${rate} = 1 volunteer hour`,
 		amountField: 'Amount ($)',
 		logDonationSubmit: 'Log Donation',
-		recentContributions: 'Recent Contributions',
+		recentContributions: 'Your Contributions',
 		noContributions: 'No contributions logged yet.',
 		typeCol: 'Type',
 		vol: 'Vol',

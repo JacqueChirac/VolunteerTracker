@@ -1,10 +1,10 @@
 // manage page server — settings, activity types, announcements, manual entries, archives
 import type { PageServerLoad, Actions } from './$types';
 import { db } from '$lib/server/db';
-import { activityTypes, announcements, users, contributions, children, childVolunteerLinks, seasonArchives } from '$lib/server/db/schema';
+import { activityTypes, announcements, users, contributions, children, childVolunteerLinks, seasonArchives, swimLevelSettings } from '$lib/server/db/schema';
 import { eq, desc, asc } from 'drizzle-orm';
 import { fail } from '@sveltejs/kit';
-import { getAllSettings, updateSetting, getDonationRate, getHoursRequired } from '$lib/server/settings';
+import { getAllSettings, updateSetting, getDonationRate, getHoursRequired, getSwimLevels } from '$lib/server/settings';
 import { createUser } from '$lib/server/auth';
 
 export const load: PageServerLoad = async () => {
@@ -24,7 +24,8 @@ export const load: PageServerLoad = async () => {
 	}
 	const childrenWithLinks = allChildren.map((c) => ({ ...c, volunteerIds: linksByChild[c.id] ?? [] }));
 
-	return { activities, announcements: news, volunteers, children: childrenWithLinks, archives, settings, donationRate };
+	const swimLevels = await getSwimLevels();
+	return { activities, announcements: news, volunteers, children: childrenWithLinks, archives, settings, donationRate, swimLevels };
 };
 
 export const actions: Actions = {
@@ -208,6 +209,35 @@ export const actions: Actions = {
 		});
 
 		return { markMetSuccess: true };
+	},
+
+	addSwimLevel: async ({ request }) => {
+		const fd = await request.formData();
+		const value = fd.get('value')?.toString().trim() ?? '';
+		const name = fd.get('name')?.toString().trim() ?? '';
+		const description = fd.get('description')?.toString().trim() ?? '';
+		if (!value || !name) return fail(400, { swimLevelError: 'Value and name are required.' });
+		const existing = await db.select().from(swimLevelSettings);
+		await db.insert(swimLevelSettings).values({ value, name, description: description || null, displayOrder: existing.length });
+		return { swimLevelSuccess: true };
+	},
+
+	editSwimLevel: async ({ request }) => {
+		const fd = await request.formData();
+		const id = Number(fd.get('id'));
+		const name = fd.get('name')?.toString().trim() ?? '';
+		const description = fd.get('description')?.toString().trim() ?? '';
+		if (!id || !name) return fail(400, { swimLevelError: 'Name is required.' });
+		await db.update(swimLevelSettings).set({ name, description: description || null }).where(eq(swimLevelSettings.id, id));
+		return { swimLevelSuccess: true };
+	},
+
+	deleteSwimLevel: async ({ request }) => {
+		const fd = await request.formData();
+		const id = Number(fd.get('id'));
+		if (!id) return fail(400, { swimLevelError: 'Invalid level.' });
+		await db.delete(swimLevelSettings).where(eq(swimLevelSettings.id, id));
+		return { swimLevelSuccess: true };
 	},
 
 	archiveSeason: async ({ request }) => {
