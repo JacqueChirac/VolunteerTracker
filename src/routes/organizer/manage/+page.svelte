@@ -32,6 +32,14 @@
 <!-- settings -->
 <div style="margin-bottom:32px;">
 	<h2>{t[$lang].settings}</h2>
+
+	{#if data.autoArchived}
+		<div style="background:#d4edda;border:1px solid #c3e6cb;border-radius:8px;padding:12px 16px;margin-top:12px;margin-bottom:12px;">
+			<p style="color:#155724;font-weight:600;margin-bottom:2px;">Season auto-archived</p>
+			<p style="color:#155724;font-size:0.88rem;">The season end date passed, so contributions were archived and the season dates have been advanced by one year.</p>
+		</div>
+	{/if}
+
 	<div class="card" style="margin-top:12px;">
 		{#if form?.settingsSuccess}
 			<div style="background:#d4edda;padding:8px 12px;border-radius:6px;margin-bottom:12px;"><p style="color:#155724;font-size:0.9rem;">{t[$lang].settingsUpdated}</p></div>
@@ -45,6 +53,28 @@
 					</div>
 				{/each}
 				<div class="form-group"><button type="submit" class="btn btn-primary">{t[$lang].saveSettings}</button></div>
+			</div>
+		</form>
+	</div>
+
+	<div class="card" style="margin-top:12px;">
+		<h3 style="margin-bottom:4px;">Season Dates</h3>
+		<p style="font-size:0.85rem;color:var(--text-light);margin-bottom:12px;">
+			Set the season's date range. Contributions will be automatically archived when the end date passes, and the dates will advance by one year for the next cycle.
+		</p>
+		<form method="POST" action="?/updateSettings" use:enhance>
+			<div style="display:flex;gap:16px;flex-wrap:wrap;align-items:end;">
+				<div class="form-group" style="flex:1;min-width:180px;">
+					<label for="season_start">Season Start</label>
+					<input id="season_start" name="setting_season_start_date" type="date" value={data.seasonDates.start} />
+				</div>
+				<div class="form-group" style="flex:1;min-width:180px;">
+					<label for="season_end">Season End</label>
+					<input id="season_end" name="setting_season_end_date" type="date" value={data.seasonDates.end} />
+				</div>
+				<div class="form-group">
+					<button type="submit" class="btn btn-primary">Save Dates</button>
+				</div>
 			</div>
 		</form>
 	</div>
