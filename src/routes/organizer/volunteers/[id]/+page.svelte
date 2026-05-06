@@ -106,12 +106,45 @@
 {:else}
 	<div class="table-wrap">
 		<table>
-			<thead><tr><th>{t[$lang].dateCol}</th><th>{t[$lang].hoursCol}</th><th>{t[$lang].notesCol}</th></tr></thead>
+			<thead><tr><th>{t[$lang].dateCol}</th><th>{t[$lang].hoursCol}</th><th>{t[$lang].notesCol}</th><th>Status</th><th></th></tr></thead>
 			<tbody>
 				{#each data.contributions as c (c.id)}
-					<tr><td>{c.date}</td><td>{c.hours}h</td><td style="max-width:200px;overflow:hidden;text-overflow:ellipsis;">{c.notes ?? '-'}</td></tr>
+					<tr>
+						<td>{c.date}</td>
+						<td>{c.hours}h</td>
+						<td style="max-width:160px;overflow:hidden;text-overflow:ellipsis;">{c.notes ?? '-'}</td>
+						<td>
+							{#if c.status === 'pending'}
+								<span class="status-badge pending">Pending</span>
+							{:else}
+								<span class="status-badge approved">Approved</span>
+							{/if}
+						</td>
+						<td>
+							<form method="POST" action="?/toggleContributionApproval" use:enhance style="display:inline;">
+								<input type="hidden" name="id" value={c.id} />
+								<button type="submit" class="btn {c.status === 'pending' ? 'btn-accent' : 'btn-outline'}" style="padding:3px 10px;font-size:0.75rem;white-space:nowrap;">
+									{c.status === 'pending' ? 'Approve' : 'Revoke'}
+								</button>
+							</form>
+						</td>
+					</tr>
 				{/each}
 			</tbody>
 		</table>
 	</div>
 {/if}
+
+<style>
+	.status-badge {
+		display: inline-block;
+		padding: 2px 8px;
+		border-radius: 999px;
+		font-size: 0.72rem;
+		font-weight: 600;
+		text-transform: uppercase;
+		letter-spacing: 0.4px;
+	}
+	.status-badge.pending { background: #fff3cd; color: #856404; border: 1px solid #ffc107; }
+	.status-badge.approved { background: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+</style>

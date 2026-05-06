@@ -311,6 +311,14 @@
 			<a href="/organizer/manage/emailing" class="btn btn-accent" style="display:block;text-align:center;margin-bottom:12px;">Go to Emailing</a>
 			<a href="/organizer/manage/email_settings" class="btn btn-outline" style="display:block;text-align:center;">Email settings</a>
 		</div>
+
+		<h2 style="margin-top:32px;">Tutorial</h2>
+		<div class="card" style="margin-top:12px;">
+			<p style="font-size:0.85rem;color:var(--text-light);margin-bottom:12px;">
+				Edit the step-by-step guide shown to volunteers, including text, links, and FAQ.
+			</p>
+			<a href="/organizer/manage/tutorials" class="btn btn-accent" style="display:block;text-align:center;">Edit Tutorial</a>
+		</div>
 	</div>
 </div>
 

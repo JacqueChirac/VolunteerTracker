@@ -1,107 +1,48 @@
 <!-- tutorial page — step-by-step guide for new volunteers -->
 <script lang="ts">
-	import { lang } from '$lib/stores/lang';
-	import { t } from '$lib/i18n';
+	import type { PageData } from './$types';
+	let { data }: { data: PageData } = $props();
+
+	const steps = [1, 2, 3, 4, 5].map((n) => ({
+		title: data.tut[`tut_step${n}_title`],
+		body: data.tut[`tut_step${n}_body`],
+		linkText: data.tut[`tut_step${n}_link_text`],
+		linkUrl: data.tut[`tut_step${n}_link_url`],
+	}));
+
+	const faqs = [1, 2, 3, 4].map((n) => ({
+		q: data.tut[`tut_faq${n}_q`],
+		a: data.tut[`tut_faq${n}_a`],
+	}));
 </script>
 
-<h1>{t[$lang].tutorialTitle}</h1>
-<p style="color:var(--text-light);margin-bottom:24px;">
-	{t[$lang].tutorialSubtitle}
-</p>
+<h1>{data.tut.tut_title}</h1>
+<p style="color:var(--text-light);margin-bottom:24px;">{data.tut.tut_subtitle}</p>
 
 <div style="display:flex;flex-direction:column;gap:20px;">
-	<div class="card">
-		<h2>{t[$lang].step1Title}</h2>
-		<p>
-			{t[$lang].step1Body} <a href="/volunteer/account">{t[$lang].step1MyAccount}</a> {t[$lang].step1And}
-			<strong>{t[$lang].step1NewChild}</strong>{t[$lang].step1Desc}
-		</p>
-		<ul style="margin-top:8px;margin-left:20px;">
-			<li><strong>{t[$lang].step1FullMember}</strong> {t[$lang].step1FullMemberDesc}</li>
-			<li><strong>{t[$lang].step1Tryout}</strong> {t[$lang].step1TryoutDesc}</li>
-		</ul>
-		<p style="margin-top:8px;">
-			{t[$lang].step1MultiGuardian}
-		</p>
-	</div>
+	{#each steps as step, i}
+		<div class="card">
+			<h2>{step.title}</h2>
+			<p style="white-space:pre-wrap;line-height:1.6;">{step.body}</p>
+			{#if step.linkUrl}
+				<a href={step.linkUrl} class="btn btn-outline" style="display:inline-block;margin-top:12px;font-size:0.9rem;">
+					{step.linkText || 'Go'}
+				</a>
+			{/if}
+		</div>
+	{/each}
 
-	<div class="card">
-		<h2>{t[$lang].step2Title}</h2>
-		<p>
-			{t[$lang].step2Body} <a href="/volunteer/events">{t[$lang].step2Events}</a> {t[$lang].step2Desc} <strong>{t[$lang].step2SignUp}</strong> {t[$lang].step2Desc2}
-		</p>
-		<p style="margin-top:8px;">{t[$lang].step2Cancel}</p>
-	</div>
-
-	<div class="card">
-		<h2>{t[$lang].step3Title}</h2>
-		<p>
-			{t[$lang].step3Body} <a href="/volunteer/log">{t[$lang].step3Log}</a> {t[$lang].step3And}
-			<strong>{t[$lang].step3LogVol}</strong>.
-		</p>
-		<ul style="margin-top:8px;margin-left:20px;">
-			<li>{t[$lang].step3List1}</li>
-			<li>{t[$lang].step3List2}</li>
-			<li>{t[$lang].step3List3}</li>
-			<li>{t[$lang].step3List4}</li>
-		</ul>
-		<p style="margin-top:8px;">
-			{t[$lang].step3Trust}
-		</p>
-	</div>
-
-	<div class="card">
-		<h2>{t[$lang].step4Title}</h2>
-		<p>
-			{t[$lang].step4Body} <a href="/volunteer/log">{t[$lang].step4Log}</a> {t[$lang].step4And} <strong>{t[$lang].step4LogDon}</strong>.
-		</p>
-		<p style="margin-top:8px;">
-			{t[$lang].step4Rate}
-		</p>
-	</div>
-
-	<div class="card">
-		<h2>{t[$lang].step5Title}</h2>
-		<p>
-			{t[$lang].step5Body} <a href="/volunteer/account">{t[$lang].step5Account}</a> {t[$lang].step5Desc}
-		</p>
-		<p style="margin-top:8px;">
-			{t[$lang].step5Multi} <strong>{t[$lang].step5All}</strong> {t[$lang].step5MultiEnd}
-		</p>
-	</div>
-
-	<!-- FAQ section -->
 	<div class="card" style="background:var(--bg);border:2px solid var(--border);">
-		<h2>{t[$lang].faqTitle}</h2>
-		<div style="margin-top:12px;">
-			<p><strong>{t[$lang].faq1Q}</strong></p>
-			<p style="color:var(--text-light);">
-				{t[$lang].faq1A}
-			</p>
-		</div>
-		<div style="margin-top:16px;">
-			<p><strong>{t[$lang].faq2Q}</strong></p>
-			<p style="color:var(--text-light);">
-				{t[$lang].faq2A}
-			</p>
-		</div>
-		<div style="margin-top:16px;">
-			<p><strong>{t[$lang].faq3Q}</strong></p>
-			<p style="color:var(--text-light);">
-				{t[$lang].faq3A}
-			</p>
-		</div>
-		<div style="margin-top:16px;">
-			<p><strong>{t[$lang].faq4Q}</strong></p>
-			<p style="color:var(--text-light);">
-				{t[$lang].faq4A}
-			</p>
-		</div>
-		<div style="margin-top:16px;">
-			<p><strong>{t[$lang].faq5Q}</strong></p>
-			<p style="color:var(--text-light);">
-				{t[$lang].faq5A}
-			</p>
+		<h2>{data.tut.tut_faq_title}</h2>
+		<div style="margin-top:12px;display:flex;flex-direction:column;gap:16px;">
+			{#each faqs as faq}
+				{#if faq.q}
+					<div>
+						<p><strong>{faq.q}</strong></p>
+						<p style="color:var(--text-light);margin-top:4px;">{faq.a}</p>
+					</div>
+				{/if}
+			{/each}
 		</div>
 	</div>
 </div>

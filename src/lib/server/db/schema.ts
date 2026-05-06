@@ -9,6 +9,7 @@ import { pgTable, serial, text, integer, boolean, date, timestamp, decimal, pgEn
 export const roleEnum = pgEnum('role', ['volunteer', 'organizer']);
 export const childStatusEnum = pgEnum('child_status', ['full_member', 'tryout']);
 export const contributionTypeEnum = pgEnum('contribution_type', ['volunteering', 'donation']);
+export const contributionStatusEnum = pgEnum('contribution_status', ['pending', 'approved']);
 
 // -- tables --
 
@@ -74,6 +75,7 @@ export const contributions = pgTable('contributions', {
 	amount: decimal('amount', { precision: 10, scale: 2 }),
 	activityId: integer('activity_id').references(() => activityTypes.id),
 	notes: text('notes'),
+	status: contributionStatusEnum('status').notNull().default('pending'),
 	createdAt: timestamp('created_at').defaultNow().notNull()
 });
 

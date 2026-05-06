@@ -1,7 +1,7 @@
 // log hours — volunteer logs hours or donations
 import type { PageServerLoad, Actions } from "./$types";
 import { db } from "$lib/server/db";
-import { eq, desc, inArray, and} from "drizzle-orm";
+import { eq, desc, inArray, and } from "drizzle-orm";
 import { fail } from "@sveltejs/kit";
 import { getDonationRate } from "$lib/server/settings";
 import { today, daysAgo } from "$lib/dateBounds";
@@ -91,6 +91,7 @@ export const actions: Actions = {
       hours: hoursNum.toFixed(2),
       notes: notes || null,
       eventId,
+      status: "pending",
     });
     return { success: true, message: `Logged ${hoursNum} volunteer hours. Waiting for approval and verifications from administrators` };
   },
@@ -125,6 +126,7 @@ export const actions: Actions = {
       hours: hoursEquiv.toFixed(2),
       amount: amountNum.toFixed(2),
       notes: notes || null,
+      status: "pending",
     });
     return {
       success: true,
@@ -144,5 +146,39 @@ export const actions: Actions = {
       return fail(403, { error: "Not authorized." });
     await db.delete(contributions).where(eq(contributions.id, id));
     return { success: true, message: "Contribution deleted." };
+  },
+
+  editContribution: async ({ request, locals }) => {
+    const fd = await request.formData();
+    const id = Number(fd.get("id"));
+    if (!id) return fail(400, { error: "Invalid." });
+
+    const [contrib] = await db.select().from(contributions).where(eq(contributions.id, id));
+    if (!contrib || contrib.userId !== locals.user!.id)
+      return fail(403, { error: "Not authorized." });
+    if (contrib.status !== "pending")
+      return fail(400, { error: "Only pending contributions can be edited." });
+
+    const date = fd.get("date")?.toString() ?? "";
+    const notes = fd.get("notes")?.toString() ?? "";
+    const max = today(), min = daysAgo(365);
+    if (!date || date > max || date < min)
+      return fail(400, { error: "Invalid date." });
+
+    if (contrib.type === "volunteering") {
+      const hours = parseFloat(fd.get("hours")?.toString() ?? "");
+      if (isNaN(hours) || hours <= 0 || hours > 24)
+        return fail(400, { error: "Hours must be between 0.5 and 24." });
+      await db.update(contributions).set({ date, hours: hours.toFixed(2), notes: notes || null }).where(eq(contributions.id, id));
+    } else {
+      const amount = parseFloat(fd.get("amount")?.toString() ?? "");
+      if (isNaN(amount) || amount <= 0)
+        return fail(400, { error: "Amount must be a positive number." });
+      const rate = await getDonationRate();
+      const hoursEquiv = amount / rate;
+      await db.update(contributions).set({ date, amount: amount.toFixed(2), hours: hoursEquiv.toFixed(2), notes: notes || null }).where(eq(contributions.id, id));
+    }
+
+    return { success: true, message: "Contribution updated." };
   },
 };
