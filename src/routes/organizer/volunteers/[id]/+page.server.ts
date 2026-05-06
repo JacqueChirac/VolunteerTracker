@@ -34,7 +34,7 @@ export const load: PageServerLoad = async ({ params }) => {
 	const totalHours = contribs.reduce((sum, c) => sum + parseFloat(c.hours ?? '0'), 0);
 
 	return {
-		volunteer: { id: volunteer.id, firstName: volunteer.firstName, lastName: volunteer.lastName, email: volunteer.email },
+		volunteer: { id: volunteer.id, firstName: volunteer.firstName, lastName: volunteer.lastName, email: volunteer.email, manuallyApproved: volunteer.manuallyApproved },
 		contributions: contributionsWithActivity,
 		children: childrenData,
 		totalHours: Math.round(totalHours * 100) / 100
@@ -50,6 +50,14 @@ export const actions: Actions = {
 		if (!childId) return fail(400, { error: 'Invalid child.' });
 		await db.update(children).set({ level: level || null, status: status || 'full_member' }).where(eq(children.id, childId));
 		return { editChildSuccess: true };
+	},
+
+	toggleApproval: async ({ params }) => {
+		const userId = Number(params.id);
+		const [volunteer] = await db.select().from(users).where(eq(users.id, userId));
+		if (!volunteer) return fail(404, { error: 'Volunteer not found.' });
+		await db.update(users).set({ manuallyApproved: !volunteer.manuallyApproved }).where(eq(users.id, userId));
+		return { toggleSuccess: true };
 	}
 };
 

@@ -13,9 +13,24 @@
 <a href="/organizer/volunteers" style="font-size:0.9rem;">{t[$lang].backToVolunteers}</a>
 
 <div style="display:flex;justify-content:space-between;align-items:center;margin-top:12px;flex-wrap:wrap;gap:12px;">
-	<h1>{data.volunteer.firstName} {data.volunteer.lastName}</h1>
+	<div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
+		<h1>{data.volunteer.firstName} {data.volunteer.lastName}</h1>
+		{#if data.volunteer.manuallyApproved}
+			<span style="background:#d4edda;color:#155724;border:1px solid #c3e6cb;border-radius:20px;padding:3px 12px;font-size:0.8rem;font-weight:600;">
+				{$lang === 'en' ? '✓ Approved' : '✓ Approuvé'}
+			</span>
+		{/if}
+	</div>
 	<span style="color:var(--text-light);font-size:0.9rem;">{data.volunteer.email}</span>
 </div>
+
+<form method="POST" action="?/toggleApproval" use:enhance style="margin-top:12px;">
+	<button type="submit" class="btn {data.volunteer.manuallyApproved ? 'btn-outline' : 'btn-accent'}" style="font-size:0.9rem;">
+		{data.volunteer.manuallyApproved
+			? ($lang === 'en' ? 'Revoke Approval' : 'Révoquer l\'approbation')
+			: ($lang === 'en' ? '✓ Mark as Meets Requirements' : '✓ Marquer comme conforme')}
+	</button>
+</form>
 
 {#if form?.editChildSuccess}
 	<div class="card" style="background:#d4edda;border:1px solid #c3e6cb;margin-top:12px;"><p style="color:#155724;">{t[$lang].childUpdated}</p></div>
