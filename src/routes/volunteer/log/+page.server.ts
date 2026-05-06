@@ -110,6 +110,18 @@ export const actions: Actions = {
     if (date < min)
       return fail(400, { error: "Date is more than a year ago." });
 
+    const eventIdRaw = fd.get("eventId")?.toString();
+    const eventId = eventIdRaw ? Number(eventIdRaw) : null;
+
+    if (eventId) {
+      const [signup] = await db
+        .select()
+        .from(eventSignups)
+        .where(and(eq(eventSignups.userId, locals.user!.id), eq(eventSignups.eventId, eventId)));
+      if (!signup)
+        return fail(400, { error: "You are not signed up for that event." });
+    }
+
     const rate = await getDonationRate();
     const hoursEquiv = amountNum / rate;
 
@@ -120,6 +132,7 @@ export const actions: Actions = {
       hours: hoursEquiv.toFixed(2),
       amount: amountNum.toFixed(2),
       notes: notes || null,
+      eventId,
     });
     return {
       success: true,

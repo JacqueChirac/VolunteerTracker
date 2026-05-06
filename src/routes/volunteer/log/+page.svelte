@@ -66,6 +66,22 @@
 		{:else}
 			<form method="POST" action="?/donation" use:enhance>
 				<p style="font-size:0.85rem;color:var(--text-light);margin-bottom:12px;">{t[$lang].donationRate(data.donationRate)}</p>
+				<div class="form-group">
+					<label for="don_event">Event (optional)</label>
+					<select
+						id="don_event"
+						name="eventId"
+						onchange={(e) => {
+							const ev = data.myEvents.find((x) => x.id === Number(e.currentTarget.value));
+							if (ev) (document.getElementById("date2") as HTMLInputElement).value = ev.date;
+						}}
+					>
+						<option value="">— Not tied to a specific event —</option>
+						{#each data.myEvents as ev}
+							<option value={ev.id}>{ev.date} — {ev.title}</option>
+						{/each}
+					</select>
+				</div>
 				<div class="form-group"><label for="date2">{t[$lang].dateField}</label><input id="date2" name="date" type="date" required value={dateMax} min={dateMin} max={dateMax} /></div>
 				<div class="form-group"><label for="amount">{t[$lang].amountField}</label><input id="amount" name="amount" type="number" step="0.01" min="1" required /></div>
 				<div class="form-group"><label for="notes2">{t[$lang].notesField}</label><textarea id="notes2" name="notes" rows="2"></textarea></div>
