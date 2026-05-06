@@ -60,16 +60,6 @@ export const actions: Actions = {
 		return { toggleSuccess: true };
 	},
 
-	toggleContributionApproval: async ({ request }) => {
-		const fd = await request.formData();
-		const id = Number(fd.get('id'));
-		if (!id) return fail(400, { error: 'Invalid.' });
-		const [contrib] = await db.select().from(contributions).where(eq(contributions.id, id));
-		if (!contrib) return fail(404, { error: 'Contribution not found.' });
-		const next = contrib.status === 'pending' ? 'approved' : 'pending';
-		await db.update(contributions).set({ status: next }).where(eq(contributions.id, id));
-		return { toggleContribSuccess: true };
-	}
 };
 
 

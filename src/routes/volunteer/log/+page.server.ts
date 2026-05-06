@@ -50,7 +50,6 @@ export const actions: Actions = {
     const hours = fd.get("hours")?.toString() ?? "";
     const notes = fd.get("notes")?.toString() ?? "";
 
-
     if (!date || !hours)
       return fail(400, { error: "Date and hours are required." });
     const hoursNum = parseFloat(hours);
@@ -59,9 +58,7 @@ export const actions: Actions = {
     if (hoursNum > 24)
       return fail(400, { error: "Hours cannot exceed 24 per entry." });
 
-    //Check if date is out of constraints
-    const max = today(),
-      min = daysAgo(365);
+    const max = today(), min = daysAgo(365);
     if (date > max)
       return fail(400, { error: "Date cannot be in the future." });
     if (date < min)
@@ -91,9 +88,8 @@ export const actions: Actions = {
       hours: hoursNum.toFixed(2),
       notes: notes || null,
       eventId,
-      status: "pending",
     });
-    return { success: true, message: `Logged ${hoursNum} volunteer hours. Waiting for approval and verifications from administrators` };
+    return { success: true, message: `Logged ${hoursNum} volunteer hours.` };
   },
 
   donation: async ({ request, locals }) => {
@@ -108,9 +104,7 @@ export const actions: Actions = {
     if (isNaN(amountNum) || amountNum <= 0)
       return fail(400, { error: "Amount must be a positive number." });
 
-    //Check if date is out of constraints
-    const max = today(),
-      min = daysAgo(365);
+    const max = today(), min = daysAgo(365);
     if (date > max)
       return fail(400, { error: "Date cannot be in the future." });
     if (date < min)
@@ -126,11 +120,10 @@ export const actions: Actions = {
       hours: hoursEquiv.toFixed(2),
       amount: amountNum.toFixed(2),
       notes: notes || null,
-      status: "pending",
     });
     return {
       success: true,
-      message: `Logged $${amountNum} donation (= ${hoursEquiv.toFixed(1)} hours). Waiting for approval and verifications from administrators`,
+      message: `Logged $${amountNum} donation (= ${hoursEquiv.toFixed(1)} hours).`,
     };
   },
 
@@ -146,39 +139,5 @@ export const actions: Actions = {
       return fail(403, { error: "Not authorized." });
     await db.delete(contributions).where(eq(contributions.id, id));
     return { success: true, message: "Contribution deleted." };
-  },
-
-  editContribution: async ({ request, locals }) => {
-    const fd = await request.formData();
-    const id = Number(fd.get("id"));
-    if (!id) return fail(400, { error: "Invalid." });
-
-    const [contrib] = await db.select().from(contributions).where(eq(contributions.id, id));
-    if (!contrib || contrib.userId !== locals.user!.id)
-      return fail(403, { error: "Not authorized." });
-    if (contrib.status !== "pending")
-      return fail(400, { error: "Only pending contributions can be edited." });
-
-    const date = fd.get("date")?.toString() ?? "";
-    const notes = fd.get("notes")?.toString() ?? "";
-    const max = today(), min = daysAgo(365);
-    if (!date || date > max || date < min)
-      return fail(400, { error: "Invalid date." });
-
-    if (contrib.type === "volunteering") {
-      const hours = parseFloat(fd.get("hours")?.toString() ?? "");
-      if (isNaN(hours) || hours <= 0 || hours > 24)
-        return fail(400, { error: "Hours must be between 0.5 and 24." });
-      await db.update(contributions).set({ date, hours: hours.toFixed(2), notes: notes || null }).where(eq(contributions.id, id));
-    } else {
-      const amount = parseFloat(fd.get("amount")?.toString() ?? "");
-      if (isNaN(amount) || amount <= 0)
-        return fail(400, { error: "Amount must be a positive number." });
-      const rate = await getDonationRate();
-      const hoursEquiv = amount / rate;
-      await db.update(contributions).set({ date, amount: amount.toFixed(2), hours: hoursEquiv.toFixed(2), notes: notes || null }).where(eq(contributions.id, id));
-    }
-
-    return { success: true, message: "Contribution updated." };
   },
 };
