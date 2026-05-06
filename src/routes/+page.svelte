@@ -13,6 +13,7 @@
 			{$lang === 'en' ? 'FR' : 'EN'}
 		</button>
 		<img src="/CPWD.png" alt="CPWD Swim Team" class="team-logo" />
+		<p class="tagline">{$lang === 'en' ? 'Carleton Place Wave Dragons' : 'Les Dragons des Vagues de Carleton Place'}</p>
 		<h1>{t[$lang].appTitle}</h1>
 		<p>{t[$lang].appSubtitle}</p>
 		<p class="subtitle">{t[$lang].appCta}</p>
@@ -41,7 +42,9 @@
 <style>
 	.landing { min-height: 100vh; display: flex; align-items: center; justify-content: center; background: linear-gradient(135deg, #1a5276 0%, #2980b9 100%); color: white; text-align: center; padding: 20px; }
 	.landing-content { max-width: 520px; position: relative; }
-	.team-logo { width: 200px; margin-bottom: 20px; }
+	.team-logo { width: 220px; margin-bottom: 10px; filter: drop-shadow(0 4px 12px rgba(0,0,0,0.25)); transition: transform 0.3s ease; }
+	.team-logo:hover { transform: scale(1.04); }
+	.tagline { font-size: 0.85rem; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase; opacity: 0.65; margin-bottom: 14px; }
 	h1 { font-size: 2.2rem; margin-bottom: 12px; }
 	p { font-size: 1.1rem; opacity: 0.9; }
 	.subtitle { font-size: 0.95rem; opacity: 0.7; margin-bottom: 36px; }

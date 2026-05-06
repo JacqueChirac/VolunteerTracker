@@ -45,6 +45,7 @@ export const load: PageServerLoad = async ({ url }) => {
 			id: volunteer.id, firstName: volunteer.firstName, lastName: volunteer.lastName,
 			email: volunteer.email,
 			totalHours: Math.round(volunteerTotalHours * 100) / 100,
+			manuallyApproved: volunteer.manuallyApproved,
 			children: childrenInfo
 		});
 	}

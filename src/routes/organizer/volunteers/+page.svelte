@@ -33,7 +33,14 @@
 	{#each data.volunteers as volunteer (volunteer.id)}
 		<div class="card" style="margin-bottom:12px;">
 			<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;flex-wrap:wrap;gap:6px;">
-				<h3><a href="/organizer/volunteers/{volunteer.id}">{volunteer.firstName} {volunteer.lastName}</a></h3>
+				<div style="display:flex;align-items:center;gap:8px;">
+					<h3><a href="/organizer/volunteers/{volunteer.id}">{volunteer.firstName} {volunteer.lastName}</a></h3>
+					{#if volunteer.manuallyApproved}
+						<span style="background:#d4edda;color:#155724;border:1px solid #c3e6cb;border-radius:20px;padding:2px 10px;font-size:0.75rem;font-weight:600;">
+							{$lang === 'en' ? '✓ Approved' : '✓ Approuvé'}
+						</span>
+					{/if}
+				</div>
 				<span style="font-size:0.85rem;color:var(--text-light);">{volunteer.email} &middot; {volunteer.totalHours} hrs</span>
 			</div>
 			{#if volunteer.children.length === 0}

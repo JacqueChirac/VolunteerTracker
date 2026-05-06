@@ -20,6 +20,7 @@ export const users = pgTable('users', {
 	firstName: text('first_name').notNull(),
 	lastName: text('last_name').notNull(),
 	email: text('email').notNull().unique(),
+	manuallyApproved: boolean('manually_approved').notNull().default(false),
 	createdAt: timestamp('created_at').defaultNow().notNull()
 });
 
