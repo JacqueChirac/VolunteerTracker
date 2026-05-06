@@ -8,6 +8,7 @@
 
   let { data, form }: { data: PageData; form: ActionData } = $props();
   let tab = $state<"volunteering" | "donation">("volunteering");
+  let submitting = $state(false);
   const dateMax = today();
   const dateMin = daysAgo(365);
 </script>
@@ -37,7 +38,10 @@
 
 		<!-- Log events with date constraints -->
 		{#if tab === 'volunteering'}
-			<form method="POST" action="?/volunteering" use:enhance>
+			<form method="POST" action="?/volunteering" use:enhance={() => {
+				submitting = true;
+				return async ({ update }) => { await update(); submitting = false; };
+			}}>
 				<div class="form-group">
 					<label for="event">Event (optional)</label>
 					<select
@@ -61,10 +65,15 @@
 				<div class="form-group"><label for="date">{t[$lang].dateField}</label><input id="date" name="date" type="date" required value={dateMax} min={dateMin} max={dateMax} /></div>
 				<div class="form-group"><label for="hours">{t[$lang].hoursField}</label><input id="hours" name="hours" type="number" step="0.5" min="0.5" max="24" required /></div>
 				<div class="form-group"><label for="notes">{t[$lang].notesField}</label><textarea id="notes" name="notes" rows="2"></textarea></div>
-				<button type="submit" class="btn btn-accent" style="width:100%;">{t[$lang].logHoursSubmit}</button>
+				<button type="submit" class="btn btn-accent" style="width:100%;" disabled={submitting}>
+					{submitting ? 'Submitting…' : t[$lang].logHoursSubmit}
+				</button>
 			</form>
 		{:else}
-			<form method="POST" action="?/donation" use:enhance>
+			<form method="POST" action="?/donation" use:enhance={() => {
+				submitting = true;
+				return async ({ update }) => { await update(); submitting = false; };
+			}}>
 				<p style="font-size:0.85rem;color:var(--text-light);margin-bottom:12px;">{t[$lang].donationRate(data.donationRate)}</p>
 				<div class="form-group">
 					<label for="don_event">Event (optional)</label>
@@ -85,7 +94,9 @@
 				<div class="form-group"><label for="date2">{t[$lang].dateField}</label><input id="date2" name="date" type="date" required value={dateMax} min={dateMin} max={dateMax} /></div>
 				<div class="form-group"><label for="amount">{t[$lang].amountField}</label><input id="amount" name="amount" type="number" step="0.01" min="1" required /></div>
 				<div class="form-group"><label for="notes2">{t[$lang].notesField}</label><textarea id="notes2" name="notes" rows="2"></textarea></div>
-				<button type="submit" class="btn btn-accent" style="width:100%;">{t[$lang].logDonationSubmit}</button>
+				<button type="submit" class="btn btn-accent" style="width:100%;" disabled={submitting}>
+					{submitting ? 'Submitting…' : t[$lang].logDonationSubmit}
+				</button>
 			</form>
 		{/if}
 	</div>
