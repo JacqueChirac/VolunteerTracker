@@ -2,7 +2,6 @@
 <script lang="ts">
 	import { enhance } from '$app/forms';
 	import type { PageData, ActionData } from './$types';
-	import { swimLevels } from '$lib/swimLevels';
 	import { lang } from '$lib/stores/lang';
 	import { t } from '$lib/i18n';
 
@@ -11,6 +10,7 @@
 	let childSearch = $state('');
 	let linkPick = $state<Record<number, string>>({});
 	let showAddChildLevelDetails = $state(false);
+	let editingLevelId = $state<number | null>(null);
 
 	let filteredChildren = $derived.by(() => {
 		const q = childSearch.trim().toLowerCase();
@@ -100,7 +100,7 @@
 						<label for="c_level">{t[$lang].levelOptional}</label>
 						<select id="c_level" name="level">
 							<option value="">{t[$lang].selectLevel}</option>
-							{#each swimLevels as lvl}
+							{#each data.swimLevels as lvl}
 								<option value={lvl.value}>{lvl.name}</option>
 							{/each}
 						</select>
@@ -109,7 +109,7 @@
 						</button>
 						{#if showAddChildLevelDetails}
 							<div style="margin-top:8px;font-size:0.8rem;color:var(--text-light);max-height:240px;overflow-y:auto;">
-								{#each swimLevels as lvl}
+								{#each data.swimLevels as lvl}
 									<p style="margin-bottom:8px;"><strong>{lvl.name}</strong> — {lvl.description}</p>
 								{/each}
 							</div>
@@ -198,6 +198,57 @@
 </section>
 
 <div class="grid-2">
+	<!-- swim levels -->
+	<div style="margin-bottom:32px;">
+		<h2>{$lang === 'en' ? 'Swim Levels' : 'Niveaux de natation'}</h2>
+		<div class="card" style="margin-top:12px;">
+			{#if form?.swimLevelError}<p class="error" style="margin-bottom:8px;">{form.swimLevelError}</p>{/if}
+			{#if form?.swimLevelSuccess}<div style="background:#d4edda;padding:8px 12px;border-radius:6px;margin-bottom:12px;"><p style="color:#155724;font-size:0.9rem;">{$lang === 'en' ? 'Saved.' : 'Sauvegardé.'}</p></div>{/if}
+
+			{#each data.swimLevels as lvl (lvl.id)}
+				<div style="padding:10px 0;border-bottom:1px solid var(--border);">
+					{#if editingLevelId === lvl.id}
+						<form method="POST" action="?/editSwimLevel" use:enhance={() => () => { editingLevelId = null; }}>
+							<input type="hidden" name="id" value={lvl.id} />
+							<div style="display:flex;flex-direction:column;gap:6px;">
+								<input name="name" type="text" value={lvl.name} required style="font-weight:600;" />
+								<textarea name="description" rows="2" style="font-size:0.85rem;">{lvl.description ?? ''}</textarea>
+								<div style="display:flex;gap:6px;">
+									<button type="submit" class="btn btn-primary" style="padding:4px 10px;font-size:0.8rem;">{$lang === 'en' ? 'Save' : 'Sauvegarder'}</button>
+									<button type="button" class="btn btn-outline" style="padding:4px 10px;font-size:0.8rem;" onclick={() => editingLevelId = null}>{$lang === 'en' ? 'Cancel' : 'Annuler'}</button>
+								</div>
+							</div>
+						</form>
+					{:else}
+						<div style="display:flex;justify-content:space-between;align-items:start;gap:8px;">
+							<div style="flex:1;">
+								<strong>{lvl.name}</strong>
+								{#if lvl.description}<p style="font-size:0.8rem;color:var(--text-light);margin-top:2px;">{lvl.description}</p>{/if}
+							</div>
+							<div style="display:flex;gap:4px;flex-shrink:0;">
+								<button type="button" class="btn btn-outline" style="padding:2px 8px;font-size:0.75rem;" onclick={() => editingLevelId = lvl.id}>{$lang === 'en' ? 'Edit' : 'Modifier'}</button>
+								<form method="POST" action="?/deleteSwimLevel" use:enhance>
+									<input type="hidden" name="id" value={lvl.id} />
+									<button type="submit" class="btn btn-danger" style="padding:2px 8px;font-size:0.75rem;" onclick={(e) => { if (!confirm($lang === 'en' ? 'Delete this level?' : 'Supprimer ce niveau?')) e.preventDefault(); }}>{$lang === 'en' ? 'Delete' : 'Supprimer'}</button>
+								</form>
+							</div>
+						</div>
+					{/if}
+				</div>
+			{/each}
+
+			<form method="POST" action="?/addSwimLevel" use:enhance style="margin-top:16px;display:flex;flex-direction:column;gap:8px;">
+				<p style="font-size:0.85rem;font-weight:600;">{$lang === 'en' ? 'Add New Level' : 'Ajouter un niveau'}</p>
+				<div style="display:flex;gap:8px;">
+					<input name="value" type="text" placeholder={$lang === 'en' ? 'ID (e.g. Junior 3)' : 'ID (ex: Junior 3)'} required style="flex:1;" />
+					<input name="name" type="text" placeholder={$lang === 'en' ? 'Display name' : 'Nom affiché'} required style="flex:1;" />
+				</div>
+				<textarea name="description" rows="2" placeholder={$lang === 'en' ? 'Description (optional)' : 'Description (optionnel)'}></textarea>
+				<button type="submit" class="btn btn-accent" style="align-self:flex-start;">{$lang === 'en' ? '+ Add Level' : '+ Ajouter un niveau'}</button>
+			</form>
+		</div>
+	</div>
+
 	<!-- activity types -->
 	<div>
 		<h2>{t[$lang].activityTypes}</h2>
