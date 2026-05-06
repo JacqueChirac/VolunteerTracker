@@ -92,7 +92,7 @@ export const actions: Actions = {
       notes: notes || null,
       eventId,
     });
-    return { success: true, message: `Logged ${hoursNum} volunteer hours.` };
+    return { success: true, message: `Logged ${hoursNum} volunteer hours. Waiting for approval and verifications from administrators` };
   },
 
   donation: async ({ request, locals }) => {
@@ -128,7 +128,7 @@ export const actions: Actions = {
     });
     return {
       success: true,
-      message: `Logged $${amountNum} donation (= ${hoursEquiv.toFixed(1)} hours).`,
+      message: `Logged $${amountNum} donation (= ${hoursEquiv.toFixed(1)} hours). Waiting for approval and verifications from administrators`,
     };
   },
 
