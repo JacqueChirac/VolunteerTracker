@@ -2,31 +2,36 @@
   //Imports
   import emailjs from "@emailjs/browser";
   import { singlestoreDatabase } from "drizzle-orm/singlestore-core";
-  import { lang } from '$lib/stores/lang';
-  import { t } from '$lib/i18n';
+  import { invalidate } from "$app/navigation";
+  import { invalidateAll } from "$app/navigation";
+  import { lang } from "$lib/stores/lang";
+  import { t } from "$lib/i18n";
+  import { json } from "@sveltejs/kit";
 
   let { data } = $props(); //Imported data from server.ts
 
   //Variables Declare
-const services = [
-  {
-    serviceID: "service_cpwd0",
-    publicKey: "InRSRMYq3D8DEYnU9",
-  },
-  {
-    serviceID: "service_cpwd1",
-    publicKey: "UmIK54UYI1rc8XP2I",
-  },
-  {
-    serviceID: "service_cpwd2",
-    publicKey: "tJvhr_u5xNaHdHRTp",
-  },
-];
-  const templates = ["defualt", "reminder"];
+  const services = [
+    {
+      serviceID: "service_cpwd0",
+      publicKey: "InRSRMYq3D8DEYnU9",
+    },
+    {
+      serviceID: "service_cpwd1",
+      publicKey: "UmIK54UYI1rc8XP2I",
+    },
+    {
+      serviceID: "service_cpwd2",
+      publicKey: "tJvhr_u5xNaHdHRTp",
+    },
+  ];
+
+  const templates = ["message", "reminder"];
   const badEmails = $derived(data.badEmails); //Bad emails as [] strings
   const allMails = $derived(data.allMails); //All emails as [] strings
   const allNames = $derived(data.allNames); //All names as [] strings
   const volunteers = $derived(data.volunteers);
+  let node = $state(Number(0));
   let selected = $state("message");
   let messageParams = $state({
     // Parameters defined in the template
@@ -36,21 +41,10 @@ const services = [
     time: 2008,
     recipient: "liuzilin375@gmail.com",
   });
-  let serviceIDs = [
-    "service_tni7nrg",
-    "service_tni7nrg",
-    "service_tni7nrg",
-    "service_tni7nrg",
-    "service_tni7nrg",
-    "service_tni7nrg",
-    "service_tni7nrg",
-    "service_tni7nrg",
-    "service_tni7nrg"
-    ]
-    
-    
+
   let inputElement: HTMLInputElement;
   let focus = $state(0);
+  let token = $derived(data.nodes?.[node]?.token ?? 0);
 
   let wordSelected = $derived.by(() => {
     const text = messageParams.recipient;
@@ -95,13 +89,14 @@ const services = [
   //Service provider functions.
   (function () {
     emailjs.init({
-      publicKey: "InRSRMYq3D8DEYnU9",
+      publicKey: services[node].publicKey,
+      blockHeadless: true,
     });
   })();
 
   function init() {
     emailjs.init({
-      publicKey: "InRSRMYq3D8DEYnU9",
+      publicKey: services[node].publicKey,
       blockHeadless: true,
       blockList: {
         list: [], // Blocklist
@@ -138,10 +133,8 @@ const services = [
   }
 
   function openDropdown() {
-    if(recentlyClosed===false)
-    showDropdown = true;
+    if (recentlyClosed === false) showDropdown = true;
   }
-
 
   function handleInput() {
     updateCursorPosition();
@@ -175,9 +168,14 @@ const services = [
   //Email logics
   function SendEmail(params: any) {
     if (selected === "message") {
-      emailjs.send("service_tni7nrg", "template_s341t4v", params).then(
+      emailjs.send(services[node].serviceID, templates[0], params).then(
         (response) => {
           console.log("SUCCESS!", response.status, response.text);
+          let cost = messageParams.recipient
+            .split(",")
+            .map((s) => s.trim())
+            .filter(Boolean).length;
+          sendCost(services[node].serviceID, cost);
         },
         (error) => {
           console.log("FAILED...", error);
@@ -185,6 +183,24 @@ const services = [
       );
     }
   }
+
+  const sendCost = async (service: string, cost: number) => {
+    const res = await fetch("?/callCost", {
+      method: "POST",
+      body: new URLSearchParams({
+        service,
+        cost: String(cost),
+      }),
+    });
+
+    if (res.ok) {
+      console.log("Token updated successfully");
+      await invalidateAll();
+    } else {
+      const error = await res.text();
+      console.error("Failed to update token:", error);
+    }
+  };
 
   //!Unfishied
   //   else {
@@ -226,7 +242,40 @@ const services = [
     const combined = [...new Set([...existing, ...emails])];
     messageParams.recipient = combined.join(", ");
   }
+
+  async function selectNode(choice: number) {
+    node = choice;
+    await invalidateAll();
+    init();
+  }
+
+  function getColor(i: number) {
+    const t = i === node ? token : 200;
+
+    if (t > 100) return "green";
+    if (t > 25) return "yellow";
+    if (t > 0) return "red";
+    return "gray";
+  }
 </script>
+
+<!--Choose node-->
+<section class="node-container">
+  <div class="node-header">
+    <h4>Nodes</h4>
+  </div>
+
+  <div class="node-content">
+    {#each services as s, i}
+      {@render nodeItem({
+        serviceID: s.serviceID,
+        token: i === node ? token : 200,
+        active: i === node,
+        serial: i,
+      })}
+    {/each}
+  </div>
+</section>
 
 <div class="top-toggle">
   <div class="toggle-container">
@@ -282,8 +331,12 @@ const services = [
       <button class="group-btn" onclick={() => selectGroup(2)}
         >{t[$lang].underCriteria}</button
       >
-      <button class="group-btn" onclick={() => selectGroup(3)}>{t[$lang].customGroup}</button>
-      <button class="group-btn" onclick={() => selectGroup(0)}>{t[$lang].clearAll}</button>
+      <button class="group-btn" onclick={() => selectGroup(3)}
+        >{t[$lang].customGroup}</button
+      >
+      <button class="group-btn" onclick={() => selectGroup(0)}
+        >{t[$lang].clearAll}</button
+      >
     </div>
   </div>
 
@@ -295,6 +348,7 @@ const services = [
       style="width: 100%; padding: 0.5rem; font-size: 1rem; resize: vertical;"
     ></textarea>
   {/if}
+
   <button onclick={() => SendEmail(messageParams)}>{t[$lang].sendEmail}</button>
 </div>
 
@@ -306,15 +360,13 @@ const services = [
 
 <pre> {allMails[recipientPrompted[0]]}  </pre>
 
+<pre>{JSON.stringify(data, null, 2)}</pre>
+
 {#snippet promptList(storedPrompts: number[])}
   <div class="dropdown">
     <div class="dropdown-header">
       <span>{t[$lang].suggestions}</span>
-      <button
-        type="button"
-        class="close-btn"
-        onclick={() => closeDropdown()}
-      >
+      <button type="button" class="close-btn" onclick={() => closeDropdown()}>
         ×
       </button>
     </div>
@@ -346,6 +398,49 @@ const services = [
       <div class="email">{data.allMails[storedPrompts[order]]}</div>
     </button>
   </article>
+{/snippet}
+
+{#snippet nodeItem({
+  serviceID,
+  token,
+  active,
+  serial,
+}: {
+  serviceID: string;
+  token: number;
+  active: boolean;
+  serial: number;
+})}
+  <div class="node-item" class:active onclick={() => selectNode(serial)}>
+    <!-- Left indicator (10%) -->
+    <div class="node-indicator">
+      <span class="dot"></span>
+    </div>
+
+    <!-- Main content -->
+    <div class="node-body">
+      <!-- Top half: service ID -->
+      <div class="node-top">
+        <span class="service-id">{serviceID}</span>
+      </div>
+
+      <!-- Bottom half: bar -->
+      <div class="node-bottom">
+        <div class="bar">
+          <div class="bar-track">
+            <div
+              class="bar-fill"
+              style={`width: ${(token / 200) * 100}%`}
+            ></div>
+
+            <div class="bar-dot" style={`left: ${(token / 200) * 100}%`}></div>
+          </div>
+
+          <span class="bar-text">({token}/200)</span>
+        </div>
+      </div>
+    </div>
+  </div>
 {/snippet}
 
 <style>
@@ -484,5 +579,110 @@ const services = [
     font-size: 12px;
     line-height: 1.2;
     opacity: 0.6;
+  }
+
+  .node-item {
+    display: flex;
+    width: 100%;
+    padding: 10px 12px;
+    border-radius: 10px;
+    background: #1e1e1e;
+    color: #fff;
+    gap: 10px;
+    align-items: stretch;
+  }
+
+  .node-item.active {
+    outline: 2px solid #3b82f6;
+  }
+
+  /* 10% indicator */
+  .node-indicator {
+    flex: 0 0 10%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+
+  .dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: #666;
+  }
+
+  .node-item.active .dot {
+    background: #3b82f6;
+  }
+
+  /* right side */
+  .node-body {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* top half */
+  .node-top {
+    flex: 1;
+    display: flex;
+    align-items: center;
+  }
+
+  .service-id {
+    font-size: 14px;
+    font-weight: 500;
+  }
+
+  /* bottom half */
+  .node-bottom {
+    flex: 1;
+    display: flex;
+    align-items: center;
+  }
+
+  /* bar layout */
+  .bar {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .bar-track {
+    position: relative;
+    flex: 1;
+    height: 6px;
+    background: #333;
+    border-radius: 999px;
+    overflow: hidden;
+  }
+
+  /* fill */
+  .bar-fill {
+    position: absolute;
+    height: 100%;
+    background: #3b82f6;
+    left: 0;
+    top: 0;
+  }
+
+  /* moving dot */
+  .bar-dot {
+    position: absolute;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    width: 10px;
+    height: 10px;
+    background: #fff;
+    border-radius: 50%;
+    border: 2px solid #3b82f6;
+  }
+
+  /* text */
+  .bar-text {
+    font-size: 12px;
+    opacity: 0.8;
+    white-space: nowrap;
   }
 </style>
