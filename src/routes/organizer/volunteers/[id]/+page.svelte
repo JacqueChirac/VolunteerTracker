@@ -8,6 +8,7 @@
 
 	let { data, form }: { data: PageData; form: ActionData } = $props();
 	let editingChildId = $state<number | null>(null);
+	let linkChildId = $state('');
 </script>
 
 <a href="/organizer/volunteers" style="font-size:0.9rem;">{t[$lang].backToVolunteers}</a>
@@ -67,10 +68,16 @@
 
 <!-- children -->
 <h2 style="margin-bottom:12px;">{t[$lang].children}</h2>
+
+{#if form?.linkError}<p style="color:var(--danger);font-size:0.9rem;margin-bottom:8px;">{form.linkError}</p>{/if}
+{#if form?.linkSuccess || form?.unlinkSuccess}
+	<div style="background:#d4edda;padding:8px 12px;border-radius:8px;margin-bottom:12px;"><p style="color:#155724;font-size:0.9rem;">{$lang === 'en' ? 'Updated.' : 'Mis à jour.'}</p></div>
+{/if}
+
 {#if data.children.length === 0}
-	<div class="card" style="margin-bottom:24px;"><p style="color:var(--text-light);">{t[$lang].noChildrenLinkedProfile}</p></div>
+	<div class="card" style="margin-bottom:16px;"><p style="color:var(--text-light);">{t[$lang].noChildrenLinkedProfile}</p></div>
 {:else}
-	<div style="display:flex;flex-direction:column;gap:8px;margin-bottom:24px;">
+	<div style="display:flex;flex-direction:column;gap:8px;margin-bottom:16px;">
 		{#each data.children as child (child.id)}
 			<div class="card">
 				{#if editingChildId === child.id}
@@ -100,9 +107,16 @@
 				{:else}
 					<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;flex-wrap:wrap;gap:4px;">
 						<strong>{child.firstName} {child.lastName}</strong>
-						<div style="display:flex;align-items:center;gap:8px;">
-							<span style="font-size:0.8rem;color:var(--text-light);">{child.status === 'tryout' ? t[$lang].tryoutOption : t[$lang].fullMemberOption}{#if child.level} &middot; {child.level}{/if}</span>
+						<div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;">
+							<span style="font-size:0.8rem;color:var(--text-light);">{child.status === 'tryout' ? t[$lang].tryoutOption : t[$lang].fullMemberOption}{#if child.level} · {child.level}{/if}</span>
 							<button type="button" class="btn btn-outline" style="padding:2px 8px;font-size:0.75rem;" onclick={() => editingChildId = child.id}>{t[$lang].edit}</button>
+							<form method="POST" action="?/unlinkChild" use:enhance>
+								<input type="hidden" name="childId" value={child.id} />
+								<button type="submit" class="btn btn-danger" style="padding:2px 8px;font-size:0.75rem;"
+									onclick={(e) => { if (!confirm($lang === 'en' ? `Unlink ${child.firstName} ${child.lastName} from this volunteer?` : `Dissocier ${child.firstName} ${child.lastName} de ce bénévole?`)) e.preventDefault(); }}>
+									{$lang === 'en' ? 'Unlink' : 'Dissocier'}
+								</button>
+							</form>
 						</div>
 					</div>
 					<div class="progress-bar" style="height:16px;">
@@ -114,6 +128,23 @@
 			</div>
 		{/each}
 	</div>
+{/if}
+
+<!-- link a new child -->
+{#if data.allChildren.filter(c => !data.linkedChildIds.includes(c.id)).length > 0}
+	<form method="POST" action="?/linkChild" use:enhance style="display:flex;gap:8px;align-items:center;margin-bottom:24px;flex-wrap:wrap;">
+		<select name="childId" bind:value={linkChildId} style="flex:1;max-width:260px;">
+			<option value="">{$lang === 'en' ? '-- Link a child --' : '-- Associer un enfant --'}</option>
+			{#each data.allChildren.filter(c => !data.linkedChildIds.includes(c.id)) as c}
+				<option value={c.id}>{c.firstName} {c.lastName}</option>
+			{/each}
+		</select>
+		<button type="submit" class="btn btn-accent" disabled={!linkChildId}>
+			{$lang === 'en' ? '+ Link Child' : '+ Associer'}
+		</button>
+	</form>
+{:else}
+	<div style="margin-bottom:24px;"></div>
 {/if}
 
 <!-- contribution history -->

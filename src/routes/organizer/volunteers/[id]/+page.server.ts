@@ -2,7 +2,7 @@
 import type { PageServerLoad, Actions } from './$types';
 import { db } from '$lib/server/db';
 import { users, children, childVolunteerLinks, contributions, activityTypes } from '$lib/server/db/schema';
-import { eq, desc } from 'drizzle-orm';
+import { eq, desc, asc, and } from 'drizzle-orm';
 import { error, fail, redirect } from '@sveltejs/kit';
 import { getHoursRequired } from '$lib/server/settings';
 
@@ -17,18 +17,27 @@ export const load: PageServerLoad = async ({ params }) => {
 	const contribs = await db.select().from(contributions).where(eq(contributions.userId, userId)).orderBy(desc(contributions.date));
 	const contributionsWithActivity = contribs.map(c => ({ ...c, activityName: c.activityId ? activityMap.get(c.activityId) ?? null : null }));
 
-	const links = await db.select().from(childVolunteerLinks).where(eq(childVolunteerLinks.userId, userId));
+	const [links, allChildren, allContribs, allLinks2] = await Promise.all([
+		db.select().from(childVolunteerLinks).where(eq(childVolunteerLinks.userId, userId)),
+		db.select().from(children).orderBy(asc(children.firstName)),
+		db.select().from(contributions),
+		db.select().from(childVolunteerLinks),
+	]);
+
+	const linkedChildIds = new Set(links.map(l => l.childId));
+
+	const hoursByVol: Record<number, number> = {};
+	for (const c of allContribs) {
+		hoursByVol[c.userId] = (hoursByVol[c.userId] ?? 0) + parseFloat(c.hours ?? '0');
+	}
+
 	const childrenData = [];
-	for (const link of links) {
-		const [child] = await db.select().from(children).where(eq(children.id, link.childId));
+	for (const childId of linkedChildIds) {
+		const child = allChildren.find(c => c.id === childId);
 		if (!child) continue;
-		const allLinks = await db.select().from(childVolunteerLinks).where(eq(childVolunteerLinks.childId, child.id));
-		let totalHours = 0;
-		for (const l of allLinks) {
-			const c = await db.select().from(contributions).where(eq(contributions.userId, l.userId));
-			totalHours += c.reduce((sum, x) => sum + parseFloat(x.hours ?? '0'), 0);
-		}
-		childrenData.push({ ...child, totalHours: Math.round(totalHours * 100) / 100, requiredHours: await getHoursRequired(child.status) });
+		const volIdsForChild = allLinks2.filter(l => l.childId === childId).map(l => l.userId);
+		const totalHoursForChild = Math.round(volIdsForChild.reduce((s, vid) => s + (hoursByVol[vid] ?? 0), 0) * 100) / 100;
+		childrenData.push({ ...child, totalHours: totalHoursForChild, requiredHours: await getHoursRequired(child.status) });
 	}
 
 	const totalHours = contribs.reduce((sum, c) => sum + parseFloat(c.hours ?? '0'), 0);
@@ -37,6 +46,8 @@ export const load: PageServerLoad = async ({ params }) => {
 		volunteer: { id: volunteer.id, firstName: volunteer.firstName, lastName: volunteer.lastName, email: volunteer.email, manuallyApproved: volunteer.manuallyApproved },
 		contributions: contributionsWithActivity,
 		children: childrenData,
+		allChildren,
+		linkedChildIds: [...linkedChildIds],
 		totalHours: Math.round(totalHours * 100) / 100
 	};
 };
@@ -58,6 +69,28 @@ export const actions: Actions = {
 		if (!volunteer) return fail(404, { error: 'Volunteer not found.' });
 		await db.update(users).set({ manuallyApproved: !volunteer.manuallyApproved }).where(eq(users.id, userId));
 		return { toggleSuccess: true };
+	},
+
+	linkChild: async ({ request, params }) => {
+		const fd = await request.formData();
+		const childId = Number(fd.get('childId'));
+		const userId = Number(params.id);
+		if (!childId || !userId) return fail(400, { linkError: 'Invalid child or volunteer.' });
+		const existing = await db.select().from(childVolunteerLinks)
+			.where(and(eq(childVolunteerLinks.childId, childId), eq(childVolunteerLinks.userId, userId)));
+		if (existing.length > 0) return fail(400, { linkError: 'Already linked.' });
+		await db.insert(childVolunteerLinks).values({ childId, userId });
+		return { linkSuccess: true };
+	},
+
+	unlinkChild: async ({ request, params }) => {
+		const fd = await request.formData();
+		const childId = Number(fd.get('childId'));
+		const userId = Number(params.id);
+		if (!childId || !userId) return fail(400, { linkError: 'Invalid child or volunteer.' });
+		await db.delete(childVolunteerLinks)
+			.where(and(eq(childVolunteerLinks.childId, childId), eq(childVolunteerLinks.userId, userId)));
+		return { unlinkSuccess: true };
 	},
 
 	deleteVolunteer: async ({ params }) => {

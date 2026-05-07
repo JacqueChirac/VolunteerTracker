@@ -123,6 +123,16 @@
 
   let showDropdown = $state(false);
   let recentlyClosed = false;
+  let toastMsg = $state('');
+  let toastType = $state<'success' | 'error'>('success');
+  let toastTimer: ReturnType<typeof setTimeout>;
+
+  function showToast(msg: string, type: 'success' | 'error' = 'success') {
+    clearTimeout(toastTimer);
+    toastMsg = msg;
+    toastType = type;
+    toastTimer = setTimeout(() => { toastMsg = ''; }, 4000);
+  }
 
   function closeDropdown() {
     showDropdown = false;
@@ -177,10 +187,15 @@
             .split(",")
             .map((s) => s.trim())
             .filter(Boolean).length;
+          showToast(cost > 1
+            ? `${$lang === 'en' ? 'Email sent to' : 'Courriel envoyé à'} ${cost} ${$lang === 'en' ? 'recipients' : 'destinataires'}`
+            : ($lang === 'en' ? 'Email sent successfully.' : 'Courriel envoyé avec succès.')
+          );
           sendCost(services[node].serviceID, cost);
         },
-        (error) => {
-          console.log("FAILED...", error);
+        (err) => {
+          console.log("FAILED...", err);
+          showToast($lang === 'en' ? 'Failed to send email. Please try again.' : 'Échec de l\'envoi. Veuillez réessayer.', 'error');
         },
       );
     }
@@ -447,7 +462,35 @@
   </div>
 {/snippet}
 
+{#if toastMsg}
+  <div class="toast" class:toast-error={toastType === 'error'}>
+    {toastMsg}
+  </div>
+{/if}
+
 <style>
+  .toast {
+    position: fixed;
+    bottom: 28px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #1a7a4a;
+    color: #fff;
+    padding: 12px 24px;
+    border-radius: 999px;
+    font-size: 0.95rem;
+    font-weight: 600;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+    z-index: 9999;
+    white-space: nowrap;
+    animation: toast-in 0.2s ease;
+  }
+  .toast-error { background: #b91c1c; }
+  @keyframes toast-in {
+    from { opacity: 0; transform: translateX(-50%) translateY(12px); }
+    to   { opacity: 1; transform: translateX(-50%) translateY(0); }
+  }
+
   .top-toggle {
     width: 100%;
     background: transparent;

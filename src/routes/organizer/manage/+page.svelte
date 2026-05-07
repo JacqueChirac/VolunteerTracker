@@ -14,10 +14,11 @@
 	let editingLevelId = $state<number | null>(null);
 	let editingActivityId = $state<number | null>(null);
 
+	let openAnnouncements = $state(true);
 	let openSettings = $state(true);
 	let openPeople = $state(true);
 	let openEntry = $state(true);
-	let openAnnouncements = $state(false);
+	let openExport = $state(false);
 
   let filteredChildren = $derived.by(() => {
     const q = childSearch.trim().toLowerCase();
