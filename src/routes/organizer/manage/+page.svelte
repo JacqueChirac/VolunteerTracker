@@ -534,7 +534,7 @@
 		<div class="card" style="margin-top:12px;">
 			<p style="font-size:0.85rem;color:var(--text-light);margin-bottom:12px;">{$lang === 'en' ? 'Manage outgoing communications and templates.' : 'Gérer les communications et modèles.'}</p>
 			<a href="/organizer/manage/emailing" class="btn btn-accent" style="display:block;text-align:center;margin-bottom:8px;">{$lang === 'en' ? 'Go to Emailing' : 'Aller aux emails'}</a>
-			<a href="/organizer/manage/email_settings" class="btn btn-outline" style="display:block;text-align:center;">{$lang === 'en' ? 'Email Settings' : 'Paramètres email'}</a>
+			<!-- <a href="/organizer/manage/email_settings" class="btn btn-outline" style="display:block;text-align:center;">{$lang === 'en' ? 'Email Settings' : 'Paramètres email'}</a> -->
 		</div>
 	</div>
 	<div>
