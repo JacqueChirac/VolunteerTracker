@@ -3,14 +3,17 @@
 	import type { PageData } from './$types';
 	let { data }: { data: PageData } = $props();
 
-	const steps = [1, 2, 3, 4, 5].map((n) => ({
+	const stepCount = Number(data.tut.tut_step_count || '5');
+	const faqCount = Number(data.tut.tut_faq_count || '4');
+
+	const steps = Array.from({ length: stepCount }, (_, i) => i + 1).map((n) => ({
 		title: data.tut[`tut_step${n}_title`],
 		body: data.tut[`tut_step${n}_body`],
 		linkText: data.tut[`tut_step${n}_link_text`],
 		linkUrl: data.tut[`tut_step${n}_link_url`],
 	}));
 
-	const faqs = [1, 2, 3, 4].map((n) => ({
+	const faqs = Array.from({ length: faqCount }, (_, i) => i + 1).map((n) => ({
 		q: data.tut[`tut_faq${n}_q`],
 		a: data.tut[`tut_faq${n}_a`],
 	}));

@@ -88,6 +88,8 @@ export async function getDonationRate(): Promise<number> {
 // -- Tutorial content --
 
 const TUTORIAL_DEFAULTS: Record<string, string> = {
+	tut_step_count: '5',
+	tut_faq_count: '4',
 	tut_title: 'How to Use This Site',
 	tut_subtitle: 'A step-by-step guide to getting started as a volunteer.',
 	tut_step1_title: 'Step 1: Add Your Children',
@@ -130,8 +132,13 @@ export async function getTutorialContent(): Promise<Record<string, string>> {
 	return result;
 }
 
+export async function deleteTutorialSetting(key: string) {
+	if (!key.startsWith('tut_')) return;
+	await db.delete(siteSettings).where(eq(siteSettings.key, key));
+}
+
 export async function updateTutorialSetting(key: string, value: string) {
-	if (!(key in TUTORIAL_DEFAULTS)) return;
+	if (!key.startsWith('tut_')) return;
 	const label = key.replace(/^tut_/, '').replace(/_/g, ' ');
 	const existing = await db.select().from(siteSettings).where(eq(siteSettings.key, key));
 	if (existing.length > 0) {
