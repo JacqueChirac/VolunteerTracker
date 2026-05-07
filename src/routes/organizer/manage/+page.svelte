@@ -12,22 +12,24 @@
 	let showAddChildLevelDetails = $state(false);
 	let editingLevelId = $state<number | null>(null);
 
-	let filteredChildren = $derived.by(() => {
-		const q = childSearch.trim().toLowerCase();
-		if (!q) return data.children;
-		return data.children.filter((c) =>
-			`${c.firstName} ${c.lastName}`.toLowerCase().includes(q)
-		);
-	});
+  let filteredChildren = $derived.by(() => {
+    const q = childSearch.trim().toLowerCase();
+    if (!q) return data.children;
+    return data.children.filter((c) =>
+      `${c.firstName} ${c.lastName}`.toLowerCase().includes(q),
+    );
+  });
 
-	function volunteerName(id: number): string {
-		const v = data.volunteers.find((x) => x.id === id);
-		return v ? `${v.firstName} ${v.lastName}` : '?';
-	}
+  function volunteerName(id: number): string {
+    const v = data.volunteers.find((x) => x.id === id);
+    return v ? `${v.firstName} ${v.lastName}` : "?";
+  }
 </script>
 
 <h1>{t[$lang].manageTitle}</h1>
-<p style="color:var(--text-light);margin-bottom:24px;">{t[$lang].manageSubtitle}</p>
+<p style="color:var(--text-light);margin-bottom:24px;">
+  {t[$lang].manageSubtitle}
+</p>
 
 <!-- settings -->
 <div style="margin-bottom:32px;">
@@ -82,30 +84,78 @@
 
 <!-- people: add volunteers + children, manage links -->
 <section style="margin-bottom:32px;">
-	<h2>{t[$lang].people}</h2>
-	<p style="color:var(--text-light);font-size:0.9rem;margin-bottom:12px;">{t[$lang].peopleSubtitle}</p>
+  <h2>{t[$lang].people}</h2>
+  <p style="color:var(--text-light);font-size:0.9rem;margin-bottom:12px;">
+    {t[$lang].peopleSubtitle}
+  </p>
 
-	<div class="grid-2">
-		<!-- add volunteer -->
-		<div class="card">
-			<h3 style="margin-bottom:8px;">{t[$lang].addVolunteer}</h3>
-			<p style="color:var(--text-light);font-size:0.85rem;margin-bottom:12px;">{t[$lang].addVolunteerDesc}</p>
-			{#if form?.volunteerSuccess}<div class="alert alert-success" role="status">{form.volunteerSuccess}</div>{/if}
-			{#if form?.volunteerError}<p class="error" role="alert">{form.volunteerError}</p>{/if}
-			<form method="POST" action="?/addVolunteer" use:enhance>
-				<div class="grid-2">
-					<div class="form-group"><label for="v_first">{t[$lang].firstNameLabel}</label><input id="v_first" name="firstName" type="text" autocomplete="given-name" required /></div>
-					<div class="form-group"><label for="v_last">{t[$lang].lastNameLabel}</label><input id="v_last" name="lastName" type="text" autocomplete="family-name" required /></div>
-				</div>
-				<div class="form-group"><label for="v_email">{t[$lang].emailLabel}</label><input id="v_email" name="email" type="email" autocomplete="email" required /></div>
-				<div class="form-group">
-					<label for="v_pass">{t[$lang].tempPassword}</label>
-					<input id="v_pass" name="password" type="text" minlength="4" required aria-describedby="v_pass_help" />
-					<small id="v_pass_help" style="color:var(--text-light);font-size:0.8rem;">{t[$lang].tempPasswordHelp}</small>
-				</div>
-				<button type="submit" class="btn btn-primary" style="width:100%;">{t[$lang].createVolunteer}</button>
-			</form>
-		</div>
+  <div class="grid-2">
+    <!-- add volunteer -->
+    <div class="card">
+      <h3 style="margin-bottom:8px;">{t[$lang].addVolunteer}</h3>
+      <p style="color:var(--text-light);font-size:0.85rem;margin-bottom:12px;">
+        {t[$lang].addVolunteerDesc}
+      </p>
+      {#if form?.volunteerSuccess}<div
+          class="alert alert-success"
+          role="status"
+        >
+          {form.volunteerSuccess}
+        </div>{/if}
+      {#if form?.volunteerError}<p class="error" role="alert">
+          {form.volunteerError}
+        </p>{/if}
+      <form method="POST" action="?/addVolunteer" use:enhance>
+        <div class="grid-2">
+          <div class="form-group">
+            <label for="v_first">{t[$lang].firstNameLabel}</label><input
+              id="v_first"
+              name="firstName"
+              type="text"
+              autocomplete="given-name"
+              required
+            />
+          </div>
+          <div class="form-group">
+            <label for="v_last">{t[$lang].lastNameLabel}</label><input
+              id="v_last"
+              name="lastName"
+              type="text"
+              autocomplete="family-name"
+              required
+            />
+          </div>
+        </div>
+        <div class="form-group">
+          <label for="v_email">{t[$lang].emailLabel}</label><input
+            id="v_email"
+            name="email"
+            type="email"
+            autocomplete="email"
+            required
+          />
+        </div>
+        <div class="form-group">
+          <label for="v_pass">{t[$lang].tempPassword}</label>
+          <input
+            id="v_pass"
+            name="password"
+            type="text"
+            minlength="4"
+            required
+            aria-describedby="v_pass_help"
+          />
+          <small
+            id="v_pass_help"
+            style="color:var(--text-light);font-size:0.8rem;"
+            >{t[$lang].tempPasswordHelp}</small
+          >
+        </div>
+        <button type="submit" class="btn btn-primary" style="width:100%;"
+          >{t[$lang].createVolunteer}</button
+        >
+      </form>
+    </div>
 
 		<!-- add child -->
 		<div class="card">
@@ -160,71 +210,131 @@
 		</div>
 	</div>
 
-	<!-- children + their links -->
-	<div class="card" style="margin-top:16px;">
-		<div style="display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:12px;">
-			<h3 style="margin:0;">{t[$lang].childrenAndLinks(data.children.length)}</h3>
-			<input
-				type="search"
-				placeholder={t[$lang].searchChildren}
-				bind:value={childSearch}
-				aria-label={t[$lang].searchChildrenLabel}
-				style="max-width:260px;"
-			/>
-		</div>
-		{#if form?.linkError}<p class="error" role="alert">{form.linkError}</p>{/if}
-		{#if data.children.length === 0}
-			<p style="color:var(--text-light);">{t[$lang].noChildrenYet}</p>
-		{:else if filteredChildren.length === 0}
-			<p style="color:var(--text-light);">{t[$lang].noChildrenMatch(childSearch)}</p>
-		{:else}
-			<ul class="link-list">
-				{#each filteredChildren as child (child.id)}
-					<li class="link-row">
-						<div class="link-row-head">
-							<div>
-								<strong>{child.firstName} {child.lastName}</strong>
-								<span class="pill {child.status === 'tryout' ? 'pill-accent' : 'pill-primary'}">{child.status === 'tryout' ? t[$lang].tryout : t[$lang].fullMember}</span>
-								{#if child.level}<span style="color:var(--text-light);font-size:0.8rem;margin-left:6px;">· {child.level}</span>{/if}
-							</div>
-							<form method="POST" action="?/deleteChild" use:enhance onsubmit={(e) => { if (!confirm(t[$lang].removeChildConfirm(`${child.firstName} ${child.lastName}`))) e.preventDefault(); }}>
-								<input type="hidden" name="childId" value={child.id} />
-								<button type="submit" class="btn btn-danger btn-sm" aria-label="{t[$lang].remove} {child.firstName} {child.lastName}">{t[$lang].remove}</button>
-							</form>
-						</div>
-						<div class="link-row-body">
-							{#if child.volunteerIds.length === 0}
-								<span style="color:var(--text-light);font-size:0.85rem;">{t[$lang].noVolunteersLinked}</span>
-							{:else}
-								<div class="chips">
-									{#each child.volunteerIds as vid}
-										<span class="chip">
-											{volunteerName(vid)}
-											<form method="POST" action="?/unlinkChild" use:enhance style="display:inline;">
-												<input type="hidden" name="childId" value={child.id} />
-												<input type="hidden" name="userId" value={vid} />
-												<button type="submit" class="chip-x" aria-label="Unlink {volunteerName(vid)}">×</button>
-											</form>
-										</span>
-									{/each}
-								</div>
-							{/if}
-							<form method="POST" action="?/linkChild" use:enhance class="link-add">
-								<input type="hidden" name="childId" value={child.id} />
-								<select name="userId" bind:value={linkPick[child.id]} aria-label={t[$lang].selectVolunteerToLink}>
-									<option value="">{t[$lang].addLinkVolunteer}</option>
-									{#each data.volunteers.filter((v) => !child.volunteerIds.includes(v.id)) as v}
-										<option value={v.id}>{v.firstName} {v.lastName}</option>
-									{/each}
-								</select>
-								<button type="submit" class="btn btn-accent btn-sm" disabled={!linkPick[child.id]}>{t[$lang].link}</button>
-							</form>
-						</div>
-					</li>
-				{/each}
-			</ul>
-		{/if}
-	</div>
+  <!-- children + their links -->
+  <div class="card" style="margin-top:16px;">
+    <div
+      style="display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:12px;"
+    >
+      <h3 style="margin:0;">
+        {t[$lang].childrenAndLinks(data.children.length)}
+      </h3>
+      <input
+        type="search"
+        placeholder={t[$lang].searchChildren}
+        bind:value={childSearch}
+        aria-label={t[$lang].searchChildrenLabel}
+        style="max-width:260px;"
+      />
+    </div>
+    {#if form?.linkError}<p class="error" role="alert">{form.linkError}</p>{/if}
+    {#if data.children.length === 0}
+      <p style="color:var(--text-light);">{t[$lang].noChildrenYet}</p>
+    {:else if filteredChildren.length === 0}
+      <p style="color:var(--text-light);">
+        {t[$lang].noChildrenMatch(childSearch)}
+      </p>
+    {:else}
+      <ul class="link-list">
+        {#each filteredChildren as child (child.id)}
+          <li class="link-row">
+            <div class="link-row-head">
+              <div>
+                <strong>{child.firstName} {child.lastName}</strong>
+                <span
+                  class="pill {child.status === 'tryout'
+                    ? 'pill-accent'
+                    : 'pill-primary'}"
+                  >{child.status === "tryout"
+                    ? t[$lang].tryout
+                    : t[$lang].fullMember}</span
+                >
+                {#if child.level}<span
+                    style="color:var(--text-light);font-size:0.8rem;margin-left:6px;"
+                    >· {child.level}</span
+                  >{/if}
+              </div>
+              <form
+                method="POST"
+                action="?/deleteChild"
+                use:enhance
+                onsubmit={(e) => {
+                  if (
+                    !confirm(
+                      t[$lang].removeChildConfirm(
+                        `${child.firstName} ${child.lastName}`,
+                      ),
+                    )
+                  )
+                    e.preventDefault();
+                }}
+              >
+                <input type="hidden" name="childId" value={child.id} />
+                <button
+                  type="submit"
+                  class="btn btn-danger btn-sm"
+                  aria-label="{t[$lang]
+                    .remove} {child.firstName} {child.lastName}"
+                  >{t[$lang].remove}</button
+                >
+              </form>
+            </div>
+            <div class="link-row-body">
+              {#if child.volunteerIds.length === 0}
+                <span style="color:var(--text-light);font-size:0.85rem;"
+                  >{t[$lang].noVolunteersLinked}</span
+                >
+              {:else}
+                <div class="chips">
+                  {#each child.volunteerIds as vid}
+                    <span class="chip">
+                      {volunteerName(vid)}
+                      <form
+                        method="POST"
+                        action="?/unlinkChild"
+                        use:enhance
+                        style="display:inline;"
+                      >
+                        <input type="hidden" name="childId" value={child.id} />
+                        <input type="hidden" name="userId" value={vid} />
+                        <button
+                          type="submit"
+                          class="chip-x"
+                          aria-label="Unlink {volunteerName(vid)}">×</button
+                        >
+                      </form>
+                    </span>
+                  {/each}
+                </div>
+              {/if}
+              <form
+                method="POST"
+                action="?/linkChild"
+                use:enhance
+                class="link-add"
+              >
+                <input type="hidden" name="childId" value={child.id} />
+                <select
+                  name="userId"
+                  bind:value={linkPick[child.id]}
+                  aria-label={t[$lang].selectVolunteerToLink}
+                >
+                  <option value="">{t[$lang].addLinkVolunteer}</option>
+                  {#each data.volunteers.filter((v) => !child.volunteerIds.includes(v.id)) as v}
+                    <option value={v.id}>{v.firstName} {v.lastName}</option>
+                  {/each}
+                </select>
+                <button
+                  type="submit"
+                  class="btn btn-accent btn-sm"
+                  disabled={!linkPick[child.id]}>{t[$lang].link}</button
+                >
+              </form>
+            </div>
+          </li>
+        {/each}
+      </ul>
+    {/if}
+  </div>
 </section>
 
 <!-- row: swim levels + activity types -->
@@ -424,7 +534,7 @@
 		<div class="card" style="margin-top:12px;">
 			<p style="font-size:0.85rem;color:var(--text-light);margin-bottom:12px;">{$lang === 'en' ? 'Manage outgoing communications and templates.' : 'Gérer les communications et modèles.'}</p>
 			<a href="/organizer/manage/emailing" class="btn btn-accent" style="display:block;text-align:center;margin-bottom:8px;">{$lang === 'en' ? 'Go to Emailing' : 'Aller aux emails'}</a>
-			<a href="/organizer/manage/email_settings" class="btn btn-outline" style="display:block;text-align:center;">{$lang === 'en' ? 'Email Settings' : 'Paramètres email'}</a>
+			<!-- <a href="/organizer/manage/email_settings" class="btn btn-outline" style="display:block;text-align:center;">{$lang === 'en' ? 'Email Settings' : 'Paramètres email'}</a> -->
 		</div>
 	</div>
 	<div>
@@ -437,106 +547,129 @@
 </div>
 
 <style>
-	.alert {
-		padding: 8px 12px;
-		border-radius: 10px;
-		margin-bottom: 12px;
-		font-size: 0.9rem;
-	}
-	.alert-success {
-		background: #DDF1E1;
-		color: #1F5A3A;
-		border: 1px solid #B8E0C2;
-	}
-	.btn-sm {
-		padding: 6px 12px;
-		font-size: 0.8rem;
-		border-radius: 12px;
-	}
-	.pill {
-		display: inline-block;
-		padding: 2px 10px;
-		border-radius: 999px;
-		font-size: 0.72rem;
-		font-weight: 600;
-		text-transform: uppercase;
-		letter-spacing: 0.4px;
-		margin-left: 8px;
-		vertical-align: middle;
-	}
-	.pill-primary { background: rgba(88,164,176,0.18); color: #2E6770; }
-	.pill-accent { background: rgba(218,164,154,0.25); color: #8A4F45; }
-	.link-list {
-		list-style: none;
-		padding: 0;
-		margin: 0;
-		display: flex;
-		flex-direction: column;
-		gap: 10px;
-	}
-	.link-row {
-		background: white;
-		border: 1px solid var(--border);
-		border-radius: 14px;
-		padding: 12px 14px;
-	}
-	.link-row-head {
-		display: flex;
-		justify-content: space-between;
-		align-items: center;
-		gap: 8px;
-		flex-wrap: wrap;
-		margin-bottom: 8px;
-	}
-	.link-row-body {
-		display: flex;
-		justify-content: space-between;
-		align-items: center;
-		gap: 12px;
-		flex-wrap: wrap;
-	}
-	.chips {
-		display: flex;
-		flex-wrap: wrap;
-		gap: 6px;
-	}
-	.chip {
-		display: inline-flex;
-		align-items: center;
-		gap: 4px;
-		background: rgba(88,164,176,0.14);
-		color: #235760;
-		padding: 4px 4px 4px 10px;
-		border-radius: 999px;
-		font-size: 0.85rem;
-		font-weight: 500;
-	}
-	.chip-x {
-		appearance: none;
-		background: transparent;
-		border: none;
-		color: #235760;
-		font-size: 1rem;
-		line-height: 1;
-		padding: 0 6px;
-		cursor: pointer;
-		border-radius: 999px;
-		min-width: 24px;
-		min-height: 24px;
-		box-shadow: none;
-	}
-	.chip-x:hover { background: rgba(88,164,176,0.25); transform: none; box-shadow: none; }
-	.link-add {
-		display: flex;
-		gap: 8px;
-		align-items: center;
-		flex-wrap: wrap;
-	}
-	.link-add select { max-width: 220px; padding: 8px 12px; font-size: 0.9rem; }
+  .alert {
+    padding: 8px 12px;
+    border-radius: 10px;
+    margin-bottom: 12px;
+    font-size: 0.9rem;
+  }
+  .alert-success {
+    background: #ddf1e1;
+    color: #1f5a3a;
+    border: 1px solid #b8e0c2;
+  }
+  .btn-sm {
+    padding: 6px 12px;
+    font-size: 0.8rem;
+    border-radius: 12px;
+  }
+  .pill {
+    display: inline-block;
+    padding: 2px 10px;
+    border-radius: 999px;
+    font-size: 0.72rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+    margin-left: 8px;
+    vertical-align: middle;
+  }
+  .pill-primary {
+    background: rgba(88, 164, 176, 0.18);
+    color: #2e6770;
+  }
+  .pill-accent {
+    background: rgba(218, 164, 154, 0.25);
+    color: #8a4f45;
+  }
+  .link-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  .link-row {
+    background: white;
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 12px 14px;
+  }
+  .link-row-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-bottom: 8px;
+  }
+  .link-row-body {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+  .chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+  .chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    background: rgba(88, 164, 176, 0.14);
+    color: #235760;
+    padding: 4px 4px 4px 10px;
+    border-radius: 999px;
+    font-size: 0.85rem;
+    font-weight: 500;
+  }
+  .chip-x {
+    appearance: none;
+    background: transparent;
+    border: none;
+    color: #235760;
+    font-size: 1rem;
+    line-height: 1;
+    padding: 0 6px;
+    cursor: pointer;
+    border-radius: 999px;
+    min-width: 24px;
+    min-height: 24px;
+    box-shadow: none;
+  }
+  .chip-x:hover {
+    background: rgba(88, 164, 176, 0.25);
+    transform: none;
+    box-shadow: none;
+  }
+  .link-add {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    flex-wrap: wrap;
+  }
+  .link-add select {
+    max-width: 220px;
+    padding: 8px 12px;
+    font-size: 0.9rem;
+  }
 
-	@media (max-width: 600px) {
-		.link-row-head, .link-row-body { flex-direction: column; align-items: stretch; }
-		.link-add select { max-width: 100%; flex: 1; }
-		.link-add { width: 100%; }
-	}
+  @media (max-width: 600px) {
+    .link-row-head,
+    .link-row-body {
+      flex-direction: column;
+      align-items: stretch;
+    }
+    .link-add select {
+      max-width: 100%;
+      flex: 1;
+    }
+    .link-add {
+      width: 100%;
+    }
+  }
 </style>

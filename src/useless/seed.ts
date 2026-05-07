@@ -25,7 +25,9 @@ async function seed() {
       email: "admin@example.com",
     })
     .onConflictDoNothing();
-  console.log("Admin account created (email: admin@example.com, password: admin123)");
+  console.log(
+    "Admin account created (email: admin@example.com, password: admin123)",
+  );
 
   // a few volunteer accounts to test with
   const volunteerPassword = hashSync("password", 10);
@@ -177,7 +179,7 @@ async function seed() {
     {
       title: "Volunteer Hours Reminder",
       content:
-        "Full member families need 30 hours, tryout families need 4 hours. Donations of $10 count as 1 hour.",
+        "Annual Member families need 30 hours, tryout families need 4 hours. Donations of $10 count as 1 hour.",
     },
   ];
 
@@ -191,7 +193,7 @@ async function seed() {
     {
       key: "hours_required_full_member",
       value: "30",
-      label: "Hours Required (Full Member)",
+      label: "Hours Required (Annual Member)",
     },
     {
       key: "hours_required_tryout",

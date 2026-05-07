@@ -19,7 +19,9 @@ export async function load() {
 
   const allNames = await getNames();
 
-  const nodes = await sql`SELECT id, service_id, token FROM nodes`;
+  let nodes = await sql`SELECT id, service_id, token FROM nodes`;
+
+  nodes = nodes.sort((a, b) => a.id - b.id);
   return {
     nodes,
     allNames,
