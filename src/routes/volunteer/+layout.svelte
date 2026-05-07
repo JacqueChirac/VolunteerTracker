@@ -34,8 +34,8 @@
 		<button onclick={() => lang.update(l => l === 'en' ? 'fr' : 'en')} class="lang-btn nav-lang-btn">
 			{$lang === 'en' ? 'FR' : 'EN'}
 		</button>
-		<form method="POST" action="/logout" use:enhance style="display:inline">
-			<button type="submit" style="background:none;color:rgba(255,255,255,0.8);padding:12px 0;font-size:0.9rem;font-weight:500;width:100%;text-align:left;display:flex;align-items:center;gap:6px;"><LogOut size={16} />{t[$lang].logout}</button>
+		<form method="POST" action="/logout" use:enhance class="nav-logout">
+			<button type="submit" class="nav-logout-btn"><LogOut size={16} />{t[$lang].logout}</button>
 		</form>
 	</div>
 </nav>
@@ -46,6 +46,26 @@
 
 <style>
 	.brand-logo { height: 28px; vertical-align: middle; border-radius: 4px; }
+	.nav-logout {
+		display: inline-flex;
+		align-items: center;
+		height: 100%;
+	}
+	.nav-logout-btn {
+		background: transparent;
+		color: rgba(255,255,255,0.85);
+		padding: 0 16px;
+		min-height: var(--touch);
+		font-size: 0.9rem;
+		font-weight: 500;
+		display: inline-flex;
+		align-items: center;
+		gap: 6px;
+		border-radius: 10px;
+		box-shadow: none;
+		white-space: nowrap;
+	}
+	.nav-logout-btn:hover { background: rgba(255,255,255,0.14); transform: none; box-shadow: none; color: white; }
 	.lang-btn {
 		background: rgba(255,255,255,0.15);
 		color: white;
@@ -66,7 +86,9 @@
 		align-self: center;
 	}
 	@media (max-width: 768px) {
-		.nav-lang-btn { width: 100%; justify-content: flex-start; border-radius: 10px; padding: 12px 0; font-size: 0.9rem; background: transparent; border: none; }
+		.nav-logout { width: 100%; height: auto; }
+		.nav-logout-btn { width: 100%; justify-content: flex-start; padding: 0 14px; }
+		.nav-lang-btn { width: 100%; justify-content: flex-start; border-radius: 10px; padding: 0 14px; min-height: var(--touch); font-size: 0.9rem; background: transparent; border: none; }
 		.nav-lang-btn:hover { background: rgba(255,255,255,0.14); }
 	}
 </style>

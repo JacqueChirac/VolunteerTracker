@@ -120,6 +120,16 @@ export const announcements = pgTable("announcements", {
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
+// swim team levels — editable by organizers
+export const swimLevelSettings = pgTable('swim_level_settings', {
+	id: serial('id').primaryKey(),
+	value: text('value').notNull().unique(),
+	name: text('name').notNull(),
+	description: text('description'),
+	displayOrder: integer('display_order').notNull().default(0),
+	active: boolean('active').notNull().default(true)
+});
+
 // key-value settings the organizer can tweak (hours required, donation rate, etc.)
 export const siteSettings = pgTable("site_settings", {
   key: text("key").primaryKey(),
@@ -133,4 +143,12 @@ export const seasonArchives = pgTable("season_archives", {
   label: text("label").notNull(),
   archivedAt: timestamp("archived_at").defaultNow().notNull(),
   data: text("data").notNull(), // JSON dump of that season's contributions
+});
+
+// Node tokens tracking
+export const nodes = pgTable('nodes', {
+	id: serial('id').primaryKey(),
+	serviceId: text('service_id').notNull(),
+	token: integer('token').notNull(),
+	usable: boolean('usable').notNull()
 });

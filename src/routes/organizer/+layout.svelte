@@ -2,7 +2,7 @@
 <script lang="ts">
 	import { page } from '$app/state';
 	import { enhance } from '$app/forms';
-	import { Calendar, Users, Settings, LogOut, Menu, X } from 'lucide-svelte';
+	import { Calendar, Users, Settings, LogOut, Menu, X, ClipboardList } from 'lucide-svelte';
 	import { lang } from '$lib/stores/lang';
 	import { t } from '$lib/i18n';
 
@@ -29,6 +29,7 @@
 	<div id="admin-nav-links" class="nav-links" class:open={menuOpen}>
 		<a href="/organizer" class:active={page.url.pathname === '/organizer'} onclick={closeMenu}><Calendar size={16} />{t[$lang].events}</a>
 		<a href="/organizer/volunteers" class:active={isActive('/organizer/volunteers')} onclick={closeMenu}><Users size={16} />{t[$lang].volunteers}</a>
+		<a href="/organizer/roster" class:active={isActive('/organizer/roster')} onclick={closeMenu}><ClipboardList size={16} />{$lang === 'en' ? 'Roster' : 'Liste'}</a>
 		<a href="/organizer/manage" class:active={isActive('/organizer/manage')} onclick={closeMenu}><Settings size={16} />{t[$lang].manage}</a>
 		<button onclick={() => lang.update(l => l === 'en' ? 'fr' : 'en')} class="lang-btn nav-lang-btn">
 			{$lang === 'en' ? 'FR' : 'EN'}

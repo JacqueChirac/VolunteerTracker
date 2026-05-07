@@ -11,6 +11,8 @@
   let showAddChild = $state(false);
   let showLinkChild = $state(false);
   let showLevelDetails = $state(false);
+  let showCurrentPw = $state(false);
+  let showNewPw = $state(false);
 </script>
 
 <h1>{t[$lang].myAccount}</h1>
@@ -266,20 +268,22 @@
         </p>{/if}
       <form method="POST" action="?/changePassword" use:enhance>
         <div class="form-group">
-          <label for="currentPassword">{t[$lang].currentPassword}</label><input
-            id="currentPassword"
-            name="currentPassword"
-            type="password"
-            required
-          />
+          <label for="currentPassword">{t[$lang].currentPassword}</label>
+          <div class="pw-wrap">
+            <input id="currentPassword" name="currentPassword" type={showCurrentPw ? 'text' : 'password'} required />
+            <button type="button" class="pw-toggle" onclick={() => showCurrentPw = !showCurrentPw}>
+              {showCurrentPw ? ($lang === 'en' ? 'Hide' : 'Masquer') : ($lang === 'en' ? 'Show' : 'Afficher')}
+            </button>
+          </div>
         </div>
         <div class="form-group">
-          <label for="newPassword">{t[$lang].newPassword}</label><input
-            id="newPassword"
-            name="newPassword"
-            type="password"
-            required
-          />
+          <label for="newPassword">{t[$lang].newPassword}</label>
+          <div class="pw-wrap">
+            <input id="newPassword" name="newPassword" type={showNewPw ? 'text' : 'password'} required />
+            <button type="button" class="pw-toggle" onclick={() => showNewPw = !showNewPw}>
+              {showNewPw ? ($lang === 'en' ? 'Hide' : 'Masquer') : ($lang === 'en' ? 'Show' : 'Afficher')}
+            </button>
+          </div>
         </div>
         <button type="submit" class="btn btn-primary" style="width:100%;"
           >{t[$lang].changePasswordBtn}</button
@@ -288,3 +292,10 @@
     </div>
   </div>
 </div>
+
+<style>
+  .pw-wrap { position: relative; }
+  .pw-wrap input { width: 100%; padding-right: 5rem; }
+  .pw-toggle { position: absolute; right: 8px; top: 50%; transform: translateY(-50%); background: none; border: none; color: var(--primary); font-size: 0.8rem; font-weight: 600; cursor: pointer; padding: 2px 4px; box-shadow: none; min-height: auto; }
+  .pw-toggle:hover { text-decoration: underline; transform: translateY(-50%); box-shadow: none; }
+</style>
