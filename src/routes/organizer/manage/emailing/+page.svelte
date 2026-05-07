@@ -44,7 +44,9 @@
 
   let inputElement: HTMLInputElement;
   let focus = $state(0);
-  let token = $derived(data.nodes?.[node]?.token ?? 0);
+  let tokens = $derived(
+  data.nodes?.map(n => n.token) ?? []
+);
 
   let wordSelected = $derived.by(() => {
     const text = messageParams.recipient;
@@ -249,10 +251,9 @@
     init();
   }
 
-  function getColor(i: number) {
-    const t = i === node ? token : 200;
+  function getColor(t: number) {
 
-    if (t > 100) return "green";
+    if (t > 100) return "#3b82f6";
     if (t > 25) return "yellow";
     if (t > 0) return "red";
     return "gray";
@@ -269,7 +270,7 @@
     {#each services as s, i}
       {@render nodeItem({
         serviceID: s.serviceID,
-        token: i === node ? token : 200,
+        token: i === node ? tokens[node] : 0,
         active: i === node,
         serial: i,
       })}
@@ -428,15 +429,18 @@
       <div class="node-bottom">
         <div class="bar">
           <div class="bar-track">
-            <div
-              class="bar-fill"
-              style={`width: ${(token / 200) * 100}%`}
-            ></div>
+           <div
+  class="bar-fill"
+  style={`
+    width: ${(tokens[serial] / 200) * 100}%;
+    background: ${getColor(tokens[serial])};
+  `}
+/>
 
-            <div class="bar-dot" style={`left: ${(token / 200) * 100}%`}></div>
+            <div class="bar-dot" style={`left: ${(tokens[serial] / 200) * 100}%`}></div>
           </div>
 
-          <span class="bar-text">({token}/200)</span>
+          <span class="bar-text">({tokens[serial]}/200)</span>
         </div>
       </div>
     </div>
