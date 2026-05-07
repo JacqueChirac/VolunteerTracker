@@ -657,7 +657,7 @@
 							<strong>{fn.label}</strong>
 						</div>
 						<div style="font-size:0.8rem;color:var(--text-light);">
-							{fn.type === 'volunteer' ? 'Volunteer' : (fn.status === 'tryout' ? 'Tryout swimmer' : 'Full member')}
+							{fn.type === 'volunteer' ? 'Volunteer' : (fn.status === 'tryout' ? 'Tryout swimmer' : 'Annual Member')}
 						</div>
 						<div style="font-size:0.85rem;margin-top:6px;">
 							{#if fn.type === 'volunteer'}
