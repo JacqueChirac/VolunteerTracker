@@ -1,7 +1,7 @@
 // log hours — volunteer logs hours or donations
 import type { PageServerLoad, Actions } from "./$types";
 import { db } from "$lib/server/db";
-import { eq, desc, inArray, and} from "drizzle-orm";
+import { eq, desc, inArray, and } from "drizzle-orm";
 import { fail } from "@sveltejs/kit";
 import { getDonationRate } from "$lib/server/settings";
 import { today, daysAgo } from "$lib/dateBounds";
@@ -50,7 +50,6 @@ export const actions: Actions = {
     const hours = fd.get("hours")?.toString() ?? "";
     const notes = fd.get("notes")?.toString() ?? "";
 
-
     if (!date || !hours)
       return fail(400, { error: "Date and hours are required." });
     const hoursNum = parseFloat(hours);
@@ -59,9 +58,7 @@ export const actions: Actions = {
     if (hoursNum > 24)
       return fail(400, { error: "Hours cannot exceed 24 per entry." });
 
-    //Check if date is out of constraints
-    const max = today(),
-      min = daysAgo(365);
+    const max = today(), min = daysAgo(365);
     if (date > max)
       return fail(400, { error: "Date cannot be in the future." });
     if (date < min)
@@ -92,7 +89,7 @@ export const actions: Actions = {
       notes: notes || null,
       eventId,
     });
-    return { success: true, message: `Logged ${hoursNum} volunteer hours. Waiting for approval and verifications from administrators` };
+    return { success: true, message: `Logged ${hoursNum} volunteer hours.` };
   },
 
   donation: async ({ request, locals }) => {
@@ -107,13 +104,23 @@ export const actions: Actions = {
     if (isNaN(amountNum) || amountNum <= 0)
       return fail(400, { error: "Amount must be a positive number." });
 
-    //Check if date is out of constraints
-    const max = today(),
-      min = daysAgo(365);
+    const max = today(), min = daysAgo(365);
     if (date > max)
       return fail(400, { error: "Date cannot be in the future." });
     if (date < min)
       return fail(400, { error: "Date is more than a year ago." });
+
+    const eventIdRaw = fd.get("eventId")?.toString();
+    const eventId = eventIdRaw ? Number(eventIdRaw) : null;
+
+    if (eventId) {
+      const [signup] = await db
+        .select()
+        .from(eventSignups)
+        .where(and(eq(eventSignups.userId, locals.user!.id), eq(eventSignups.eventId, eventId)));
+      if (!signup)
+        return fail(400, { error: "You are not signed up for that event." });
+    }
 
     const rate = await getDonationRate();
     const hoursEquiv = amountNum / rate;
@@ -125,10 +132,11 @@ export const actions: Actions = {
       hours: hoursEquiv.toFixed(2),
       amount: amountNum.toFixed(2),
       notes: notes || null,
+      eventId,
     });
     return {
       success: true,
-      message: `Logged $${amountNum} donation (= ${hoursEquiv.toFixed(1)} hours). Waiting for approval and verifications from administrators`,
+      message: `Logged $${amountNum} donation (= ${hoursEquiv.toFixed(1)} hours).`,
     };
   },
 

@@ -261,6 +261,7 @@ tr:last-child td { border-bottom: none; }
 	border-radius: 10px;
 	transition: background 0.15s;
 	min-height: var(--touch);
+	white-space: nowrap;
 }
 .nav a:hover, .nav a.active {
 	color: white;

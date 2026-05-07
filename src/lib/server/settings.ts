@@ -3,7 +3,8 @@
 // stored in the site_settings table as key-value pairs
 
 import { db } from './db';
-import { siteSettings } from './db/schema';
+import { siteSettings, swimLevelSettings } from './db/schema';
+import { swimLevels as hardcodedLevels } from '$lib/swimLevels';
 import { eq } from 'drizzle-orm';
 
 // fallback values if nothing is in the database yet
@@ -62,4 +63,72 @@ export async function getHoursRequired(status: 'full_member' | 'tryout'): Promis
 // convenience: how many dollars = 1 volunteer hour?
 export async function getDonationRate(): Promise<number> {
 	return Number(await getSetting('donation_to_hour_rate'));
+}
+
+// -- Tutorial content --
+
+const TUTORIAL_DEFAULTS: Record<string, string> = {
+	tut_title: 'How to Use This Site',
+	tut_subtitle: 'A step-by-step guide to getting started as a volunteer.',
+	tut_step1_title: 'Step 1: Add Your Children',
+	tut_step1_body: "Go to My Account and click \"+ New Child\". Fill in your child's name, level, and select their status. If your child has multiple guardians who volunteer, each guardian should create their own account — all hours from every linked guardian count toward the child's goal.",
+	tut_step1_link_text: 'My Account',
+	tut_step1_link_url: '/volunteer/account',
+	tut_step2_title: 'Step 2: Sign Up for Events',
+	tut_step2_body: 'Visit the Events page to see upcoming events that need volunteers. Click "Sign Up" on any event you can attend. You can cancel your sign-up at any time if your plans change.',
+	tut_step2_link_text: 'View Events',
+	tut_step2_link_url: '/volunteer/events',
+	tut_step3_title: 'Step 3: Log Your Volunteer Hours',
+	tut_step3_body: 'After you volunteer, go to Log Contributions and select "Log Volunteering". Enter the date, hours worked, activity type, and any notes. Your entry will be reviewed by an administrator.',
+	tut_step3_link_text: 'Log Contributions',
+	tut_step3_link_url: '/volunteer/log',
+	tut_step4_title: 'Step 4: Log Donations',
+	tut_step4_body: 'Monetary donations also count toward your volunteer hours. Go to Log Contributions and select "Log Donation". The conversion rate is shown on the page — just enter the dollar amount and the hours are calculated automatically.',
+	tut_step4_link_text: 'Log Contributions',
+	tut_step4_link_url: '/volunteer/log',
+	tut_step5_title: 'Step 5: Track Your Progress',
+	tut_step5_body: "Go to My Account to see each child's progress bar showing how many hours have been completed out of the required total. Remember: your hours count for all of your linked children.",
+	tut_step5_link_text: 'My Account',
+	tut_step5_link_url: '/volunteer/account',
+	tut_faq_title: 'Frequently Asked Questions',
+	tut_faq1_q: 'How many hours do I need?',
+	tut_faq1_a: 'Manual members need 30 hours per year. Tryout members need 4 hours. These requirements are set by the organizer and may change.',
+	tut_faq2_q: 'Do donations count as hours?',
+	tut_faq2_a: 'Yes! The current conversion rate is shown on the Log Contributions page.',
+	tut_faq3_q: "I share custody — do both guardians' hours count?",
+	tut_faq3_a: 'Yes. Each guardian creates their own account and adds the same child. All hours from every linked guardian are added together for that child.',
+	tut_faq4_q: 'I have multiple children — do I need to volunteer separately for each?',
+	tut_faq4_a: 'No. When you log hours, those hours count for every child linked to your account. 5 hours logged = 5 hours for each of your children.',
+};
+
+export async function getTutorialContent(): Promise<Record<string, string>> {
+	const rows = await db.select().from(siteSettings);
+	const result = { ...TUTORIAL_DEFAULTS };
+	for (const row of rows) {
+		if (row.key.startsWith('tut_')) result[row.key] = row.value;
+	}
+	return result;
+}
+
+export async function updateTutorialSetting(key: string, value: string) {
+	if (!(key in TUTORIAL_DEFAULTS)) return;
+	const label = key.replace(/^tut_/, '').replace(/_/g, ' ');
+	const existing = await db.select().from(siteSettings).where(eq(siteSettings.key, key));
+	if (existing.length > 0) {
+		await db.update(siteSettings).set({ value }).where(eq(siteSettings.key, key));
+	} else {
+		await db.insert(siteSettings).values({ key, value, label });
+	}
+}
+
+// get swim levels from DB, seeding from hardcoded list if empty
+export async function getSwimLevels() {
+	const rows = await db.select().from(swimLevelSettings).orderBy(swimLevelSettings.displayOrder);
+	if (rows.length > 0) return rows;
+	// seed from hardcoded list on first use
+	for (let i = 0; i < hardcodedLevels.length; i++) {
+		const lvl = hardcodedLevels[i];
+		await db.insert(swimLevelSettings).values({ value: lvl.value, name: lvl.name, description: lvl.description, displayOrder: i }).onConflictDoNothing();
+	}
+	return await db.select().from(swimLevelSettings).orderBy(swimLevelSettings.displayOrder);
 }

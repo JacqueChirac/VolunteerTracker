@@ -6,6 +6,8 @@
 	import { t } from '$lib/i18n';
 
 	let { form }: { form: ActionData } = $props();
+	let showPassword = $state(false);
+	let showConfirm = $state(false);
 </script>
 
 <div class="register-page">
@@ -36,11 +38,21 @@
 			</div>
 			<div class="form-group">
 				<label for="password">{t[$lang].password}</label>
-				<input id="password" name="password" type="password" required />
+				<div class="pw-wrap">
+					<input id="password" name="password" type={showPassword ? 'text' : 'password'} required />
+					<button type="button" class="pw-toggle" onclick={() => showPassword = !showPassword}>
+						{showPassword ? ($lang === 'en' ? 'Hide' : 'Masquer') : ($lang === 'en' ? 'Show' : 'Afficher')}
+					</button>
+				</div>
 			</div>
 			<div class="form-group">
 				<label for="confirmPassword">{t[$lang].confirmPassword}</label>
-				<input id="confirmPassword" name="confirmPassword" type="password" required />
+				<div class="pw-wrap">
+					<input id="confirmPassword" name="confirmPassword" type={showConfirm ? 'text' : 'password'} required />
+					<button type="button" class="pw-toggle" onclick={() => showConfirm = !showConfirm}>
+						{showConfirm ? ($lang === 'en' ? 'Hide' : 'Masquer') : ($lang === 'en' ? 'Show' : 'Afficher')}
+					</button>
+				</div>
 			</div>
 			<button type="submit" class="btn btn-primary" style="width:100%">{t[$lang].createAccountBtn}</button>
 		</form>
@@ -71,4 +83,8 @@
 		transition: background 0.2s;
 	}
 	.lang-btn:hover { background: rgba(88,164,176,0.3); transform: none; box-shadow: none; }
+	.pw-wrap { position: relative; }
+	.pw-wrap input { width: 100%; padding-right: 5rem; }
+	.pw-toggle { position: absolute; right: 8px; top: 50%; transform: translateY(-50%); background: none; border: none; color: var(--primary); font-size: 0.8rem; font-weight: 600; cursor: pointer; padding: 2px 4px; box-shadow: none; min-height: auto; }
+	.pw-toggle:hover { text-decoration: underline; transform: translateY(-50%); box-shadow: none; }
 </style>

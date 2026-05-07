@@ -2,7 +2,6 @@
 <script lang="ts">
 	import { enhance } from '$app/forms';
 	import type { PageData, ActionData } from './$types';
-	import { swimLevels } from '$lib/swimLevels';
 	import { lang } from '$lib/stores/lang';
 	import { t } from '$lib/i18n';
 
@@ -11,6 +10,7 @@
 	let childSearch = $state('');
 	let linkPick = $state<Record<number, string>>({});
 	let showAddChildLevelDetails = $state(false);
+	let editingLevelId = $state<number | null>(null);
 
 	let filteredChildren = $derived.by(() => {
 		const q = childSearch.trim().toLowerCase();
@@ -32,6 +32,14 @@
 <!-- settings -->
 <div style="margin-bottom:32px;">
 	<h2>{t[$lang].settings}</h2>
+
+	{#if data.autoArchived}
+		<div style="background:#d4edda;border:1px solid #c3e6cb;border-radius:8px;padding:12px 16px;margin-top:12px;margin-bottom:12px;">
+			<p style="color:#155724;font-weight:600;margin-bottom:2px;">Season auto-archived</p>
+			<p style="color:#155724;font-size:0.88rem;">The season end date passed, so contributions were archived and the season dates have been advanced by one year.</p>
+		</div>
+	{/if}
+
 	<div class="card" style="margin-top:12px;">
 		{#if form?.settingsSuccess}
 			<div style="background:#d4edda;padding:8px 12px;border-radius:6px;margin-bottom:12px;"><p style="color:#155724;font-size:0.9rem;">{t[$lang].settingsUpdated}</p></div>
@@ -45,6 +53,28 @@
 					</div>
 				{/each}
 				<div class="form-group"><button type="submit" class="btn btn-primary">{t[$lang].saveSettings}</button></div>
+			</div>
+		</form>
+	</div>
+
+	<div class="card" style="margin-top:12px;">
+		<h3 style="margin-bottom:4px;">Season Dates</h3>
+		<p style="font-size:0.85rem;color:var(--text-light);margin-bottom:12px;">
+			Set the season's date range. Contributions will be automatically archived when the end date passes, and the dates will advance by one year for the next cycle.
+		</p>
+		<form method="POST" action="?/updateSettings" use:enhance>
+			<div style="display:flex;gap:16px;flex-wrap:wrap;align-items:end;">
+				<div class="form-group" style="flex:1;min-width:180px;">
+					<label for="season_start">Season Start</label>
+					<input id="season_start" name="setting_season_start_date" type="date" value={data.seasonDates.start} />
+				</div>
+				<div class="form-group" style="flex:1;min-width:180px;">
+					<label for="season_end">Season End</label>
+					<input id="season_end" name="setting_season_end_date" type="date" value={data.seasonDates.end} />
+				</div>
+				<div class="form-group">
+					<button type="submit" class="btn btn-primary">Save Dates</button>
+				</div>
 			</div>
 		</form>
 	</div>
@@ -100,7 +130,7 @@
 						<label for="c_level">{t[$lang].levelOptional}</label>
 						<select id="c_level" name="level">
 							<option value="">{t[$lang].selectLevel}</option>
-							{#each swimLevels as lvl}
+							{#each data.swimLevels as lvl}
 								<option value={lvl.value}>{lvl.name}</option>
 							{/each}
 						</select>
@@ -109,7 +139,7 @@
 						</button>
 						{#if showAddChildLevelDetails}
 							<div style="margin-top:8px;font-size:0.8rem;color:var(--text-light);max-height:240px;overflow-y:auto;">
-								{#each swimLevels as lvl}
+								{#each data.swimLevels as lvl}
 									<p style="margin-bottom:8px;"><strong>{lvl.name}</strong> — {lvl.description}</p>
 								{/each}
 							</div>
@@ -197,7 +227,57 @@
 	</div>
 </section>
 
-<div class="grid-2">
+<!-- row: swim levels + activity types -->
+<div class="grid-2" style="margin-bottom:32px;">
+	<!-- swim levels -->
+	<div>
+		<h2>{$lang === 'en' ? 'Swim Levels' : 'Niveaux de natation'}</h2>
+		<div class="card" style="margin-top:12px;">
+			{#if form?.swimLevelError}<p class="error" style="margin-bottom:8px;">{form.swimLevelError}</p>{/if}
+			{#if form?.swimLevelSuccess}<div style="background:#d4edda;padding:8px 12px;border-radius:6px;margin-bottom:12px;"><p style="color:#155724;font-size:0.9rem;">{$lang === 'en' ? 'Saved.' : 'Sauvegardé.'}</p></div>{/if}
+			{#each data.swimLevels as lvl (lvl.id)}
+				<div style="padding:10px 0;border-bottom:1px solid var(--border);">
+					{#if editingLevelId === lvl.id}
+						<form method="POST" action="?/editSwimLevel" use:enhance={() => () => { editingLevelId = null; }}>
+							<input type="hidden" name="id" value={lvl.id} />
+							<div style="display:flex;flex-direction:column;gap:6px;">
+								<input name="name" type="text" value={lvl.name} required style="font-weight:600;" />
+								<textarea name="description" rows="2" style="font-size:0.85rem;">{lvl.description ?? ''}</textarea>
+								<div style="display:flex;gap:6px;">
+									<button type="submit" class="btn btn-primary" style="padding:4px 10px;font-size:0.8rem;">{$lang === 'en' ? 'Save' : 'Sauvegarder'}</button>
+									<button type="button" class="btn btn-outline" style="padding:4px 10px;font-size:0.8rem;" onclick={() => editingLevelId = null}>{$lang === 'en' ? 'Cancel' : 'Annuler'}</button>
+								</div>
+							</div>
+						</form>
+					{:else}
+						<div style="display:flex;justify-content:space-between;align-items:start;gap:8px;">
+							<div style="flex:1;">
+								<strong>{lvl.name}</strong>
+								{#if lvl.description}<p style="font-size:0.8rem;color:var(--text-light);margin-top:2px;">{lvl.description}</p>{/if}
+							</div>
+							<div style="display:flex;gap:4px;flex-shrink:0;">
+								<button type="button" class="btn btn-outline" style="padding:2px 8px;font-size:0.75rem;" onclick={() => editingLevelId = lvl.id}>{$lang === 'en' ? 'Edit' : 'Modifier'}</button>
+								<form method="POST" action="?/deleteSwimLevel" use:enhance>
+									<input type="hidden" name="id" value={lvl.id} />
+									<button type="submit" class="btn btn-danger" style="padding:2px 8px;font-size:0.75rem;" onclick={(e) => { if (!confirm($lang === 'en' ? 'Delete this level?' : 'Supprimer ce niveau?')) e.preventDefault(); }}>{$lang === 'en' ? 'Delete' : 'Supprimer'}</button>
+								</form>
+							</div>
+						</div>
+					{/if}
+				</div>
+			{/each}
+			<form method="POST" action="?/addSwimLevel" use:enhance style="margin-top:16px;display:flex;flex-direction:column;gap:8px;">
+				<p style="font-size:0.85rem;font-weight:600;">{$lang === 'en' ? 'Add New Level' : 'Ajouter un niveau'}</p>
+				<div style="display:flex;gap:8px;">
+					<input name="value" type="text" placeholder={$lang === 'en' ? 'ID (e.g. Junior 3)' : 'ID (ex: Junior 3)'} required style="flex:1;" />
+					<input name="name" type="text" placeholder={$lang === 'en' ? 'Display name' : 'Nom affiché'} required style="flex:1;" />
+				</div>
+				<textarea name="description" rows="2" placeholder={$lang === 'en' ? 'Description (optional)' : 'Description (optionnel)'}></textarea>
+				<button type="submit" class="btn btn-accent" style="align-self:flex-start;">{$lang === 'en' ? '+ Add Level' : '+ Ajouter un niveau'}</button>
+			</form>
+		</div>
+	</div>
+
 	<!-- activity types -->
 	<div>
 		<h2>{t[$lang].activityTypes}</h2>
@@ -218,9 +298,11 @@
 				</div>
 			{/each}
 		</div>
-
 	</div>
+</div>
 
+<!-- row: manual entry + mark as met -->
+<div class="grid-2" style="margin-bottom:32px;">
 	<!-- manual entry -->
 	<div>
 		<h2>{t[$lang].manualEntry}</h2>
@@ -251,98 +333,105 @@
 				<button type="submit" class="btn btn-primary" style="width:100%;">{t[$lang].addEntry}</button>
 			</form>
 		</div>
+	</div>
 
-		<h2 style="margin-top:32px;">Emailing</h2>
+	<!-- mark as met -->
+	<div>
+		<h2>{$lang === 'en' ? 'Mark as Met' : 'Marquer comme atteint'}</h2>
+		<p style="color:var(--text-light);font-size:0.85rem;margin-bottom:12px;">{$lang === 'en' ? 'Adds enough hours so the volunteer meets their requirement.' : 'Ajoute les heures nécessaires pour atteindre l\'exigence.'}</p>
 		<div class="card" style="margin-top:12px;">
-			<p style="font-size:0.85rem;color:var(--text-light);margin-bottom:12px;">
-				Manage outgoing communications and templates.
-			</p>
-			<a href="/organizer/manage/emailing" class="btn btn-accent" style="display:block;text-align:center;margin-bottom:12px;">Go to Emailing</a>
-			<a href="/organizer/manage/email_settings" class="btn btn-outline" style="display:block;text-align:center;">Email settings</a>
+			{#if form?.markMetSuccess}
+				<div style="background:#d4edda;padding:8px 12px;border-radius:6px;margin-bottom:12px;"><p style="color:#155724;font-size:0.9rem;">{$lang === 'en' ? 'Volunteer marked as meeting requirements.' : 'Bénévole marqué comme ayant atteint les exigences.'}</p></div>
+			{/if}
+			{#if form?.markMetError}<p class="error" style="margin-bottom:8px;">{form.markMetError}</p>{/if}
+			<form method="POST" action="?/markMet" use:enhance style="display:flex;flex-direction:column;gap:12px;">
+				<div class="form-group" style="margin-bottom:0;">
+					<label for="markMetUser">{$lang === 'en' ? 'Volunteer' : 'Bénévole'}</label>
+					<select id="markMetUser" name="userId" required>
+						<option value="">{$lang === 'en' ? '-- Select volunteer --' : '-- Sélectionner --'}</option>
+						{#each data.volunteers as v}
+							<option value={v.id}>{v.firstName} {v.lastName}</option>
+						{/each}
+					</select>
+				</div>
+				<div class="form-group" style="margin-bottom:0;">
+					<label for="markAs">{$lang === 'en' ? 'Requirement' : 'Exigence'}</label>
+					<select id="markAs" name="markAs">
+						<option value="full_member">{$lang === 'en' ? 'Full Member' : 'Membre complet'}</option>
+						<option value="tryout">{$lang === 'en' ? 'Tryout' : 'Essai'}</option>
+					</select>
+				</div>
+				<button type="submit" class="btn btn-primary" onclick={(e) => { if (!confirm($lang === 'en' ? 'This will add hours to meet the selected requirement. Continue?' : 'Cela ajoutera des heures. Continuer?')) e.preventDefault(); }}>{$lang === 'en' ? 'Mark as Met' : 'Marquer comme atteint'}</button>
+			</form>
 		</div>
 	</div>
 </div>
 
-<!-- mark volunteer as meeting requirements -->
-<div style="margin-top:32px;margin-bottom:32px;">
-	<h2>Mark Volunteer as Met</h2>
-	<p style="color:var(--text-light);font-size:0.9rem;margin-bottom:12px;">Adds enough hours so all of a volunteer's linked children meet their requirement.</p>
-	<div class="card" style="margin-top:12px;">
-		{#if form?.markMetSuccess}
-			<div style="background:#d4edda;padding:8px 12px;border-radius:6px;margin-bottom:12px;"><p style="color:#155724;font-size:0.9rem;">Volunteer marked as meeting requirements.</p></div>
-		{/if}
-		{#if form?.markMetError}<p class="error" style="margin-bottom:8px;">{form.markMetError}</p>{/if}
-		<form method="POST" action="?/markMet" use:enhance style="display:flex;gap:8px;align-items:end;flex-wrap:wrap;">
-			<div class="form-group" style="flex:1;min-width:200px;margin-bottom:0;">
-				<label for="markMetUser">Volunteer</label>
-				<select id="markMetUser" name="userId" required>
-					<option value="">-- Select volunteer --</option>
-					{#each data.volunteers as v}
-						<option value={v.id}>{v.firstName} {v.lastName}</option>
-					{/each}
-				</select>
-			</div>
-			<div class="form-group" style="min-width:160px;margin-bottom:0;">
-				<label for="markAs">Requirement</label>
-				<select id="markAs" name="markAs">
-					<option value="full_member">Full Member</option>
-					<option value="tryout">Tryout</option>
-				</select>
-			</div>
-			<button type="submit" class="btn btn-primary" onclick={(e) => { if (!confirm('This will add hours to meet the selected requirement. Continue?')) e.preventDefault(); }}>Mark as Met</button>
-		</form>
+<!-- row: announcements + export/archive -->
+<div class="grid-2" style="margin-bottom:32px;">
+	<!-- announcements -->
+	<div>
+		<h2>{t[$lang].announcements}</h2>
+		<div class="card" style="margin-top:12px;">
+			{#if form?.announcementError}<p class="error" style="margin-bottom:8px;">{form.announcementError}</p>{/if}
+			<form method="POST" action="?/addAnnouncement" use:enhance style="margin-bottom:16px;">
+				<div class="form-group"><label for="announcementTitle">{t[$lang].announcementTitle}</label><input id="announcementTitle" name="title" type="text" required /></div>
+				<div class="form-group"><label for="announcementContent">{t[$lang].announcementContent}</label><textarea id="announcementContent" name="content" rows="3" required></textarea></div>
+				<button type="submit" class="btn btn-accent">{t[$lang].postAnnouncement}</button>
+			</form>
+			{#each data.announcements as a}
+				<div style="display:flex;justify-content:space-between;align-items:start;padding:8px 0;border-bottom:1px solid var(--border);">
+					<div><strong>{a.title}</strong><p style="font-size:0.85rem;color:var(--text-light);">{new Date(a.createdAt).toLocaleDateString()}</p></div>
+					<form method="POST" action="?/deleteAnnouncement" use:enhance><input type="hidden" name="id" value={a.id} /><button type="submit" class="btn btn-danger" style="padding:4px 10px;font-size:0.8rem;">{t[$lang].delete}</button></form>
+				</div>
+			{/each}
+		</div>
 	</div>
-</div>
 
-<div style="margin-top:32px;">
-	<div class="grid-2">
-		<!-- announcements -->
-		<div>
-			<h2>{t[$lang].announcements}</h2>
-			<div class="card" style="margin-top:12px;">
-				{#if form?.announcementError}<p class="error" style="margin-bottom:8px;">{form.announcementError}</p>{/if}
-				<form method="POST" action="?/addAnnouncement" use:enhance style="margin-bottom:16px;">
-					<div class="form-group"><label for="announcementTitle">{t[$lang].announcementTitle}</label><input id="announcementTitle" name="title" type="text" required /></div>
-					<div class="form-group"><label for="announcementContent">{t[$lang].announcementContent}</label><textarea id="announcementContent" name="content" rows="3" required></textarea></div>
-					<button type="submit" class="btn btn-accent">{t[$lang].postAnnouncement}</button>
-				</form>
-				{#each data.announcements as a}
-					<div style="display:flex;justify-content:space-between;align-items:start;padding:8px 0;border-bottom:1px solid var(--border);">
-						<div><strong>{a.title}</strong><p style="font-size:0.85rem;color:var(--text-light);">{new Date(a.createdAt).toLocaleDateString()}</p></div>
-						<form method="POST" action="?/deleteAnnouncement" use:enhance><input type="hidden" name="id" value={a.id} /><button type="submit" class="btn btn-danger" style="padding:4px 10px;font-size:0.8rem;">{t[$lang].delete}</button></form>
+	<!-- export + archive -->
+	<div>
+		<h2>{t[$lang].exportArchive}</h2>
+		<div class="card" style="margin-top:12px;">
+			<a href="/api/export" class="btn btn-primary" style="display:block;text-align:center;margin-bottom:16px;">{t[$lang].exportCsv}</a>
+			<hr style="border:none;border-top:1px solid var(--border);margin:16px 0;" />
+			<h3>{t[$lang].archiveSeason}</h3>
+			<p style="font-size:0.85rem;color:var(--text-light);margin-bottom:12px;">{t[$lang].archiveSeasonDesc}</p>
+			{#if form?.archiveSuccess}
+				<div style="background:#d4edda;padding:8px 12px;border-radius:6px;margin-bottom:12px;"><p style="color:#155724;font-size:0.9rem;">{t[$lang].seasonArchivedSuccess}</p></div>
+			{/if}
+			{#if form?.archiveError}<p class="error" style="margin-bottom:8px;">{form.archiveError}</p>{/if}
+			<form method="POST" action="?/archiveSeason" use:enhance onsubmit={(e) => { if (!confirm(t[$lang].archiveConfirm)) e.preventDefault(); }}>
+				<div class="form-group"><label for="archiveLabel">{t[$lang].seasonLabel}</label><input id="archiveLabel" name="label" type="text" placeholder={t[$lang].seasonLabelPlaceholder} required /></div>
+				<button type="submit" class="btn btn-danger" style="width:100%;">{t[$lang].archiveReset}</button>
+			</form>
+			{#if data.archives.length > 0}
+				<h4 style="margin-top:16px;">{t[$lang].pastArchives}</h4>
+				{#each data.archives as archive}
+					<div style="padding:8px 0;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;">
+						<span>{archive.label}</span>
+						<span style="font-size:0.85rem;color:var(--text-light);">{new Date(archive.archivedAt).toLocaleDateString()}</span>
 					</div>
 				{/each}
-			</div>
+			{/if}
 		</div>
+	</div>
+</div>
 
-		
-
-		<!-- export + archive -->
-		<div>
-			<h2>{t[$lang].exportArchive}</h2>
-			<div class="card" style="margin-top:12px;">
-				<a href="/api/export" class="btn btn-primary" style="display:block;text-align:center;margin-bottom:16px;">{t[$lang].exportCsv}</a>
-				<hr style="border:none;border-top:1px solid var(--border);margin:16px 0;" />
-				<h3>{t[$lang].archiveSeason}</h3>
-				<p style="font-size:0.85rem;color:var(--text-light);margin-bottom:12px;">{t[$lang].archiveSeasonDesc}</p>
-				{#if form?.archiveSuccess}
-					<div style="background:#d4edda;padding:8px 12px;border-radius:6px;margin-bottom:12px;"><p style="color:#155724;font-size:0.9rem;">{t[$lang].seasonArchivedSuccess}</p></div>
-				{/if}
-				{#if form?.archiveError}<p class="error" style="margin-bottom:8px;">{form.archiveError}</p>{/if}
-				<form method="POST" action="?/archiveSeason" use:enhance onsubmit={(e) => { if (!confirm(t[$lang].archiveConfirm)) e.preventDefault(); }}>
-					<div class="form-group"><label for="archiveLabel">{t[$lang].seasonLabel}</label><input id="archiveLabel" name="label" type="text" placeholder={t[$lang].seasonLabelPlaceholder} required /></div>
-					<button type="submit" class="btn btn-danger" style="width:100%;">{t[$lang].archiveReset}</button>
-				</form>
-				{#if data.archives.length > 0}
-					<h4 style="margin-top:16px;">{t[$lang].pastArchives}</h4>
-					{#each data.archives as archive}
-						<div style="padding:8px 0;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;">
-							<span>{archive.label}</span>
-							<span style="font-size:0.85rem;color:var(--text-light);">{new Date(archive.archivedAt).toLocaleDateString()}</span>
-						</div>
-					{/each}
-				{/if}
-			</div>
+<!-- row: emailing + tutorial -->
+<div class="grid-2" style="margin-bottom:32px;">
+	<div>
+		<h2>Emailing</h2>
+		<div class="card" style="margin-top:12px;">
+			<p style="font-size:0.85rem;color:var(--text-light);margin-bottom:12px;">{$lang === 'en' ? 'Manage outgoing communications and templates.' : 'Gérer les communications et modèles.'}</p>
+			<a href="/organizer/manage/emailing" class="btn btn-accent" style="display:block;text-align:center;margin-bottom:8px;">{$lang === 'en' ? 'Go to Emailing' : 'Aller aux emails'}</a>
+			<a href="/organizer/manage/email_settings" class="btn btn-outline" style="display:block;text-align:center;">{$lang === 'en' ? 'Email Settings' : 'Paramètres email'}</a>
+		</div>
+	</div>
+	<div>
+		<h2>Tutorial</h2>
+		<div class="card" style="margin-top:12px;">
+			<p style="font-size:0.85rem;color:var(--text-light);margin-bottom:12px;">{$lang === 'en' ? 'Edit the step-by-step guide shown to volunteers.' : 'Modifier le guide étape par étape affiché aux bénévoles.'}</p>
+			<a href="/organizer/manage/tutorials" class="btn btn-accent" style="display:block;text-align:center;">{$lang === 'en' ? 'Edit Tutorial' : 'Modifier le tutoriel'}</a>
 		</div>
 	</div>
 </div>

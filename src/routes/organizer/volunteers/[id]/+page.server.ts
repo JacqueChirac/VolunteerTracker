@@ -58,7 +58,8 @@ export const actions: Actions = {
 		if (!volunteer) return fail(404, { error: 'Volunteer not found.' });
 		await db.update(users).set({ manuallyApproved: !volunteer.manuallyApproved }).where(eq(users.id, userId));
 		return { toggleSuccess: true };
-	}
+	},
+
 };
 
 

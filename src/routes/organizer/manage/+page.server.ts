@@ -1,11 +1,17 @@
 // manage page server — settings, activity types, announcements, manual entries, archives
 import type { PageServerLoad, Actions } from './$types';
 import { db } from '$lib/server/db';
-import { activityTypes, announcements, users, contributions, children, childVolunteerLinks, seasonArchives } from '$lib/server/db/schema';
+import { activityTypes, announcements, users, contributions, children, childVolunteerLinks, seasonArchives, swimLevelSettings } from '$lib/server/db/schema';
 import { eq, desc, asc } from 'drizzle-orm';
 import { fail } from '@sveltejs/kit';
-import { getAllSettings, updateSetting, getDonationRate, getHoursRequired } from '$lib/server/settings';
+import { getAllSettings, updateSetting, getSetting, getDonationRate, getHoursRequired, getSwimLevels } from '$lib/server/settings';
 import { createUser } from '$lib/server/auth';
+
+function advanceOneYear(dateStr: string): string {
+	const d = new Date(dateStr + 'T00:00:00Z');
+	d.setUTCFullYear(d.getUTCFullYear() + 1);
+	return d.toISOString().split('T')[0];
+}
 
 export const load: PageServerLoad = async () => {
 	const activities = await db.select().from(activityTypes);
@@ -13,9 +19,46 @@ export const load: PageServerLoad = async () => {
 	const volunteers = await db.select({ id: users.id, firstName: users.firstName, lastName: users.lastName, email: users.email }).from(users).where(eq(users.role, 'volunteer')).orderBy(asc(users.firstName));
 	const allChildren = await db.select().from(children).orderBy(asc(children.firstName));
 	const allLinks = await db.select().from(childVolunteerLinks);
-	const archives = await db.select().from(seasonArchives).orderBy(desc(seasonArchives.archivedAt));
+	let archives = await db.select().from(seasonArchives).orderBy(desc(seasonArchives.archivedAt));
 	const settings = await getAllSettings();
 	const donationRate = await getDonationRate();
+
+	// season date settings (stored separately from numeric settings)
+	const seasonStartDate = await getSetting('season_start_date');
+	const seasonEndDate = await getSetting('season_end_date');
+	const todayStr = new Date().toISOString().split('T')[0];
+
+	// auto-archive: if season end date has passed and no archive created after it
+	let autoArchived = false;
+	if (seasonEndDate && todayStr > seasonEndDate) {
+		const lastArchive = archives[0];
+		const alreadyArchived = lastArchive &&
+			new Date(lastArchive.archivedAt) > new Date(seasonEndDate + 'T23:59:59Z');
+
+		if (!alreadyArchived) {
+			const label = seasonStartDate
+				? `${seasonStartDate} – ${seasonEndDate}`
+				: `Season ended ${seasonEndDate}`;
+
+			const allContribs = await db.select().from(contributions);
+			const allChildrenSnap = await db.select().from(children);
+			const allLinksSnap = await db.select().from(childVolunteerLinks);
+			const allVolsSnap = await db.select({ id: users.id, firstName: users.firstName, lastName: users.lastName, email: users.email }).from(users).where(eq(users.role, 'volunteer'));
+
+			await db.insert(seasonArchives).values({
+				label,
+				data: JSON.stringify({ contributions: allContribs, children: allChildrenSnap, links: allLinksSnap, volunteers: allVolsSnap })
+			});
+			await db.delete(contributions);
+
+			// advance season dates by one year for next cycle
+			await updateSetting('season_end_date', advanceOneYear(seasonEndDate));
+			if (seasonStartDate) await updateSetting('season_start_date', advanceOneYear(seasonStartDate));
+
+			autoArchived = true;
+			archives = await db.select().from(seasonArchives).orderBy(desc(seasonArchives.archivedAt));
+		}
+	}
 
 	// attach linked volunteer ids to each child for quick lookup in the UI
 	const linksByChild: Record<number, number[]> = {};
@@ -24,7 +67,13 @@ export const load: PageServerLoad = async () => {
 	}
 	const childrenWithLinks = allChildren.map((c) => ({ ...c, volunteerIds: linksByChild[c.id] ?? [] }));
 
-	return { activities, announcements: news, volunteers, children: childrenWithLinks, archives, settings, donationRate };
+	const swimLevels = await getSwimLevels();
+	return {
+		activities, announcements: news, volunteers, children: childrenWithLinks,
+		archives, settings, donationRate, swimLevels,
+		seasonDates: { start: seasonStartDate, end: seasonEndDate },
+		autoArchived
+	};
 };
 
 export const actions: Actions = {
@@ -208,6 +257,35 @@ export const actions: Actions = {
 		});
 
 		return { markMetSuccess: true };
+	},
+
+	addSwimLevel: async ({ request }) => {
+		const fd = await request.formData();
+		const value = fd.get('value')?.toString().trim() ?? '';
+		const name = fd.get('name')?.toString().trim() ?? '';
+		const description = fd.get('description')?.toString().trim() ?? '';
+		if (!value || !name) return fail(400, { swimLevelError: 'Value and name are required.' });
+		const existing = await db.select().from(swimLevelSettings);
+		await db.insert(swimLevelSettings).values({ value, name, description: description || null, displayOrder: existing.length });
+		return { swimLevelSuccess: true };
+	},
+
+	editSwimLevel: async ({ request }) => {
+		const fd = await request.formData();
+		const id = Number(fd.get('id'));
+		const name = fd.get('name')?.toString().trim() ?? '';
+		const description = fd.get('description')?.toString().trim() ?? '';
+		if (!id || !name) return fail(400, { swimLevelError: 'Name is required.' });
+		await db.update(swimLevelSettings).set({ name, description: description || null }).where(eq(swimLevelSettings.id, id));
+		return { swimLevelSuccess: true };
+	},
+
+	deleteSwimLevel: async ({ request }) => {
+		const fd = await request.formData();
+		const id = Number(fd.get('id'));
+		if (!id) return fail(400, { swimLevelError: 'Invalid level.' });
+		await db.delete(swimLevelSettings).where(eq(swimLevelSettings.id, id));
+		return { swimLevelSuccess: true };
 	},
 
 	archiveSeason: async ({ request }) => {
