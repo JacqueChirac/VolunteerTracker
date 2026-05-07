@@ -47,6 +47,18 @@
 	</div>
 </div>
 
+<!-- legend -->
+<div style="display:flex;gap:12px;margin-bottom:16px;flex-wrap:wrap;">
+	<span style="display:inline-flex;align-items:center;gap:6px;font-size:0.85rem;">
+		<span style="width:10px;height:10px;border-radius:50%;background:#2E7D32;flex-shrink:0;"></span>
+		{en ? 'Annual Member' : 'Membre annuel'}
+	</span>
+	<span style="display:inline-flex;align-items:center;gap:6px;font-size:0.85rem;">
+		<span style="width:10px;height:10px;border-radius:50%;background:#c0392b;flex-shrink:0;"></span>
+		{en ? 'Tryout' : 'Essai'}
+	</span>
+</div>
+
 <!-- tabs -->
 <div class="tabs" style="margin-bottom:16px;">
 	<button class="tab-btn" class:active={tab === 'volunteers'} onclick={() => { tab = 'volunteers'; search = ''; }}>
