@@ -112,6 +112,16 @@ export const actions: Actions = {
 		return { announcementSuccess: true };
 	},
 
+	editAnnouncement: async ({ request }) => {
+		const fd = await request.formData();
+		const id = Number(fd.get('id'));
+		const title = fd.get('title')?.toString().trim() ?? '';
+		const content = fd.get('content')?.toString().trim() ?? '';
+		if (!id || !title || !content) return fail(400, { announcementError: 'Title and content are required.' });
+		await db.update(announcements).set({ title, content }).where(eq(announcements.id, id));
+		return { announcementSuccess: true };
+	},
+
 	deleteAnnouncement: async ({ request }) => {
 		const fd = await request.formData();
 		const id = Number(fd.get('id'));

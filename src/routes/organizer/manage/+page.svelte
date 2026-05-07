@@ -13,6 +13,7 @@
 	let showAddChildLevelDetails = $state(false);
 	let editingLevelId = $state<number | null>(null);
 	let editingActivityId = $state<number | null>(null);
+	let editingAnnouncementId = $state<number | null>(null);
 
 	let openAnnouncements = $state(true);
 	let openSettings = $state(true);
@@ -81,10 +82,38 @@
 		{#if data.announcements.length === 0}
 			<p style="color:var(--text-light);font-size:0.9rem;">{$lang === 'en' ? 'No announcements yet.' : 'Aucune annonce pour l\'instant.'}</p>
 		{:else}
-			{#each data.announcements as a}
-				<div style="display:flex;justify-content:space-between;align-items:start;padding:8px 0;border-bottom:1px solid var(--border);">
-					<div><strong>{a.title}</strong><p style="font-size:0.85rem;color:var(--text-light);">{new Date(a.createdAt).toLocaleDateString()}</p></div>
-					<form method="POST" action="?/deleteAnnouncement" use:enhance><input type="hidden" name="id" value={a.id} /><button type="submit" class="btn btn-danger" style="padding:4px 10px;font-size:0.8rem;">{t[$lang].delete}</button></form>
+			{#each data.announcements as a (a.id)}
+				<div style="padding:10px 0;border-bottom:1px solid var(--border);">
+					{#if editingAnnouncementId === a.id}
+						<form method="POST" action="?/editAnnouncement" use:enhance={() => () => { editingAnnouncementId = null; }}>
+							<input type="hidden" name="id" value={a.id} />
+							<div class="form-group" style="margin-bottom:8px;">
+								<input name="title" type="text" value={a.title} required />
+							</div>
+							<div class="form-group" style="margin-bottom:8px;">
+								<textarea name="content" rows="3" required>{a.content}</textarea>
+							</div>
+							<div style="display:flex;gap:6px;">
+								<button type="submit" class="btn btn-primary" style="padding:4px 12px;font-size:0.85rem;">{$lang === 'en' ? 'Save' : 'Sauvegarder'}</button>
+								<button type="button" class="btn btn-outline" style="padding:4px 12px;font-size:0.85rem;" onclick={() => editingAnnouncementId = null}>{$lang === 'en' ? 'Cancel' : 'Annuler'}</button>
+							</div>
+						</form>
+					{:else}
+						<div style="display:flex;justify-content:space-between;align-items:start;gap:8px;">
+							<div style="flex:1;">
+								<strong>{a.title}</strong>
+								<p style="font-size:0.85rem;color:var(--text-light);margin-top:2px;">{a.content}</p>
+								<p style="font-size:0.78rem;color:var(--text-light);margin-top:4px;">{new Date(a.createdAt).toLocaleDateString()}</p>
+							</div>
+							<div style="display:flex;gap:4px;flex-shrink:0;">
+								<button type="button" class="btn btn-outline" style="padding:2px 8px;font-size:0.75rem;" onclick={() => editingAnnouncementId = a.id}>{$lang === 'en' ? 'Edit' : 'Modifier'}</button>
+								<form method="POST" action="?/deleteAnnouncement" use:enhance>
+									<input type="hidden" name="id" value={a.id} />
+									<button type="submit" class="btn btn-danger" style="padding:2px 8px;font-size:0.75rem;">{t[$lang].delete}</button>
+								</form>
+							</div>
+						</div>
+					{/if}
 				</div>
 			{/each}
 		{/if}
