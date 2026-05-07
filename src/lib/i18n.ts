@@ -282,7 +282,7 @@ export const t = {
 		step1And: 'and click',
 		step1NewChild: '"+ New Child"',
 		step1Desc: ". Fill in your child's name, level, and select their status:",
-		step1FullMember: 'Full Member',
+		step1FullMember: 'Annual Member',
 		step1FullMemberDesc: '-- requires 30 volunteer hours per year',
 		step1Tryout: 'Tryout',
 		step1TryoutDesc: '-- requires 4 volunteer hours',

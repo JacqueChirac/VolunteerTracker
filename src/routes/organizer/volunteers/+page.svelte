@@ -148,7 +148,7 @@
 							<td><strong>{c.firstName} {c.lastName}</strong></td>
 							<td>
 								<span class="pill {c.status === 'tryout' ? 'pill-accent' : 'pill-primary'}">
-									{c.status === 'tryout' ? (en ? 'Tryout' : 'Essai') : (en ? 'Full Member' : 'Membre complet')}
+									{c.status === 'tryout' ? (en ? 'Tryout' : 'Essai') : (en ? 'Annual Member' : 'Membre annuel')}
 								</span>
 							</td>
 							<td style="color:var(--text-light);font-size:0.85rem;">{c.level || '—'}</td>

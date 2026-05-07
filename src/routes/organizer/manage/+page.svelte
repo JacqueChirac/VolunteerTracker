@@ -467,7 +467,7 @@
 				<div class="form-group" style="margin-bottom:0;">
 					<label for="markAs">{$lang === 'en' ? 'Requirement' : 'Exigence'}</label>
 					<select id="markAs" name="markAs">
-						<option value="full_member">{$lang === 'en' ? 'Full Member' : 'Membre complet'}</option>
+						<option value="full_member">{$lang === 'en' ? 'Annual Member' : 'Membre annuel'}</option>
 						<option value="tryout">{$lang === 'en' ? 'Tryout' : 'Essai'}</option>
 					</select>
 				</div>

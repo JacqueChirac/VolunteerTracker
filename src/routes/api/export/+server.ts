@@ -78,7 +78,7 @@ export const GET: RequestHandler = async ({ locals, url }) => {
 		});
 		rows.push([
 			`${child.firstName} ${child.lastName}`,
-			child.status === 'tryout' ? 'Tryout' : 'Full Member',
+			child.status === 'tryout' ? 'Tryout' : 'Annual Member',
 			child.level ?? '', required.toString(), totalHours.toString(),
 			Math.max(0, required - totalHours).toString(),
 			totalHours >= required ? 'Yes' : 'No',
