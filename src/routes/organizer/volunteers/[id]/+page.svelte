@@ -24,13 +24,30 @@
 	<span style="color:var(--text-light);font-size:0.9rem;">{data.volunteer.email}</span>
 </div>
 
-<form method="POST" action="?/toggleApproval" use:enhance style="margin-top:12px;">
-	<button type="submit" class="btn {data.volunteer.manuallyApproved ? 'btn-outline' : 'btn-accent'}" style="font-size:0.9rem;">
-		{data.volunteer.manuallyApproved
-			? ($lang === 'en' ? 'Revoke Approval' : 'Révoquer l\'approbation')
-			: ($lang === 'en' ? '✓ Mark as Meets Requirements' : '✓ Marquer comme conforme')}
-	</button>
-</form>
+<div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:12px;">
+	<form method="POST" action="?/toggleApproval" use:enhance>
+		<button type="submit" class="btn {data.volunteer.manuallyApproved ? 'btn-outline' : 'btn-accent'}" style="font-size:0.9rem;">
+			{data.volunteer.manuallyApproved
+				? ($lang === 'en' ? 'Revoke Approval' : 'Révoquer l\'approbation')
+				: ($lang === 'en' ? '✓ Mark as Meets Requirements' : '✓ Marquer comme conforme')}
+		</button>
+	</form>
+	<form method="POST" action="?/deleteVolunteer" use:enhance>
+		<button
+			type="submit"
+			class="btn btn-danger"
+			style="font-size:0.9rem;"
+			onclick={(e) => {
+				if (!confirm($lang === 'en'
+					? `Permanently delete ${data.volunteer.firstName} ${data.volunteer.lastName}? All their contributions and links will be removed.`
+					: `Supprimer définitivement ${data.volunteer.firstName} ${data.volunteer.lastName}? Toutes leurs contributions seront supprimées.`
+				)) e.preventDefault();
+			}}
+		>
+			{$lang === 'en' ? 'Delete Volunteer' : 'Supprimer le bénévole'}
+		</button>
+	</form>
+</div>
 
 {#if form?.editChildSuccess}
 	<div class="card" style="background:#d4edda;border:1px solid #c3e6cb;margin-top:12px;"><p style="color:#155724;">{t[$lang].childUpdated}</p></div>

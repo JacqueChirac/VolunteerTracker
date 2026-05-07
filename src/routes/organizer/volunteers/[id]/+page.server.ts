@@ -3,7 +3,7 @@ import type { PageServerLoad, Actions } from './$types';
 import { db } from '$lib/server/db';
 import { users, children, childVolunteerLinks, contributions, activityTypes } from '$lib/server/db/schema';
 import { eq, desc } from 'drizzle-orm';
-import { error, fail } from '@sveltejs/kit';
+import { error, fail, redirect } from '@sveltejs/kit';
 import { getHoursRequired } from '$lib/server/settings';
 
 export const load: PageServerLoad = async ({ params }) => {
@@ -58,6 +58,12 @@ export const actions: Actions = {
 		if (!volunteer) return fail(404, { error: 'Volunteer not found.' });
 		await db.update(users).set({ manuallyApproved: !volunteer.manuallyApproved }).where(eq(users.id, userId));
 		return { toggleSuccess: true };
+	},
+
+	deleteVolunteer: async ({ params }) => {
+		const userId = Number(params.id);
+		await db.delete(users).where(eq(users.id, userId));
+		redirect(302, '/organizer/volunteers');
 	},
 
 };

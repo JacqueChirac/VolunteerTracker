@@ -12,6 +12,7 @@
 	let linkPick = $state<Record<number, string>>({});
 	let showAddChildLevelDetails = $state(false);
 	let editingLevelId = $state<number | null>(null);
+	let editingActivityId = $state<number | null>(null);
 
 	let openSettings = $state(true);
 	let openPeople = $state(true);
@@ -165,25 +166,41 @@
 			</div>
 		</div>
 
-		<!-- activity types + tutorial -->
+		<!-- activity types -->
 		<div>
 			<h2 style="margin-bottom:12px;">{t[$lang].activityTypes}</h2>
 			<div class="card">
 				{#if form?.activityError}<p class="error" style="margin-bottom:8px;">{form.activityError}</p>{/if}
-				<form method="POST" action="?/addActivity" use:enhance style="display:flex;gap:8px;margin-bottom:16px;">
+				{#if form?.activitySuccess}<div style="background:#d4edda;padding:8px 12px;border-radius:6px;margin-bottom:12px;"><p style="color:#155724;font-size:0.9rem;">{$lang === 'en' ? 'Saved.' : 'Sauvegardé.'}</p></div>{/if}
+				{#each data.activities as activity (activity.id)}
+					<div style="padding:10px 0;border-bottom:1px solid var(--border);">
+						{#if editingActivityId === activity.id}
+							<form method="POST" action="?/editActivity" use:enhance={() => () => { editingActivityId = null; }}>
+								<input type="hidden" name="id" value={activity.id} />
+								<div style="display:flex;gap:6px;align-items:center;">
+									<input name="name" type="text" value={activity.name} required style="flex:1;" />
+									<button type="submit" class="btn btn-primary" style="padding:4px 10px;font-size:0.8rem;">{$lang === 'en' ? 'Save' : 'Sauv.'}</button>
+									<button type="button" class="btn btn-outline" style="padding:4px 10px;font-size:0.8rem;" onclick={() => editingActivityId = null}>{$lang === 'en' ? 'Cancel' : 'Annuler'}</button>
+								</div>
+							</form>
+						{:else}
+							<div style="display:flex;justify-content:space-between;align-items:center;gap:8px;">
+								<span>{activity.name}</span>
+								<div style="display:flex;gap:4px;flex-shrink:0;">
+									<button type="button" class="btn btn-outline" style="padding:2px 8px;font-size:0.75rem;" onclick={() => editingActivityId = activity.id}>{$lang === 'en' ? 'Edit' : 'Modifier'}</button>
+									<form method="POST" action="?/deleteActivity" use:enhance>
+										<input type="hidden" name="id" value={activity.id} />
+										<button type="submit" class="btn btn-danger" style="padding:2px 8px;font-size:0.75rem;" onclick={(e) => { if (!confirm($lang === 'en' ? 'Delete this activity type?' : 'Supprimer ce type d\'activité?')) e.preventDefault(); }}>{$lang === 'en' ? 'Delete' : 'Supprimer'}</button>
+									</form>
+								</div>
+							</div>
+						{/if}
+					</div>
+				{/each}
+				<form method="POST" action="?/addActivity" use:enhance style="display:flex;gap:8px;margin-top:14px;">
 					<input name="name" type="text" placeholder={t[$lang].newActivityPlaceholder} required style="flex:1;" />
 					<button type="submit" class="btn btn-accent">{t[$lang].add}</button>
 				</form>
-				{#each data.activities as activity}
-					<div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid var(--border);">
-						<span style={activity.active ? '' : 'text-decoration:line-through;color:var(--text-light);'}>{activity.name}</span>
-						<form method="POST" action="?/toggleActivity" use:enhance>
-							<input type="hidden" name="id" value={activity.id} />
-							<input type="hidden" name="active" value={String(activity.active)} />
-							<button type="submit" class="btn {activity.active ? 'btn-outline' : 'btn-accent'}" style="padding:4px 10px;font-size:0.8rem;">{activity.active ? t[$lang].disable : t[$lang].enable}</button>
-						</form>
-					</div>
-				{/each}
 			</div>
 
 		</div>

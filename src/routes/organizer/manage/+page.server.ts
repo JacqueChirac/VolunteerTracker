@@ -85,11 +85,21 @@ export const actions: Actions = {
 		return { activitySuccess: true };
 	},
 
-	toggleActivity: async ({ request }) => {
+	editActivity: async ({ request }) => {
 		const fd = await request.formData();
 		const id = Number(fd.get('id'));
-		const active = fd.get('active') === 'true';
-		await db.update(activityTypes).set({ active: !active }).where(eq(activityTypes.id, id));
+		const name = fd.get('name')?.toString().trim() ?? '';
+		if (!id || !name) return fail(400, { activityError: 'Name is required.' });
+		await db.update(activityTypes).set({ name }).where(eq(activityTypes.id, id));
+		return { activitySuccess: true };
+	},
+
+	deleteActivity: async ({ request }) => {
+		const fd = await request.formData();
+		const id = Number(fd.get('id'));
+		if (!id) return fail(400, { activityError: 'Invalid activity.' });
+		await db.update(contributions).set({ activityId: null }).where(eq(contributions.activityId, id));
+		await db.delete(activityTypes).where(eq(activityTypes.id, id));
 		return { activitySuccess: true };
 	},
 
