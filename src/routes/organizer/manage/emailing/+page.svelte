@@ -8,6 +8,21 @@
   let { data } = $props(); //Imported data from server.ts
 
   //Variables Declare
+const services = [
+  {
+    serviceID: "service_cpwd0",
+    publicKey: "InRSRMYq3D8DEYnU9",
+  },
+  {
+    serviceID: "service_cpwd1",
+    publicKey: "UmIK54UYI1rc8XP2I",
+  },
+  {
+    serviceID: "service_cpwd2",
+    publicKey: "tJvhr_u5xNaHdHRTp",
+  },
+];
+  const templates = ["defualt", "reminder"];
   const badEmails = $derived(data.badEmails); //Bad emails as [] strings
   const allMails = $derived(data.allMails); //All emails as [] strings
   const allNames = $derived(data.allNames); //All names as [] strings

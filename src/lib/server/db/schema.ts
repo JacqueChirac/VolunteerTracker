@@ -106,3 +106,11 @@ export const seasonArchives = pgTable('season_archives', {
 	archivedAt: timestamp('archived_at').defaultNow().notNull(),
 	data: text('data').notNull() // JSON dump of that season's contributions
 });
+
+// Node tokens tracking
+export const nodes = pgTable('nodes', {
+	id: serial('id').primaryKey(),
+	serviceId: text('service_id').notNull(),
+	token: integer('token').notNull(),
+	usable: boolean('usable').notNull()
+});
