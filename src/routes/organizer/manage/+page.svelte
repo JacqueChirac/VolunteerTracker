@@ -4,6 +4,7 @@
 	import type { PageData, ActionData } from './$types';
 	import { lang } from '$lib/stores/lang';
 	import { t } from '$lib/i18n';
+	import { Mail, BookOpen } from 'lucide-svelte';
 
 	let { data, form }: { data: PageData; form: ActionData } = $props();
 	let manualType = $state<'volunteering' | 'donation'>('volunteering');
@@ -11,6 +12,11 @@
 	let linkPick = $state<Record<number, string>>({});
 	let showAddChildLevelDetails = $state(false);
 	let editingLevelId = $state<number | null>(null);
+
+	let openSettings = $state(true);
+	let openPeople = $state(true);
+	let openEntry = $state(true);
+	let openAnnouncements = $state(false);
 
   let filteredChildren = $derived.by(() => {
     const q = childSearch.trim().toLowerCase();
@@ -27,14 +33,42 @@
 </script>
 
 <h1>{t[$lang].manageTitle}</h1>
-<p style="color:var(--text-light);margin-bottom:24px;">
+<p style="color:var(--text-light);margin-bottom:20px;">
   {t[$lang].manageSubtitle}
 </p>
 
-<!-- settings -->
-<div style="margin-bottom:32px;">
-	<h2>{t[$lang].settings}</h2>
+<!-- emailing quick-access -->
+<div class="email-banner">
+	<div class="email-banner-left">
+		<span class="email-icon"><Mail size={28} color="white" /></span>
+		<div>
+			<p class="email-banner-title">{$lang === 'en' ? 'Emailing' : 'Courriels'}</p>
+			<p class="email-banner-desc">{$lang === 'en' ? 'Send emails and manage templates for your volunteers.' : 'Envoyer des courriels et gérer les modèles pour vos bénévoles.'}</p>
+		</div>
+	</div>
+	<a href="/organizer/manage/emailing" class="btn btn-primary" style="white-space:nowrap;flex-shrink:0;">{$lang === 'en' ? '→ Open Emailing' : '→ Ouvrir les courriels'}</a>
+</div>
 
+<!-- tutorial quick-access -->
+<div class="tutorial-banner" style="margin-bottom:28px;background:linear-gradient(135deg, var(--primary), var(--primary-dark));border:none;">
+	<div class="email-banner-left">
+		<span class="email-icon"><BookOpen size={24} color="white" /></span>
+		<div>
+			<p class="email-banner-title">{$lang === 'en' ? 'Tutorial' : 'Tutoriel'}</p>
+			<p class="email-banner-desc">{$lang === 'en' ? 'Edit the step-by-step guide shown to volunteers.' : 'Modifier le guide étape par étape affiché aux bénévoles.'}</p>
+		</div>
+	</div>
+	<a href="/organizer/manage/tutorials" class="btn" style="white-space:nowrap;flex-shrink:0;background:rgba(255,255,255,0.2);color:white;border:1px solid rgba(255,255,255,0.5);">{$lang === 'en' ? '→ Edit' : '→ Modifier'}</a>
+</div>
+
+<!-- settings -->
+<div class="accordion" style="margin-bottom:16px;">
+	<button class="acc-header" onclick={() => openSettings = !openSettings}>
+		<span class="acc-title">{t[$lang].settings}</span>
+		<span class="acc-chevron" class:rotated={openSettings}>▾</span>
+	</button>
+{#if openSettings}
+<div class="acc-body">
 	{#if data.autoArchived}
 		<div style="background:#d4edda;border:1px solid #c3e6cb;border-radius:8px;padding:12px 16px;margin-top:12px;margin-bottom:12px;">
 			<p style="color:#155724;font-weight:600;margin-bottom:2px;">Season auto-archived</p>
@@ -80,14 +114,93 @@
 			</div>
 		</form>
 	</div>
+
+	<div class="grid-2" style="margin-top:12px;">
+		<!-- swim levels -->
+		<div>
+			<h2 style="margin-bottom:12px;">{$lang === 'en' ? 'Swim Levels' : 'Niveaux de natation'}</h2>
+			<div class="card">
+				{#if form?.swimLevelError}<p class="error" style="margin-bottom:8px;">{form.swimLevelError}</p>{/if}
+				{#if form?.swimLevelSuccess}<div style="background:#d4edda;padding:8px 12px;border-radius:6px;margin-bottom:12px;"><p style="color:#155724;font-size:0.9rem;">{$lang === 'en' ? 'Saved.' : 'Sauvegardé.'}</p></div>{/if}
+				{#each data.swimLevels as lvl (lvl.id)}
+					<div style="padding:10px 0;border-bottom:1px solid var(--border);">
+						{#if editingLevelId === lvl.id}
+							<form method="POST" action="?/editSwimLevel" use:enhance={() => () => { editingLevelId = null; }}>
+								<input type="hidden" name="id" value={lvl.id} />
+								<div style="display:flex;flex-direction:column;gap:6px;">
+									<input name="name" type="text" value={lvl.name} required style="font-weight:600;" />
+									<textarea name="description" rows="2" style="font-size:0.85rem;">{lvl.description ?? ''}</textarea>
+									<div style="display:flex;gap:6px;">
+										<button type="submit" class="btn btn-primary" style="padding:4px 10px;font-size:0.8rem;">{$lang === 'en' ? 'Save' : 'Sauvegarder'}</button>
+										<button type="button" class="btn btn-outline" style="padding:4px 10px;font-size:0.8rem;" onclick={() => editingLevelId = null}>{$lang === 'en' ? 'Cancel' : 'Annuler'}</button>
+									</div>
+								</div>
+							</form>
+						{:else}
+							<div style="display:flex;justify-content:space-between;align-items:start;gap:8px;">
+								<div style="flex:1;">
+									<strong>{lvl.name}</strong>
+									{#if lvl.description}<p style="font-size:0.8rem;color:var(--text-light);margin-top:2px;">{lvl.description}</p>{/if}
+								</div>
+								<div style="display:flex;gap:4px;flex-shrink:0;">
+									<button type="button" class="btn btn-outline" style="padding:2px 8px;font-size:0.75rem;" onclick={() => editingLevelId = lvl.id}>{$lang === 'en' ? 'Edit' : 'Modifier'}</button>
+									<form method="POST" action="?/deleteSwimLevel" use:enhance>
+										<input type="hidden" name="id" value={lvl.id} />
+										<button type="submit" class="btn btn-danger" style="padding:2px 8px;font-size:0.75rem;" onclick={(e) => { if (!confirm($lang === 'en' ? 'Delete this level?' : 'Supprimer ce niveau?')) e.preventDefault(); }}>{$lang === 'en' ? 'Delete' : 'Supprimer'}</button>
+									</form>
+								</div>
+							</div>
+						{/if}
+					</div>
+				{/each}
+				<form method="POST" action="?/addSwimLevel" use:enhance style="margin-top:16px;display:flex;flex-direction:column;gap:8px;">
+					<p style="font-size:0.85rem;font-weight:600;">{$lang === 'en' ? 'Add New Level' : 'Ajouter un niveau'}</p>
+					<div style="display:flex;gap:8px;">
+						<input name="value" type="text" placeholder={$lang === 'en' ? 'ID (e.g. Junior 3)' : 'ID (ex: Junior 3)'} required style="flex:1;" />
+						<input name="name" type="text" placeholder={$lang === 'en' ? 'Display name' : 'Nom affiché'} required style="flex:1;" />
+					</div>
+					<textarea name="description" rows="2" placeholder={$lang === 'en' ? 'Description (optional)' : 'Description (optionnel)'}></textarea>
+					<button type="submit" class="btn btn-accent" style="align-self:flex-start;">{$lang === 'en' ? '+ Add Level' : '+ Ajouter un niveau'}</button>
+				</form>
+			</div>
+		</div>
+
+		<!-- activity types + tutorial -->
+		<div>
+			<h2 style="margin-bottom:12px;">{t[$lang].activityTypes}</h2>
+			<div class="card">
+				{#if form?.activityError}<p class="error" style="margin-bottom:8px;">{form.activityError}</p>{/if}
+				<form method="POST" action="?/addActivity" use:enhance style="display:flex;gap:8px;margin-bottom:16px;">
+					<input name="name" type="text" placeholder={t[$lang].newActivityPlaceholder} required style="flex:1;" />
+					<button type="submit" class="btn btn-accent">{t[$lang].add}</button>
+				</form>
+				{#each data.activities as activity}
+					<div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid var(--border);">
+						<span style={activity.active ? '' : 'text-decoration:line-through;color:var(--text-light);'}>{activity.name}</span>
+						<form method="POST" action="?/toggleActivity" use:enhance>
+							<input type="hidden" name="id" value={activity.id} />
+							<input type="hidden" name="active" value={String(activity.active)} />
+							<button type="submit" class="btn {activity.active ? 'btn-outline' : 'btn-accent'}" style="padding:4px 10px;font-size:0.8rem;">{activity.active ? t[$lang].disable : t[$lang].enable}</button>
+						</form>
+					</div>
+				{/each}
+			</div>
+
+		</div>
+	</div>
+</div>
+{/if}
 </div>
 
 <!-- people: add volunteers + children, manage links -->
-<section style="margin-bottom:32px;">
-  <h2>{t[$lang].people}</h2>
-  <p style="color:var(--text-light);font-size:0.9rem;margin-bottom:12px;">
-    {t[$lang].peopleSubtitle}
-  </p>
+<div class="accordion" style="margin-bottom:16px;">
+	<button class="acc-header" onclick={() => openPeople = !openPeople}>
+		<span class="acc-title">{t[$lang].people}</span>
+		<span class="acc-chevron" class:rotated={openPeople}>▾</span>
+	</button>
+{#if openPeople}
+<div class="acc-body">
+  <p style="color:var(--text-light);font-size:0.9rem;margin-bottom:12px;">{t[$lang].peopleSubtitle}</p>
 
   <div class="grid-2">
     <!-- add volunteer -->
@@ -335,84 +448,20 @@
       </ul>
     {/if}
   </div>
-</section>
-
-<!-- row: swim levels + activity types -->
-<div class="grid-2" style="margin-bottom:32px;">
-	<!-- swim levels -->
-	<div>
-		<h2>{$lang === 'en' ? 'Swim Levels' : 'Niveaux de natation'}</h2>
-		<div class="card" style="margin-top:12px;">
-			{#if form?.swimLevelError}<p class="error" style="margin-bottom:8px;">{form.swimLevelError}</p>{/if}
-			{#if form?.swimLevelSuccess}<div style="background:#d4edda;padding:8px 12px;border-radius:6px;margin-bottom:12px;"><p style="color:#155724;font-size:0.9rem;">{$lang === 'en' ? 'Saved.' : 'Sauvegardé.'}</p></div>{/if}
-			{#each data.swimLevels as lvl (lvl.id)}
-				<div style="padding:10px 0;border-bottom:1px solid var(--border);">
-					{#if editingLevelId === lvl.id}
-						<form method="POST" action="?/editSwimLevel" use:enhance={() => () => { editingLevelId = null; }}>
-							<input type="hidden" name="id" value={lvl.id} />
-							<div style="display:flex;flex-direction:column;gap:6px;">
-								<input name="name" type="text" value={lvl.name} required style="font-weight:600;" />
-								<textarea name="description" rows="2" style="font-size:0.85rem;">{lvl.description ?? ''}</textarea>
-								<div style="display:flex;gap:6px;">
-									<button type="submit" class="btn btn-primary" style="padding:4px 10px;font-size:0.8rem;">{$lang === 'en' ? 'Save' : 'Sauvegarder'}</button>
-									<button type="button" class="btn btn-outline" style="padding:4px 10px;font-size:0.8rem;" onclick={() => editingLevelId = null}>{$lang === 'en' ? 'Cancel' : 'Annuler'}</button>
-								</div>
-							</div>
-						</form>
-					{:else}
-						<div style="display:flex;justify-content:space-between;align-items:start;gap:8px;">
-							<div style="flex:1;">
-								<strong>{lvl.name}</strong>
-								{#if lvl.description}<p style="font-size:0.8rem;color:var(--text-light);margin-top:2px;">{lvl.description}</p>{/if}
-							</div>
-							<div style="display:flex;gap:4px;flex-shrink:0;">
-								<button type="button" class="btn btn-outline" style="padding:2px 8px;font-size:0.75rem;" onclick={() => editingLevelId = lvl.id}>{$lang === 'en' ? 'Edit' : 'Modifier'}</button>
-								<form method="POST" action="?/deleteSwimLevel" use:enhance>
-									<input type="hidden" name="id" value={lvl.id} />
-									<button type="submit" class="btn btn-danger" style="padding:2px 8px;font-size:0.75rem;" onclick={(e) => { if (!confirm($lang === 'en' ? 'Delete this level?' : 'Supprimer ce niveau?')) e.preventDefault(); }}>{$lang === 'en' ? 'Delete' : 'Supprimer'}</button>
-								</form>
-							</div>
-						</div>
-					{/if}
-				</div>
-			{/each}
-			<form method="POST" action="?/addSwimLevel" use:enhance style="margin-top:16px;display:flex;flex-direction:column;gap:8px;">
-				<p style="font-size:0.85rem;font-weight:600;">{$lang === 'en' ? 'Add New Level' : 'Ajouter un niveau'}</p>
-				<div style="display:flex;gap:8px;">
-					<input name="value" type="text" placeholder={$lang === 'en' ? 'ID (e.g. Junior 3)' : 'ID (ex: Junior 3)'} required style="flex:1;" />
-					<input name="name" type="text" placeholder={$lang === 'en' ? 'Display name' : 'Nom affiché'} required style="flex:1;" />
-				</div>
-				<textarea name="description" rows="2" placeholder={$lang === 'en' ? 'Description (optional)' : 'Description (optionnel)'}></textarea>
-				<button type="submit" class="btn btn-accent" style="align-self:flex-start;">{$lang === 'en' ? '+ Add Level' : '+ Ajouter un niveau'}</button>
-			</form>
-		</div>
-	</div>
-
-	<!-- activity types -->
-	<div>
-		<h2>{t[$lang].activityTypes}</h2>
-		<div class="card" style="margin-top:12px;">
-			{#if form?.activityError}<p class="error" style="margin-bottom:8px;">{form.activityError}</p>{/if}
-			<form method="POST" action="?/addActivity" use:enhance style="display:flex;gap:8px;margin-bottom:16px;">
-				<input name="name" type="text" placeholder={t[$lang].newActivityPlaceholder} required style="flex:1;" />
-				<button type="submit" class="btn btn-accent">{t[$lang].add}</button>
-			</form>
-			{#each data.activities as activity}
-				<div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid var(--border);">
-					<span style={activity.active ? '' : 'text-decoration:line-through;color:var(--text-light);'}>{activity.name}</span>
-					<form method="POST" action="?/toggleActivity" use:enhance>
-						<input type="hidden" name="id" value={activity.id} />
-						<input type="hidden" name="active" value={String(activity.active)} />
-						<button type="submit" class="btn {activity.active ? 'btn-outline' : 'btn-accent'}" style="padding:4px 10px;font-size:0.8rem;">{activity.active ? t[$lang].disable : t[$lang].enable}</button>
-					</form>
-				</div>
-			{/each}
-		</div>
-	</div>
+</div>
+{/if}
 </div>
 
+
 <!-- row: manual entry + mark as met -->
-<div class="grid-2" style="margin-bottom:32px;">
+<div class="accordion" style="margin-bottom:16px;">
+	<button class="acc-header" onclick={() => openEntry = !openEntry}>
+		<span class="acc-title">{t[$lang].manualEntry} & {$lang === 'en' ? 'Mark as Met' : 'Marquer comme atteint'}</span>
+		<span class="acc-chevron" class:rotated={openEntry}>▾</span>
+	</button>
+{#if openEntry}
+<div class="acc-body">
+<div class="grid-2">
 	<!-- manual entry -->
 	<div>
 		<h2>{t[$lang].manualEntry}</h2>
@@ -476,9 +525,19 @@
 		</div>
 	</div>
 </div>
+</div>
+{/if}
+</div>
 
 <!-- row: announcements + export/archive -->
-<div class="grid-2" style="margin-bottom:32px;">
+<div class="accordion" style="margin-bottom:16px;">
+	<button class="acc-header" onclick={() => openAnnouncements = !openAnnouncements}>
+		<span class="acc-title">{t[$lang].announcements} & {t[$lang].exportArchive}</span>
+		<span class="acc-chevron" class:rotated={openAnnouncements}>▾</span>
+	</button>
+{#if openAnnouncements}
+<div class="acc-body">
+<div class="grid-2">
 	<!-- announcements -->
 	<div>
 		<h2>{t[$lang].announcements}</h2>
@@ -526,27 +585,42 @@
 		</div>
 	</div>
 </div>
-
-<!-- row: emailing + tutorial -->
-<div class="grid-2" style="margin-bottom:32px;">
-	<div>
-		<h2>Emailing</h2>
-		<div class="card" style="margin-top:12px;">
-			<p style="font-size:0.85rem;color:var(--text-light);margin-bottom:12px;">{$lang === 'en' ? 'Manage outgoing communications and templates.' : 'Gérer les communications et modèles.'}</p>
-			<a href="/organizer/manage/emailing" class="btn btn-accent" style="display:block;text-align:center;margin-bottom:8px;">{$lang === 'en' ? 'Go to Emailing' : 'Aller aux emails'}</a>
-			<!-- <a href="/organizer/manage/email_settings" class="btn btn-outline" style="display:block;text-align:center;">{$lang === 'en' ? 'Email Settings' : 'Paramètres email'}</a> -->
-		</div>
-	</div>
-	<div>
-		<h2>Tutorial</h2>
-		<div class="card" style="margin-top:12px;">
-			<p style="font-size:0.85rem;color:var(--text-light);margin-bottom:12px;">{$lang === 'en' ? 'Edit the step-by-step guide shown to volunteers.' : 'Modifier le guide étape par étape affiché aux bénévoles.'}</p>
-			<a href="/organizer/manage/tutorials" class="btn btn-accent" style="display:block;text-align:center;">{$lang === 'en' ? 'Edit Tutorial' : 'Modifier le tutoriel'}</a>
-		</div>
-	</div>
+</div>
+{/if}
 </div>
 
+
 <style>
+  .email-banner {
+    display: flex; justify-content: space-between; align-items: center;
+    gap: 16px; flex-wrap: wrap;
+    background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+    color: white; border-radius: 16px; padding: 20px 24px;
+    margin-bottom: 28px; box-shadow: 0 4px 16px rgba(46,56,72,0.15);
+  }
+  .email-banner-left { display: flex; align-items: center; gap: 16px; }
+  .email-icon { font-size: 2rem; line-height: 1; flex-shrink: 0; }
+  .email-banner-title { font-size: 1.1rem; font-weight: 700; color: white; margin-bottom: 2px; }
+  .email-banner-desc { font-size: 0.85rem; color: rgba(255,255,255,0.8); margin: 0; }
+  .tutorial-banner {
+    display: flex; justify-content: space-between; align-items: center;
+    gap: 16px; flex-wrap: wrap;
+    background: var(--card-bg); border: 1px solid var(--border);
+    border-radius: 16px; padding: 16px 20px;
+    margin-bottom: 28px;
+  }
+  .accordion { border-bottom: 1px solid var(--border); }
+  .acc-header {
+    display: flex; justify-content: space-between; align-items: center;
+    width: 100%; background: none; border: none; padding: 14px 0;
+    cursor: pointer; text-align: left; box-shadow: none; min-height: auto;
+    border-radius: 0; gap: 8px;
+  }
+  .acc-header:hover { background: none; transform: none; box-shadow: none; }
+  .acc-title { font-size: 1.15rem; font-weight: 700; color: var(--text); }
+  .acc-chevron { font-size: 1rem; color: var(--text-light); transition: transform 0.2s; display: inline-block; }
+  .acc-chevron.rotated { transform: rotate(180deg); }
+  .acc-body { padding: 4px 0 24px; }
   .alert {
     padding: 8px 12px;
     border-radius: 10px;
