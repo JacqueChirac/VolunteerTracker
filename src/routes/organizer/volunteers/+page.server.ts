@@ -1,54 +1,76 @@
-// volunteers list — loads all volunteers with their linked children and hour progress
 import type { PageServerLoad } from './$types';
 import { db } from '$lib/server/db';
 import { users, children, childVolunteerLinks, contributions } from '$lib/server/db/schema';
-import { eq } from 'drizzle-orm';
+import { eq, asc } from 'drizzle-orm';
 import { getHoursRequired } from '$lib/server/settings';
 
-export const load: PageServerLoad = async ({ url }) => {
-	const search = url.searchParams.get('search')?.toLowerCase() ?? '';
-	let volunteers = await db.select().from(users).where(eq(users.role, 'volunteer'));
+export const load: PageServerLoad = async () => {
+	const [allVolunteers, allChildren, allLinks, allContributions] = await Promise.all([
+		db.select().from(users).where(eq(users.role, 'volunteer')).orderBy(asc(users.firstName)),
+		db.select().from(children).orderBy(asc(children.firstName)),
+		db.select().from(childVolunteerLinks),
+		db.select().from(contributions)
+	]);
 
-	if (search) {
-		volunteers = volunteers.filter(p =>
-			p.firstName.toLowerCase().includes(search) ||
-			p.lastName.toLowerCase().includes(search) ||
-			p.email.toLowerCase().includes(search)
-		);
+	const [hoursFullMember, hoursTryout] = await Promise.all([
+		getHoursRequired('full_member'),
+		getHoursRequired('tryout')
+	]);
+
+	const hoursByVol: Record<number, number> = {};
+	for (const c of allContributions) {
+		hoursByVol[c.userId] = (hoursByVol[c.userId] ?? 0) + parseFloat(c.hours ?? '0');
 	}
 
-	const volunteersData = [];
-	for (const volunteer of volunteers) {
-		const links = await db.select().from(childVolunteerLinks).where(eq(childVolunteerLinks.userId, volunteer.id));
-		const volunteerContribs = await db.select().from(contributions).where(eq(contributions.userId, volunteer.id));
-		const volunteerTotalHours = volunteerContribs.reduce((sum, c) => sum + parseFloat(c.hours ?? '0'), 0);
-
-		const childrenInfo = [];
-		for (const link of links) {
-			const [child] = await db.select().from(children).where(eq(children.id, link.childId));
-			if (!child) continue;
-			const allLinks = await db.select().from(childVolunteerLinks).where(eq(childVolunteerLinks.childId, child.id));
-			let totalHours = 0;
-			for (const l of allLinks) {
-				const contribs = await db.select().from(contributions).where(eq(contributions.userId, l.userId));
-				totalHours += contribs.reduce((sum, c) => sum + parseFloat(c.hours ?? '0'), 0);
-			}
-			childrenInfo.push({
-				id: child.id, firstName: child.firstName, lastName: child.lastName,
-				status: child.status,
-				totalHours: Math.round(totalHours * 100) / 100,
-				requiredHours: await getHoursRequired(child.status)
-			});
-		}
-
-		volunteersData.push({
-			id: volunteer.id, firstName: volunteer.firstName, lastName: volunteer.lastName,
-			email: volunteer.email,
-			totalHours: Math.round(volunteerTotalHours * 100) / 100,
-			manuallyApproved: volunteer.manuallyApproved,
-			children: childrenInfo
-		});
+	const volsByChild: Record<number, number[]> = {};
+	const childrenByVol: Record<number, number[]> = {};
+	for (const l of allLinks) {
+		(volsByChild[l.childId] ??= []).push(l.userId);
+		(childrenByVol[l.userId] ??= []).push(l.childId);
 	}
 
-	return { volunteers: volunteersData, search };
+	const volunteers = allVolunteers.map((v) => {
+		const totalHours = Math.round((hoursByVol[v.id] ?? 0) * 100) / 100;
+		const childIds = childrenByVol[v.id] ?? [];
+		return {
+			id: v.id,
+			firstName: v.firstName,
+			lastName: v.lastName,
+			email: v.email,
+			totalHours,
+			manuallyApproved: v.manuallyApproved,
+			children: childIds
+				.map((cid) => {
+					const c = allChildren.find((x) => x.id === cid);
+					if (!c) return null;
+					const required = c.status === 'tryout' ? hoursTryout : hoursFullMember;
+					const childVolIds = volsByChild[c.id] ?? [];
+					const childHours = Math.round(childVolIds.reduce((s, vid) => s + (hoursByVol[vid] ?? 0), 0) * 100) / 100;
+					return { id: c.id, firstName: c.firstName, lastName: c.lastName, status: c.status, totalHours: childHours, requiredHours: required };
+				})
+				.filter(Boolean) as { id: number; firstName: string; lastName: string; status: string; totalHours: number; requiredHours: number }[]
+		};
+	});
+
+	const childrenData = allChildren.map((child) => {
+		const required = child.status === 'tryout' ? hoursTryout : hoursFullMember;
+		const volIds = volsByChild[child.id] ?? [];
+		const totalHours = Math.round(volIds.reduce((s, vid) => s + (hoursByVol[vid] ?? 0), 0) * 100) / 100;
+		return {
+			id: child.id,
+			firstName: child.firstName,
+			lastName: child.lastName,
+			status: child.status,
+			level: child.level ?? '',
+			totalHours,
+			requiredHours: required,
+			complete: totalHours >= required,
+			volunteerNames: volIds.map((vid) => {
+				const vol = allVolunteers.find((u) => u.id === vid);
+				return vol ? `${vol.firstName} ${vol.lastName}` : '?';
+			})
+		};
+	});
+
+	return { volunteers, childrenData };
 };
