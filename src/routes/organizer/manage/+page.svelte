@@ -63,6 +63,36 @@
 	<a href="/organizer/manage/tutorials" class="btn" style="white-space:nowrap;flex-shrink:0;background:rgba(255,255,255,0.2);color:white;border:1px solid rgba(255,255,255,0.5);">{$lang === 'en' ? '→ Edit' : '→ Modifier'}</a>
 </div>
 
+<!-- announcements -->
+<div class="accordion" style="margin-bottom:16px;">
+	<button class="acc-header" onclick={() => openAnnouncements = !openAnnouncements}>
+		<span class="acc-title">{t[$lang].announcements}</span>
+		<span class="acc-chevron" class:rotated={openAnnouncements}>▾</span>
+	</button>
+{#if openAnnouncements}
+<div class="acc-body">
+	<div class="card">
+		{#if form?.announcementError}<p class="error" style="margin-bottom:8px;">{form.announcementError}</p>{/if}
+		<form method="POST" action="?/addAnnouncement" use:enhance style="margin-bottom:16px;">
+			<div class="form-group"><label for="announcementTitle">{t[$lang].announcementTitle}</label><input id="announcementTitle" name="title" type="text" required /></div>
+			<div class="form-group"><label for="announcementContent">{t[$lang].announcementContent}</label><textarea id="announcementContent" name="content" rows="3" required></textarea></div>
+			<button type="submit" class="btn btn-accent">{t[$lang].postAnnouncement}</button>
+		</form>
+		{#if data.announcements.length === 0}
+			<p style="color:var(--text-light);font-size:0.9rem;">{$lang === 'en' ? 'No announcements yet.' : 'Aucune annonce pour l\'instant.'}</p>
+		{:else}
+			{#each data.announcements as a}
+				<div style="display:flex;justify-content:space-between;align-items:start;padding:8px 0;border-bottom:1px solid var(--border);">
+					<div><strong>{a.title}</strong><p style="font-size:0.85rem;color:var(--text-light);">{new Date(a.createdAt).toLocaleDateString()}</p></div>
+					<form method="POST" action="?/deleteAnnouncement" use:enhance><input type="hidden" name="id" value={a.id} /><button type="submit" class="btn btn-danger" style="padding:4px 10px;font-size:0.8rem;">{t[$lang].delete}</button></form>
+				</div>
+			{/each}
+		{/if}
+	</div>
+</div>
+{/if}
+</div>
+
 <!-- settings -->
 <div class="accordion" style="margin-bottom:16px;">
 	<button class="acc-header" onclick={() => openSettings = !openSettings}>
@@ -547,62 +577,37 @@
 {/if}
 </div>
 
-<!-- row: announcements + export/archive -->
+<!-- export + archive -->
 <div class="accordion" style="margin-bottom:16px;">
-	<button class="acc-header" onclick={() => openAnnouncements = !openAnnouncements}>
-		<span class="acc-title">{t[$lang].announcements} & {t[$lang].exportArchive}</span>
-		<span class="acc-chevron" class:rotated={openAnnouncements}>▾</span>
+	<button class="acc-header" onclick={() => openExport = !openExport}>
+		<span class="acc-title">{t[$lang].exportArchive}</span>
+		<span class="acc-chevron" class:rotated={openExport}>▾</span>
 	</button>
-{#if openAnnouncements}
+{#if openExport}
 <div class="acc-body">
-<div class="grid-2">
-	<!-- announcements -->
-	<div>
-		<h2>{t[$lang].announcements}</h2>
-		<div class="card" style="margin-top:12px;">
-			{#if form?.announcementError}<p class="error" style="margin-bottom:8px;">{form.announcementError}</p>{/if}
-			<form method="POST" action="?/addAnnouncement" use:enhance style="margin-bottom:16px;">
-				<div class="form-group"><label for="announcementTitle">{t[$lang].announcementTitle}</label><input id="announcementTitle" name="title" type="text" required /></div>
-				<div class="form-group"><label for="announcementContent">{t[$lang].announcementContent}</label><textarea id="announcementContent" name="content" rows="3" required></textarea></div>
-				<button type="submit" class="btn btn-accent">{t[$lang].postAnnouncement}</button>
-			</form>
-			{#each data.announcements as a}
-				<div style="display:flex;justify-content:space-between;align-items:start;padding:8px 0;border-bottom:1px solid var(--border);">
-					<div><strong>{a.title}</strong><p style="font-size:0.85rem;color:var(--text-light);">{new Date(a.createdAt).toLocaleDateString()}</p></div>
-					<form method="POST" action="?/deleteAnnouncement" use:enhance><input type="hidden" name="id" value={a.id} /><button type="submit" class="btn btn-danger" style="padding:4px 10px;font-size:0.8rem;">{t[$lang].delete}</button></form>
+	<div class="card">
+		<a href="/api/export" class="btn btn-primary" style="display:block;text-align:center;margin-bottom:16px;">{t[$lang].exportCsv}</a>
+		<hr style="border:none;border-top:1px solid var(--border);margin:16px 0;" />
+		<h3>{t[$lang].archiveSeason}</h3>
+		<p style="font-size:0.85rem;color:var(--text-light);margin-bottom:12px;">{t[$lang].archiveSeasonDesc}</p>
+		{#if form?.archiveSuccess}
+			<div style="background:#d4edda;padding:8px 12px;border-radius:6px;margin-bottom:12px;"><p style="color:#155724;font-size:0.9rem;">{t[$lang].seasonArchivedSuccess}</p></div>
+		{/if}
+		{#if form?.archiveError}<p class="error" style="margin-bottom:8px;">{form.archiveError}</p>{/if}
+		<form method="POST" action="?/archiveSeason" use:enhance onsubmit={(e) => { if (!confirm(t[$lang].archiveConfirm)) e.preventDefault(); }}>
+			<div class="form-group"><label for="archiveLabel">{t[$lang].seasonLabel}</label><input id="archiveLabel" name="label" type="text" placeholder={t[$lang].seasonLabelPlaceholder} required /></div>
+			<button type="submit" class="btn btn-danger" style="width:100%;">{t[$lang].archiveReset}</button>
+		</form>
+		{#if data.archives.length > 0}
+			<h4 style="margin-top:16px;">{t[$lang].pastArchives}</h4>
+			{#each data.archives as archive}
+				<div style="padding:8px 0;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;">
+					<span>{archive.label}</span>
+					<span style="font-size:0.85rem;color:var(--text-light);">{new Date(archive.archivedAt).toLocaleDateString()}</span>
 				</div>
 			{/each}
-		</div>
+		{/if}
 	</div>
-
-	<!-- export + archive -->
-	<div>
-		<h2>{t[$lang].exportArchive}</h2>
-		<div class="card" style="margin-top:12px;">
-			<a href="/api/export" class="btn btn-primary" style="display:block;text-align:center;margin-bottom:16px;">{t[$lang].exportCsv}</a>
-			<hr style="border:none;border-top:1px solid var(--border);margin:16px 0;" />
-			<h3>{t[$lang].archiveSeason}</h3>
-			<p style="font-size:0.85rem;color:var(--text-light);margin-bottom:12px;">{t[$lang].archiveSeasonDesc}</p>
-			{#if form?.archiveSuccess}
-				<div style="background:#d4edda;padding:8px 12px;border-radius:6px;margin-bottom:12px;"><p style="color:#155724;font-size:0.9rem;">{t[$lang].seasonArchivedSuccess}</p></div>
-			{/if}
-			{#if form?.archiveError}<p class="error" style="margin-bottom:8px;">{form.archiveError}</p>{/if}
-			<form method="POST" action="?/archiveSeason" use:enhance onsubmit={(e) => { if (!confirm(t[$lang].archiveConfirm)) e.preventDefault(); }}>
-				<div class="form-group"><label for="archiveLabel">{t[$lang].seasonLabel}</label><input id="archiveLabel" name="label" type="text" placeholder={t[$lang].seasonLabelPlaceholder} required /></div>
-				<button type="submit" class="btn btn-danger" style="width:100%;">{t[$lang].archiveReset}</button>
-			</form>
-			{#if data.archives.length > 0}
-				<h4 style="margin-top:16px;">{t[$lang].pastArchives}</h4>
-				{#each data.archives as archive}
-					<div style="padding:8px 0;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;">
-						<span>{archive.label}</span>
-						<span style="font-size:0.85rem;color:var(--text-light);">{new Date(archive.archivedAt).toLocaleDateString()}</span>
-					</div>
-				{/each}
-			{/if}
-		</div>
-	</div>
-</div>
 </div>
 {/if}
 </div>
