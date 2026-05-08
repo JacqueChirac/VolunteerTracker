@@ -71,3 +71,19 @@ src/
 | `bun run db:seed` | Seed test data |
 | `bun run check` | TypeScript type checking |
 ```
+## Emailing 
+Provider: Email.js 
+Account-Root: 
+Gmail: wcssSwimTeam@gmail.com
+Password: wcss111111
+
+Acc1: 
+Proton Mail: cpwdSwimTeam1@proton.me
+Password: cpwd111111
+Email password: cpwd111111
+
+Acc2: 
+Proton Mail: cpwdSwimTeam2
+Password: cpwd222222
+Recov: apart essay faint hidden blue jealous accident diagram ladder rural ugly region
+Email password: cpwd222222
