@@ -275,108 +275,94 @@
   }
 </script>
 
-<!--Choose node-->
-<section class="node-container">
-  <div class="node-header">
-    <h4>Nodes</h4>
-  </div>
+<h1>{$lang === 'en' ? 'Emailing' : 'Courriels'}</h1>
+<p style="color:var(--text-light);margin-bottom:24px;">
+  {$lang === 'en' ? 'Select a service node and compose messages to your volunteers.' : 'Sélectionnez un nœud de service et composez des messages pour vos bénévoles.'}
+</p>
 
-  <div class="node-content">
-    {#each services as s, i}
-      {@render nodeItem({
-        serviceID: s.serviceID,
-        token: i === node ? tokens[node] : 0,
-        active: i === node,
-        serial: i,
-      })}
-    {/each}
-  </div>
+<section class="nodes-grid">
+  {#each services as s, i}
+    {@render nodeItem({
+      serviceID: s.serviceID,
+      token: i === node ? tokens[node] : tokens[i] ?? 0,
+      active: i === node,
+      serial: i,
+    })}
+  {/each}
 </section>
 
-<div class="top-toggle">
-  <div class="toggle-container">
-    <button
-      class="toggle-option"
-      class:active={selected === "message"}
-      onclick={() => select("message")}
-    >
-      {t[$lang].message}
-    </button>
-    <button
-      class="toggle-option"
-      class:active={selected === "reminder"}
-      onclick={() => select("reminder")}
-    >
-      {t[$lang].reminder}
-    </button>
-  </div>
-</div>
-
-<div>
-  <label for="recipient">{t[$lang].recipient}</label>
-
-  <!-- Autofill Suggestions -->
-  <div class="recipient-wrapper">
-    <input
-      class="recipient-input"
-      type="text"
-      autocomplete="off"
-      id="recipient"
-      bind:value={messageParams.recipient}
-      bind:this={inputElement}
-      oninput={handleInput}
-      onclick={handleClick}
-    />
-
-    <div class="dropdown-wrapper">
-      <!-- your input or trigger element here -->
-
-      {#if showDropdown === true && recipientPrompted.length > 0}
-        {@render promptList(recipientPrompted)}
-      {/if}
+<div class="card email-composer">
+  <div class="composer-header">
+    <div class="toggle-container">
+      <button
+        class="toggle-option"
+        class:active={selected === "message"}
+        onclick={() => select("message")}
+      >
+        {t[$lang].message}
+      </button>
+      <button
+        class="toggle-option"
+        class:active={selected === "reminder"}
+        onclick={() => select("reminder")}
+      >
+        {t[$lang].reminder}
+      </button>
     </div>
   </div>
 
-  <div class="group-select">
-    <h4>{t[$lang].quickSelect}</h4>
+  <div class="form-group">
+    <label for="recipient">{t[$lang].recipient}</label>
+    <div class="recipient-wrapper">
+      <input
+        class="recipient-input"
+        type="text"
+        autocomplete="off"
+        id="recipient"
+        placeholder={$lang === 'en' ? 'Search names or type emails...' : 'Chercher des noms ou taper des courriels...'}
+        bind:value={messageParams.recipient}
+        bind:this={inputElement}
+        oninput={handleInput}
+        onclick={handleClick}
+      />
 
+      <div class="dropdown-wrapper">
+        {#if showDropdown === true && recipientPrompted.length > 0}
+          {@render promptList(recipientPrompted)}
+        {/if}
+      </div>
+    </div>
+  </div>
+
+  <div class="group-select-container">
+    <p class="section-label">{t[$lang].quickSelect}</p>
     <div class="group-buttons">
-      <button class="group-btn" onclick={() => selectGroup(1)}
-        >{t[$lang].allVolunteers}</button
-      >
-      <button class="group-btn" onclick={() => selectGroup(2)}
-        >{t[$lang].underCriteria}</button
-      >
-      <button class="group-btn" onclick={() => selectGroup(3)}
-        >{t[$lang].customGroup}</button
-      >
-      <button class="group-btn" onclick={() => selectGroup(0)}
-        >{t[$lang].clearAll}</button
-      >
+      <button class="btn btn-outline btn-sm" onclick={() => selectGroup(1)}>{t[$lang].allVolunteers}</button>
+      <button class="btn btn-outline btn-sm" onclick={() => selectGroup(2)}>{t[$lang].underCriteria}</button>
+      <button class="btn btn-outline btn-sm" onclick={() => selectGroup(3)}>{t[$lang].customGroup}</button>
+      <button class="btn btn-danger btn-sm" onclick={() => selectGroup(0)}>{t[$lang].clearAll}</button>
     </div>
   </div>
 
-  {#if selected === "message"}
-    <textarea
-      rows="8"
-      placeholder={t[$lang].typeMessageHere}
-      bind:value={messageParams.message}
-      style="width: 100%; padding: 0.5rem; font-size: 1rem; resize: vertical;"
-    ></textarea>
-  {/if}
+  <div class="form-group">
+    <label for="message-body">{$lang === 'en' ? 'Message' : 'Message'}</label>
+      {#if selected === "message"}
+        <textarea
+          id="message-body"
+          rows="10"
+          placeholder={t[$lang].typeMessageHere}
+          bind:value={messageParams.message}
+          style="width: 100%; padding: 12px; font-size: 1rem; border-radius: 12px; border: 1px solid var(--border); resize: vertical;"
+        ></textarea>
+      {/if}
+  </div>
 
-  <button onclick={() => SendEmail(messageParams)}>{t[$lang].sendEmail}</button>
+  <div style="margin-top: 12px;">
+    <button class="btn btn-primary" style="width: 100%; padding: 14px;" onclick={() => SendEmail(messageParams)}>
+      {t[$lang].sendEmail}
+    </button>
+  </div>
 </div>
-
-<pre> {focus}, {wordSelected}  </pre>
-
-<pre> {recipientPrompted}  </pre>
-
-<pre> {allNames[recipientPrompted[0]]}  </pre>
-
-<pre> {allMails[recipientPrompted[0]]}  </pre>
-
-<pre>{JSON.stringify(data, null, 2)}</pre>
 
 {#snippet promptList(storedPrompts: number[])}
   <div class="dropdown">
@@ -427,7 +413,7 @@
   active: boolean;
   serial: number;
 })}
-  <div class="node-item" class:active onclick={() => selectNode(serial)}>
+  <button class="node-item" class:active onclick={() => selectNode(serial)} type="button">
     <!-- Left indicator (10%) -->
     <div class="node-indicator">
       <span class="dot"></span>
@@ -444,22 +430,20 @@
       <div class="node-bottom">
         <div class="bar">
           <div class="bar-track">
-           <div
-  class="bar-fill"
-  style={`
-    width: ${(tokens[serial] / 200) * 100}%;
-    background: ${getColor(tokens[serial])};
-  `}
-/>
-
-            <div class="bar-dot" style={`left: ${(tokens[serial] / 200) * 100}%`}></div>
+            <div
+              class="bar-fill"
+              style={`
+                width: ${(token / 200) * 100}%;
+                background: ${getColor(token)};
+              `}
+            />
+            <div class="bar-dot" style={`left: ${(token / 200) * 100}%`}></div>
           </div>
-
-          <span class="bar-text">({tokens[serial]}/200)</span>
+          <span class="bar-text">({token}/200)</span>
         </div>
       </div>
     </div>
-  </div>
+  </button>
 {/snippet}
 
 {#if toastMsg}
@@ -491,18 +475,35 @@
     to   { opacity: 1; transform: translateX(-50%) translateY(0); }
   }
 
-  .top-toggle {
-    width: 100%;
-    background: transparent;
-    padding: 10px 0;
-    position: sticky;
-    top: 0;
-    z-index: 100;
+  .nodes-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 16px;
+    margin-bottom: 32px;
+  }
+
+  .email-composer {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 32px;
+  }
+
+  .composer-header {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 32px;
+  }
+
+  .section-label {
+    font-weight: 700;
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--text-light);
+    margin-bottom: 8px;
   }
 
   .toggle-container {
-    max-width: 92%;
-    margin: 0 auto;
     display: flex;
     background: rgba(30, 30, 30, 0.85); /* subtle dark with transparency */
     border: 1px solid rgba(255, 255, 255, 0.1);
@@ -548,12 +549,11 @@
     top: 100%;
     left: 0;
     z-index: 1000;
-
-    width: 40%;
-    min-width: 260px;
+    width: 100%;
+    max-width: 400px;
 
     background: #fff;
-    border: 1px solid #e6e6e6;
+    border: 1px solid var(--border);
     border-radius: 6px;
     box-shadow: 0 8px 18px rgba(0, 0, 0, 0.12);
 
@@ -598,27 +598,47 @@
     overflow-y: auto;
   }
 
+  .group-select-container {
+    margin: 24px 0;
+    padding: 16px;
+    background: rgba(0,0,0,0.02);
+    border: 1px dashed var(--border);
+    border-radius: 12px;
+  }
+
+  .group-buttons {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
   .dropdown-item {
     width: 100%;
-    padding: 8px 10px;
-
+    padding: 10px 14px;
     display: flex;
     flex-direction: column;
     align-items: flex-start;
-
     text-align: left;
     cursor: pointer;
-
     border: none;
     background: transparent;
+    box-shadow: none;
+    border-radius: 0;
   }
 
   .dropdown-item:hover {
     background: #f5f5f5;
+    transform: none;
+  }
+
+  .recipient-input {
+    width: 100%;
   }
 
   .name {
     font-size: 14px;
+    font-weight: 600;
+    color: var(--text);
     line-height: 1.2;
   }
 
