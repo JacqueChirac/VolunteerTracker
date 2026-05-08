@@ -245,7 +245,7 @@
         break;
       case 3:
         break;
-        defualt: break;
+      defualt: break;
     }
   }
 
