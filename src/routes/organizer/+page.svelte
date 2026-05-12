@@ -1,34 +1,20 @@
-<!-- organizer events dashboard — stats + event list with add/delete -->
+<!-- organizer home — welcome, stats, quick links, recent announcements -->
 <script lang="ts">
-	import { enhance } from '$app/forms';
-	import type { PageData, ActionData } from './$types';
-	import { today, daysFromNow } from "$lib/dateBounds";
+	import type { PageData } from './$types';
 	import { lang } from '$lib/stores/lang';
 	import { t } from '$lib/i18n';
+	import { Calendar, Users, Settings, BookOpen } from 'lucide-svelte';
 
-  type OrganizerPageData = PageData & {
-    activityTypes: Array<{ name: string }>;
-  };
-  let { data, form }: { data: OrganizerPageData; form: ActionData } = $props();
-  let showAddEvent = $state(false);
-
-  const dateMin = today();
-  const dateMax = daysFromNow(730); // ~2 years
-  //Datemin is just today
-  let upcomingEvents = $derived(
-    data.events.filter((e: (typeof data.events)[0]) => e.date >= dateMin),
-  );
-  let pastEvents = $derived(
-    data.events.filter((e: (typeof data.events)[0]) => e.date < dateMin),
-  );
-
-  let editingId = $state<number | null>(null);
+	let { data }: { data: PageData } = $props();
 </script>
 
-<h1>{t[$lang].eventsDashboard}</h1>
+<h1>{t[$lang].welcomeMsg(data.user?.firstName ?? '')}</h1>
+<p style="color:var(--text-light);margin-bottom:24px;">
+	{$lang === 'en' ? 'Your organizer dashboard. Use the tiles below to manage events, volunteers, and settings.' : 'Votre tableau de bord. Utilisez les tuiles ci-dessous pour gérer les événements, les bénévoles et les paramètres.'}
+</p>
 
 <!-- stat cards -->
-<div style="display:flex;gap:12px;margin:16px 0 24px;flex-wrap:wrap;">
+<div style="display:flex;gap:12px;margin-bottom:28px;flex-wrap:wrap;">
 	<div class="card" style="flex:1;min-width:120px;text-align:center;">
 		<p style="font-size:1.8rem;font-weight:700;">{data.stats.totalVolunteers}</p>
 		<p style="font-size:0.8rem;color:var(--text-light);">{t[$lang].totalVolunteers}</p>
@@ -43,114 +29,82 @@
 	</div>
 </div>
 
-{#if form?.success}
-	<div class="card" style="background:#d4edda;border:1px solid #c3e6cb;margin-bottom:16px;" role="status" aria-live="polite">
-		<p style="color:#155724;">{t[$lang].eventSaved}</p>
-	</div>
-{/if}
+<!-- quick-link tiles -->
+<div class="tile-grid">
+	<a href="/organizer/events" class="tile">
+		<span class="tile-icon"><Calendar size={28} /></span>
+		<span class="tile-title">{t[$lang].events}</span>
+		<span class="tile-desc">{$lang === 'en' ? 'Create and manage upcoming and past events.' : 'Créer et gérer les événements à venir et passés.'}</span>
+	</a>
+	<a href="/organizer/volunteers" class="tile">
+		<span class="tile-icon"><Users size={28} /></span>
+		<span class="tile-title">{t[$lang].volunteers}</span>
+		<span class="tile-desc">{$lang === 'en' ? 'View volunteer profiles and progress.' : 'Voir les profils et la progression des bénévoles.'}</span>
+	</a>
+	<a href="/organizer/manage" class="tile">
+		<span class="tile-icon"><Settings size={28} /></span>
+		<span class="tile-title">{t[$lang].manage}</span>
+		<span class="tile-desc">{$lang === 'en' ? 'Settings, announcements, people, exports.' : 'Paramètres, annonces, personnes, exports.'}</span>
+	</a>
+	<a href="/organizer/tutorial" class="tile">
+		<span class="tile-icon"><BookOpen size={28} /></span>
+		<span class="tile-title">{$lang === 'en' ? 'Tutorial' : 'Tutoriel'}</span>
+		<span class="tile-desc">{$lang === 'en' ? 'Learn how to use the organizer interface.' : "Apprendre à utiliser l'interface d'organisateur."}</span>
+	</a>
+</div>
 
-<button class="btn btn-accent" style="margin-bottom:16px;" onclick={() => showAddEvent = !showAddEvent} aria-expanded={showAddEvent} aria-controls="add-event-panel">
-	{showAddEvent ? t[$lang].cancel : t[$lang].addNewEvent}
-</button>
-
-<div id="add-event-panel" class="card" style="margin-bottom:20px;" hidden={!showAddEvent}>
-		<h2>{t[$lang].addNewEventTitle}</h2>
-		{#if form?.error}<p class="error" role="alert" aria-live="assertive">{form.error}</p>{/if}
-		<form method="POST" action="?/addEvent" use:enhance style="margin-top:12px;">
-			<div class="grid-2">
-				<div class="form-group"><label for="add_title">{t[$lang].title}</label><input id="add_title" name="title" type="text" required /></div>
-				<div class="form-group"><label for="add_date">{t[$lang].date}</label><input id="add_date" name="date" type="date" required min={dateMin} max={dateMax} /></div>
-				<div class="form-group"><label for="add_start">{t[$lang].startTime}</label><input id="add_start" name="startTime" type="time" required /></div>
-				<div class="form-group"><label for="add_end">{t[$lang].endTime}</label><input id="add_end" name="endTime" type="time" /></div>
-				<div class="form-group"><label for="add_loc">{t[$lang].location}</label><input id="add_loc" name="location" type="text" /></div>
-				<div class="form-group"><label for="add_type">{t[$lang].eventType}</label>
-					<select id="add_type" name="type">
-							<option value="other" selected>{t[$lang].other}</option>
-							{#each data.activityTypes as at}
-								<option value={at.name}>{at.name}</option>
-							{/each}
-						</select>
-				</div>
-			</div>
-			<div class="form-group"><label for="add_desc">{t[$lang].description}</label><textarea id="add_desc" name="description" rows="3"></textarea></div>
-			<button type="submit" class="btn btn-primary">{t[$lang].createEvent}</button>
-		</form>
-	</div>
-
-{#if data.events.length === 0}
-	<div class="card"><p style="color:var(--text-light);">{t[$lang].noEventsYet}</p></div>
-{:else}
-	<h2 style="margin-bottom:12px;">{t[$lang].upcomingEvents(upcomingEvents.length)}</h2>
-	{#each upcomingEvents as event (event.id)}
+{#if data.announcements.length > 0}
+	<h2 style="margin-top:32px;margin-bottom:12px;">{t[$lang].announcementsTitle}</h2>
+	{#each data.announcements as a}
 		<div class="card" style="margin-bottom:12px;">
-			{#if editingId !== event.id}
-				<!-- DISPLAY MODE -->
-				<div style="display:flex;justify-content:space-between;align-items:start;gap:16px;flex-wrap:wrap;">
-					<div style="flex:1;">
-						<h3>{event.title}</h3>
-						<p style="font-size:0.9rem;color:var(--text-light);">{event.date} at {event.startTime}{event.endTime ? ` - ${event.endTime}` : ''}{#if event.location} &middot; {event.location}{/if}</p>
-						{#if event.description}<p style="margin-top:4px;font-size:0.9rem;">{event.description}</p>{/if}
-						<p style="font-size:0.85rem;color:var(--text-light);margin-top:4px;">{t[$lang].volunteersCount(event.signupCount)}{#if event.type} &middot; {event.type}{/if}</p>
-					</div>
-					<div style="display:flex;gap:6px;">
-						<button type="button" class="btn btn-outline" style="padding:4px 10px;font-size:0.8rem;" onclick={() => (editingId = event.id)}>Edit</button>
-						<form method="POST" action="?/deleteEvent" use:enhance style="display:inline;">
-							<input type="hidden" name="eventId" value={event.id} />
-							<button type="submit" class="btn btn-danger" style="padding:4px 10px;font-size:0.8rem;" aria-label={t[$lang].deleteEvent(event.title)} onclick={(e) => { if (!confirm(t[$lang].deleteEventConfirm)) e.preventDefault(); }}>{t[$lang].delete}</button>
-						</form>
-					</div>
-				</div>
-			{:else}
-				<!-- EDIT MODE -->
-				<form method="POST" action="?/editEvent" use:enhance={() => async ({ update }) => { await update(); editingId = null; }}>
-					<input type="hidden" name="id" value={event.id} />
-					<div class="grid-2">
-						<div class="form-group">
-							<label>Title<input name="title" type="text" required value={event.title} /></label>
-						</div>
-						<div class="form-group">
-							<label>Date<input name="date" type="date" required value={event.date} /></label>
-						</div>
-						<div class="form-group">
-							<label>Start<input name="startTime" type="time" required value={event.startTime} /></label>
-						</div>
-						<div class="form-group">
-							<label>End<input name="endTime" type="time" value={event.endTime ?? ""} /></label>
-						</div>
-						<div class="form-group">
-							<label>Location<input name="location" type="text" value={event.location ?? ""} /></label>
-						</div>
-						<div class="form-group">
-							<label>Type<input name="type" type="text" value={event.type ?? "other"} /></label>
-						</div>
-					</div>
-					<div class="form-group">
-						<label>Description<textarea name="description" rows="2">{event.description ?? ""}</textarea></label>
-					</div>
-					<div style="display:flex;gap:8px;">
-						<button type="submit" class="btn btn-primary">Save</button>
-						<button type="button" class="btn btn-outline" onclick={() => (editingId = null)}>Cancel</button>
-					</div>
-				</form>
-			{/if}
-		</div>
-	{/each}
-
-	<h2 style="margin-top:32px;margin-bottom:12px;">{t[$lang].pastEvents(pastEvents.length)}</h2>
-	{#each pastEvents as event (event.id)}
-		<div class="card" style="margin-bottom:12px;opacity:0.75;">
-			<div style="display:flex;justify-content:space-between;align-items:start;gap:16px;flex-wrap:wrap;">
-				<div style="flex:1;">
-					<h3>{event.title}</h3>
-					<p style="font-size:0.9rem;color:var(--text-light);">{event.date} at {event.startTime}{event.endTime ? ` - ${event.endTime}` : ''}{#if event.location} &middot; {event.location}{/if}</p>
-					{#if event.description}<p style="margin-top:4px;font-size:0.9rem;">{event.description}</p>{/if}
-					<p style="font-size:0.85rem;color:var(--text-light);margin-top:4px;">{t[$lang].volunteersCount(event.signupCount)}{#if event.type} &middot; {event.type}{/if}</p>
-				</div>
-				<form method="POST" action="?/deleteEvent" use:enhance style="display:inline;">
-					<input type="hidden" name="eventId" value={event.id} />
-					<button type="submit" class="btn btn-danger" style="padding:4px 10px;font-size:0.8rem;" aria-label={t[$lang].deleteEvent(event.title)} onclick={(e) => { if (!confirm(t[$lang].deleteConfirm)) e.preventDefault(); }}>{t[$lang].delete}</button>
-				</form>
-			</div>
+			<h3>{a.title}</h3>
+			<p style="font-size:0.85rem;color:var(--text-light);margin-bottom:4px;">{new Date(a.createdAt).toLocaleDateString()}</p>
+			<p>{a.content}</p>
 		</div>
 	{/each}
 {/if}
+
+<style>
+	.tile-grid {
+		display: grid;
+		grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+		gap: 14px;
+	}
+	.tile {
+		display: flex;
+		flex-direction: column;
+		gap: 6px;
+		background: var(--card-bg, white);
+		border: 1px solid var(--border);
+		border-radius: 14px;
+		padding: 18px 18px 20px;
+		color: var(--text);
+		text-decoration: none;
+		transition: transform 0.15s, box-shadow 0.15s, border-color 0.15s;
+	}
+	.tile:hover {
+		transform: translateY(-2px);
+		box-shadow: 0 6px 18px rgba(46,56,72,0.08);
+		border-color: var(--primary);
+	}
+	.tile-icon {
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		width: 44px;
+		height: 44px;
+		border-radius: 12px;
+		background: rgba(88, 164, 176, 0.14);
+		color: var(--primary);
+		margin-bottom: 4px;
+	}
+	.tile-title {
+		font-size: 1.05rem;
+		font-weight: 700;
+	}
+	.tile-desc {
+		font-size: 0.85rem;
+		color: var(--text-light);
+		line-height: 1.4;
+	}
+</style>

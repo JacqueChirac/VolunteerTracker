@@ -2,7 +2,7 @@
 <script lang="ts">
 	import { page } from '$app/state';
 	import { enhance } from '$app/forms';
-	import { Calendar, Users, Settings, LogOut, Menu, X } from 'lucide-svelte';
+	import { Home, Calendar, Users, Settings, BookOpen, LogOut, Menu, X } from 'lucide-svelte';
 	import { lang } from '$lib/stores/lang';
 	import { t } from '$lib/i18n';
 
@@ -27,9 +27,11 @@
 		{#if menuOpen}<X size={20} />{:else}<Menu size={20} />{/if}
 	</button>
 	<div id="admin-nav-links" class="nav-links" class:open={menuOpen}>
-		<a href="/organizer" class:active={page.url.pathname === '/organizer'} onclick={closeMenu}><Calendar size={16} />{t[$lang].events}</a>
+		<a href="/organizer" class:active={page.url.pathname === '/organizer'} onclick={closeMenu}><Home size={16} />{$lang === 'en' ? 'Home' : 'Accueil'}</a>
+		<a href="/organizer/events" class:active={isActive('/organizer/events')} onclick={closeMenu}><Calendar size={16} />{t[$lang].events}</a>
 		<a href="/organizer/volunteers" class:active={isActive('/organizer/volunteers')} onclick={closeMenu}><Users size={16} />{t[$lang].volunteers}</a>
 		<a href="/organizer/manage" class:active={isActive('/organizer/manage')} onclick={closeMenu}><Settings size={16} />{t[$lang].manage}</a>
+		<a href="/organizer/tutorial" class:active={isActive('/organizer/tutorial')} onclick={closeMenu}><BookOpen size={16} />{$lang === 'en' ? 'Tutorial' : 'Tutoriel'}</a>
 		<button onclick={() => lang.update(l => l === 'en' ? 'fr' : 'en')} class="lang-btn nav-lang-btn">
 			{$lang === 'en' ? 'FR' : 'EN'}
 		</button>
