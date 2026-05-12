@@ -152,3 +152,9 @@ export const nodes = pgTable('nodes', {
 	token: integer('token').notNull(),
 	usable: boolean('usable').notNull()
 });
+
+export const email_setting = pgTable('email_settings', {
+	id: serial('id').primaryKey(),
+	name: text('name').notNull(),
+	lastLogin: text('last_login').notNull()
+});

@@ -176,9 +176,12 @@
     else messageParams.recipient = firstPart + middlePart;
     showDropdown = false;
   }
-
   //Email logics
   function SendEmail(params: any) {
+    if(tokens[node] <= 0){
+      showToast("Node messgae limit hit", "error");
+      return;
+    }
     if (selected === "message") {
       emailjs.send(services[node].serviceID, templates[0], params).then(
         (response) => {
@@ -245,7 +248,7 @@
         break;
       case 3:
         break;
-        defualt: break;
+      defualt: break;
     }
   }
 
@@ -276,6 +279,7 @@
 </script>
 
 <h1>{$lang === 'en' ? 'Emailing' : 'Courriels'}</h1>
+
 <p style="color:var(--text-light);margin-bottom:24px;">
   {$lang === 'en' ? 'Select a service node and compose messages to your volunteers.' : 'Sélectionnez un nœud de service et composez des messages pour vos bénévoles.'}
 </p>
@@ -363,6 +367,8 @@
     </button>
   </div>
 </div>
+ 
+
 
 {#snippet promptList(storedPrompts: number[])}
   <div class="dropdown">
