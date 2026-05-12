@@ -363,7 +363,8 @@
     </button>
   </div>
 </div>
-
+ 
+<pre>{data.newDate}</pre>
 {#snippet promptList(storedPrompts: number[])}
   <div class="dropdown">
     <div class="dropdown-header">
