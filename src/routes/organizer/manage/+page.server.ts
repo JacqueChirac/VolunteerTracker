@@ -13,6 +13,11 @@ function advanceOneYear(dateStr: string): string {
 	return d.toISOString().split('T')[0];
 }
 
+// schema caps: hours = decimal(6,2) → 9999.99 max ; amount = decimal(10,2) → ~$100M max
+const MAX_MANUAL_HOURS = 9999;
+const MAX_MANUAL_DONATION = 1_000_000;
+const MAX_DERIVED_HOURS = 9999;
+
 export const load: PageServerLoad = async () => {
 	const activities = await db.select().from(activityTypes);
 	const news = await db.select().from(announcements).orderBy(desc(announcements.createdAt));
@@ -142,9 +147,25 @@ export const actions: Actions = {
 		if (isNaN(num) || num <= 0) return fail(400, { manualError: 'Value must be a positive number.' });
 
 		if (type === 'donation') {
+			if (num > MAX_MANUAL_DONATION) {
+				return fail(400, {
+					manualError: `The amount you entered is too large to be accepted. Donations cannot exceed $${MAX_MANUAL_DONATION.toLocaleString()} per entry.`,
+				});
+			}
 			const rate = await getDonationRate();
-			await db.insert(contributions).values({ userId, type: 'donation', date, hours: (num / rate).toFixed(2), amount: num.toFixed(2), notes: notes || null });
+			const hoursEquiv = num / rate;
+			if (hoursEquiv > MAX_DERIVED_HOURS) {
+				return fail(400, {
+					manualError: `The amount you entered is too large to be accepted. With the current conversion rate ($${rate}/hr), this donation would convert to more than ${MAX_DERIVED_HOURS} hours.`,
+				});
+			}
+			await db.insert(contributions).values({ userId, type: 'donation', date, hours: hoursEquiv.toFixed(2), amount: num.toFixed(2), notes: notes || null });
 		} else {
+			if (num > MAX_MANUAL_HOURS) {
+				return fail(400, {
+					manualError: `The amount you entered is too large to be accepted. Hours cannot exceed ${MAX_MANUAL_HOURS} per entry.`,
+				});
+			}
 			await db.insert(contributions).values({ userId, type: 'volunteering', date, hours: num.toFixed(2), notes: notes || null });
 		}
 		return { manualSuccess: true };
@@ -263,6 +284,11 @@ export const actions: Actions = {
 
 		const remaining = maxRequired - currentHours;
 		if (remaining <= 0) return fail(400, { markMetError: 'This volunteer already meets requirements.' });
+		if (remaining > MAX_MANUAL_HOURS) {
+			return fail(400, {
+				markMetError: `The hours requirement is too large to top up in one entry (would need ${remaining.toFixed(1)} hours). Lower the requirement in Settings or add hours manually in chunks.`,
+			});
+		}
 
 		const today = new Date().toISOString().split('T')[0];
 		await db.insert(contributions).values({

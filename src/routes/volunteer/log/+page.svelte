@@ -92,7 +92,7 @@
 					</select>
 				</div>
 				<div class="form-group"><label for="date2">{t[$lang].dateField}</label><input id="date2" name="date" type="date" required value={dateMax} min={dateMin} max={dateMax} /></div>
-				<div class="form-group"><label for="amount">{t[$lang].amountField}</label><input id="amount" name="amount" type="number" step="0.01" min="1" required /></div>
+				<div class="form-group"><label for="amount">{t[$lang].amountField}</label><input id="amount" name="amount" type="number" step="0.01" min="1" max="10000" required /></div>
 				<div class="form-group"><label for="notes2">{t[$lang].notesField}</label><textarea id="notes2" name="notes" rows="2"></textarea></div>
 				<button type="submit" class="btn btn-accent" style="width:100%;" disabled={submitting}>
 					{submitting ? 'Submitting…' : t[$lang].logDonationSubmit}

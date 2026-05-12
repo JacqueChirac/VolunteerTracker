@@ -564,7 +564,7 @@
 					<input type="hidden" name="type" value={manualType} />
 				</fieldset>
 				<div class="form-group"><label for="date">{t[$lang].date}</label><input id="date" name="date" type="date" required value={new Date().toISOString().split('T')[0]} /></div>
-				<div class="form-group"><label for="value">{manualType === 'donation' ? t[$lang].amountLabel : t[$lang].hoursLabel}</label><input id="value" name="value" type="number" step="0.5" min="0.5" required /></div>
+				<div class="form-group"><label for="value">{manualType === 'donation' ? t[$lang].amountLabel : t[$lang].hoursLabel}</label><input id="value" name="value" type="number" step="0.5" min="0.5" max={manualType === 'donation' ? 10000 : 999} required /></div>
 				<div class="form-group"><label for="notes">{t[$lang].notes}</label><input id="notes" name="notes" type="text" /></div>
 				<button type="submit" class="btn btn-primary" style="width:100%;">{t[$lang].addEntry}</button>
 			</form>

@@ -4,6 +4,7 @@
 
 import {
   pgTable,
+  pgView,
   serial,
   text,
   integer,
@@ -13,6 +14,7 @@ import {
   decimal,
   pgEnum,
 } from "drizzle-orm/pg-core";
+import { sql, eq } from "drizzle-orm";
 
 // -- enums (dropdown-style columns with fixed options) --
 
@@ -158,3 +160,30 @@ export const email_setting = pgTable('email_settings', {
 	name: text('name').notNull(),
 	lastLogin: text('last_login').notNull()
 });
+
+// -- views: live-computed totals, queryable like a regular table --
+
+// total hours and donation $ per volunteer, summed from contributions
+export const userTotals = pgView('user_totals').as((qb) =>
+	qb
+		.select({
+			userId: contributions.userId,
+			hours: sql<string>`COALESCE(SUM(${contributions.hours}), 0)`.as('hours'),
+			donations: sql<string>`COALESCE(SUM(${contributions.amount}) FILTER (WHERE ${contributions.type} = 'donation'), 0)`.as('donations')
+		})
+		.from(contributions)
+		.groupBy(contributions.userId)
+);
+
+// total hours per child, summed from every linked guardian's contributions
+export const childTotals = pgView('child_totals').as((qb) =>
+	qb
+		.select({
+			childId: children.id,
+			hours: sql<string>`COALESCE(SUM(${contributions.hours}), 0)`.as('hours')
+		})
+		.from(children)
+		.leftJoin(childVolunteerLinks, eq(childVolunteerLinks.childId, children.id))
+		.leftJoin(contributions, eq(contributions.userId, childVolunteerLinks.userId))
+		.groupBy(children.id)
+);

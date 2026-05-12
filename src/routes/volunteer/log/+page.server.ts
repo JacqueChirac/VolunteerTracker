@@ -7,6 +7,12 @@ import { getDonationRate } from "$lib/server/settings";
 import { today, daysAgo } from "$lib/dateBounds";
 import { activityTypes, contributions, events, eventSignups } from '$lib/server/db/schema';
 
+// schema caps: hours = decimal(6,2) → max 9999.99 ; amount = decimal(10,2) → max 99,999,999.99
+// we keep user-facing limits well below the column ceiling so the message reads naturally
+const MAX_HOURS_PER_ENTRY = 24;
+const MAX_DONATION_AMOUNT = 10_000; // $10K per entry is the friendly ceiling
+const MAX_DERIVED_HOURS = 9999;        // never let a donation's hour-equivalent overflow the column
+
 export const load: PageServerLoad = async ({ locals }) => {
   const activities = await db
     .select()
@@ -55,8 +61,10 @@ export const actions: Actions = {
     const hoursNum = parseFloat(hours);
     if (isNaN(hoursNum) || hoursNum <= 0)
       return fail(400, { error: "Hours must be a positive number." });
-    if (hoursNum > 24)
-      return fail(400, { error: "Hours cannot exceed 24 per entry." });
+    if (hoursNum > MAX_HOURS_PER_ENTRY)
+      return fail(400, {
+        error: `The amount you entered is too large to be accepted. Hours cannot exceed ${MAX_HOURS_PER_ENTRY} per entry — please split it into multiple entries if needed.`,
+      });
 
     const max = today(), min = daysAgo(365);
     if (date > max)
@@ -103,6 +111,10 @@ export const actions: Actions = {
     const amountNum = parseFloat(amount);
     if (isNaN(amountNum) || amountNum <= 0)
       return fail(400, { error: "Amount must be a positive number." });
+    if (amountNum > MAX_DONATION_AMOUNT)
+      return fail(400, {
+        error: `The amount you entered is too large to be accepted. Donations cannot exceed $${MAX_DONATION_AMOUNT.toLocaleString()} per entry — please split it into multiple entries if needed.`,
+      });
 
     const max = today(), min = daysAgo(365);
     if (date > max)
@@ -124,6 +136,10 @@ export const actions: Actions = {
 
     const rate = await getDonationRate();
     const hoursEquiv = amountNum / rate;
+    if (hoursEquiv > MAX_DERIVED_HOURS)
+      return fail(400, {
+        error: `The amount you entered is too large to be accepted. With the current conversion rate ($${rate}/hr), this donation would convert to more than ${MAX_DERIVED_HOURS} hours.`,
+      });
 
     await db.insert(contributions).values({
       userId: locals.user!.id,
