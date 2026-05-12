@@ -176,9 +176,12 @@
     else messageParams.recipient = firstPart + middlePart;
     showDropdown = false;
   }
-
   //Email logics
   function SendEmail(params: any) {
+    if(tokens[node] <= 0){
+      showToast("Node messgae limit hit", "error");
+      return;
+    }
     if (selected === "message") {
       emailjs.send(services[node].serviceID, templates[0], params).then(
         (response) => {
