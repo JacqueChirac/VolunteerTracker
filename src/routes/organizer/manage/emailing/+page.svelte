@@ -275,6 +275,8 @@
   }
 </script>
 
+<pre>{data.newDate}</pre>
+
 <h1>{$lang === 'en' ? 'Emailing' : 'Courriels'}</h1>
 <p style="color:var(--text-light);margin-bottom:24px;">
   {$lang === 'en' ? 'Select a service node and compose messages to your volunteers.' : 'Sélectionnez un nœud de service et composez des messages pour vos bénévoles.'}
@@ -364,7 +366,8 @@
   </div>
 </div>
  
-<pre>{data.newDate}</pre>
+
+
 {#snippet promptList(storedPrompts: number[])}
   <div class="dropdown">
     <div class="dropdown-header">
