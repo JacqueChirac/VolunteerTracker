@@ -11,7 +11,7 @@ let volunteers = await sql`SELECT * FROM users WHERE role = 'volunteer'`;
 
 async function dateCheck(){
 const date = await sql`SELECT last_login FROM email_settings`;
-const oldDateString = date[0].last_login;
+const oldDateString = await date[0].last_login;
 const oldDate = new Date(oldDateString);
 const response = await fetch('https://timeapi.io/api/v1/time/current/utc');
 const newDatePackage =  await response.json();
@@ -29,12 +29,13 @@ if((oldDate.getDate() < 5 || oldDate.getMonth()<newDate.getMonth()) && newDate.g
     WHERE service_id IN ('service_cpwd1', 'service_cpwd2')`;
 }
 await sql`UPDATE email_settings SET last_login = ${newDate}`
-console.log(newDatePackage.utc_time);
+console.log(newDate);
+return newDate;
 }
 
-dateCheck();
 
 export async function load() {
+  const newDate = await dateCheck();
   const children = await sql`
     SELECT * FROM child_volunteer_links
   `;
@@ -53,6 +54,7 @@ export async function load() {
     allMails,
     badEmails,
     volunteers,
+    newDate,
   };
 }
 
