@@ -28,7 +28,7 @@ if((oldDate.getDate() < 5 || oldDate.getMonth()<newDate.getMonth()) && newDate.g
     SET token = 200
     WHERE service_id IN ('service_cpwd1', 'service_cpwd2')`;
 }
-await sql`UPDATE email_settings SET last_login = ${newDate}`
+await sql`UPDATE email_settings SET last_login = ${newDate.toISOString()}`
 console.log(newDate);
 return newDate;
 }
