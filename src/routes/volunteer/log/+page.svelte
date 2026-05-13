@@ -48,7 +48,7 @@
 						id="event"
 						name="eventId"
 						onchange={(e) => {
-							const ev = data.myEvents.find(
+							const ev = data.allEvents.find(
 								(x) => x.id === Number(e.currentTarget.value),
 							);
 							if (ev)
@@ -57,7 +57,7 @@
 						}}
 					>
 						<option value="">— Other / general hours —</option>
-						{#each data.myEvents as ev}
+						{#each data.allEvents as ev}
 							<option value={ev.id}>{ev.date} — {ev.title}</option>
 						{/each}
 					</select>
@@ -81,12 +81,12 @@
 						id="don_event"
 						name="eventId"
 						onchange={(e) => {
-							const ev = data.myEvents.find((x) => x.id === Number(e.currentTarget.value));
+							const ev = data.allEvents.find((x) => x.id === Number(e.currentTarget.value));
 							if (ev) (document.getElementById("date2") as HTMLInputElement).value = ev.date;
 						}}
 					>
 						<option value="">— Not tied to a specific event —</option>
-						{#each data.myEvents as ev}
+						{#each data.allEvents as ev}
 							<option value={ev.id}>{ev.date} — {ev.title}</option>
 						{/each}
 					</select>

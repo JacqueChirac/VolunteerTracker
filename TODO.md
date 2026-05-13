@@ -17,3 +17,4 @@ Zilin: 16. Archive events automatically at the end of the year (let organizers s
 Zilin: 17. backup data automatically every week or so
 Mary 18. Replace website icons with CPWD icon  (Done)
 Mary 19. French/English Translator (Done)
+20. some people may end up volunteering on an even that is over (ie: cleaning up after the event or something like that).  Can you change it so that when a person is logging their volunteering that all events are visible in the drop down menu? (not sure if this makes sense)
