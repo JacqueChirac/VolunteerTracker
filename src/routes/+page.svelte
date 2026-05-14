@@ -13,7 +13,7 @@
 			{$lang === 'en' ? 'FR' : 'EN'}
 		</button>
 		<img src="/CPWD.png" alt="CPWD Swim Team" class="team-logo" />
-		<p class="tagline">{$lang === 'en' ? 'Carleton Place Wave Dragons' : 'Les Dragons des Vagues de Carleton Place'}</p>
+		<p class="tagline">{$lang === 'en' ? 'Carleton Place Water Dragons' : 'Les Dragons des Vagues de Carleton Place'}</p>
 		<h1>{t[$lang].appTitle}</h1>
 		<p>{t[$lang].appSubtitle}</p>
 		<p class="subtitle">{t[$lang].appCta}</p>
