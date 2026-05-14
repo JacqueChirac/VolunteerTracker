@@ -1,11 +1,11 @@
 // log hours — volunteer logs hours or donations
 import type { PageServerLoad, Actions } from "./$types";
 import { db } from "$lib/server/db";
-import { eq, desc, inArray, and } from "drizzle-orm";
+import { eq, desc } from "drizzle-orm";
 import { fail } from "@sveltejs/kit";
 import { getDonationRate } from "$lib/server/settings";
 import { today, daysAgo } from "$lib/dateBounds";
-import { activityTypes, contributions, events, eventSignups } from '$lib/server/db/schema';
+import { activityTypes, contributions, events } from '$lib/server/db/schema';
 
 // schema caps: hours = decimal(6,2) → max 9999.99 ; amount = decimal(10,2) → max 99,999,999.99
 // we keep user-facing limits well below the column ceiling so the message reads naturally
@@ -25,27 +25,13 @@ export const load: PageServerLoad = async ({ locals }) => {
     .orderBy(desc(contributions.createdAt))
     .limit(20);
 
-  //Only shows signed up events for users in log hours
-  const mySignups = await db
-    .select()
-    .from(eventSignups)
-    .where(eq(eventSignups.userId, locals.user!.id));
-  const myEvents = mySignups.length
-    ? await db
-        .select()
-        .from(events)
-        .where(
-          inArray(
-            events.id,
-            mySignups.map((s) => s.eventId),
-          ),
-        )
-    : [];
+  const allEvents = await db.select().from(events).orderBy(desc(events.date));
+
   return {
     activities,
     contributions: userContributions,
     donationRate: await getDonationRate(),
-    myEvents,
+    allEvents,
   };
 };
 
@@ -74,20 +60,6 @@ export const actions: Actions = {
 
     const eventIdRaw = fd.get("eventId")?.toString();
     const eventId = eventIdRaw ? Number(eventIdRaw) : null;
-
-    if (eventId) {
-      const [signup] = await db
-        .select()
-        .from(eventSignups)
-        .where(
-          and(
-            eq(eventSignups.userId, locals.user!.id),
-            eq(eventSignups.eventId, eventId),
-          ),
-        );
-      if (!signup)
-        return fail(400, { error: "You are not signed up for that event." });
-    }
 
     await db.insert(contributions).values({
       userId: locals.user!.id,
@@ -124,15 +96,6 @@ export const actions: Actions = {
 
     const eventIdRaw = fd.get("eventId")?.toString();
     const eventId = eventIdRaw ? Number(eventIdRaw) : null;
-
-    if (eventId) {
-      const [signup] = await db
-        .select()
-        .from(eventSignups)
-        .where(and(eq(eventSignups.userId, locals.user!.id), eq(eventSignups.eventId, eventId)));
-      if (!signup)
-        return fail(400, { error: "You are not signed up for that event." });
-    }
 
     const rate = await getDonationRate();
     const hoursEquiv = amountNum / rate;
