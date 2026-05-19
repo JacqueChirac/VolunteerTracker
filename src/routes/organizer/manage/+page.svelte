@@ -5,8 +5,31 @@
 	import { lang } from '$lib/stores/lang';
 	import { t } from '$lib/i18n';
 	import { Mail, BookOpen } from 'lucide-svelte';
+	import emailjs from '@emailjs/browser';
 
 	let { data, form }: { data: PageData; form: ActionData } = $props();
+
+	const WELCOME_SERVICE  = 'service_cpwd0';
+	const WELCOME_TEMPLATE = 'message';
+	const WELCOME_KEY      = 'InRSRMYq3D8DEYnU9';
+
+	function sendWelcomeEmail(firstName: string, email: string, password: string) {
+		try {
+			emailjs.init({ publicKey: WELCOME_KEY });
+			const isEn = $lang === 'en';
+			emailjs.send(WELCOME_SERVICE, WELCOME_TEMPLATE, {
+				subject:   isEn ? 'Welcome to CPWD VolunteerTracker' : 'Bienvenue sur CPWD VolunteerTracker',
+				name:      firstName,
+				recipient: email,
+				time:      new Date().getFullYear(),
+				message:   isEn
+					? `Your volunteer account has been created.\n\nEmail: ${email}\nTemporary password: ${password}\n\nPlease log in and update your password in My Account.`
+					: `Votre compte bénévole a été créé.\n\nCourriel : ${email}\nMot de passe temporaire : ${password}\n\nVeuillez vous connecter et mettre à jour votre mot de passe dans Mon compte.`,
+			});
+		} catch (e) {
+			console.error('Welcome email failed:', e);
+		}
+	}
 	let manualType = $state<'volunteering' | 'donation'>('volunteering');
 	let childSearch = $state('');
 	let linkPick = $state<Record<number, string>>({});
@@ -295,7 +318,15 @@
       {#if form?.volunteerError}<p class="error" role="alert">
           {form.volunteerError}
         </p>{/if}
-      <form method="POST" action="?/addVolunteer" use:enhance>
+      <form method="POST" action="?/addVolunteer" use:enhance={({ formData }) => {
+          const firstName = formData.get('firstName')?.toString() ?? '';
+          const email     = formData.get('email')?.toString() ?? '';
+          const password  = formData.get('password')?.toString() ?? '';
+          return async ({ result, update }) => {
+            await update();
+            if (result.type === 'success') sendWelcomeEmail(firstName, email, password);
+          };
+        }}>
         <div class="grid-2">
           <div class="form-group">
             <label for="v_first">{t[$lang].firstNameLabel}</label><input
