@@ -35,7 +35,7 @@
   let selected = $state("message");
   let messageParams = $state({
     // Parameters defined in the template
-    subject: "Morning!",
+    subject: "CPWD communication",
     name: "Kelp",
     message: "I send you a message!",
     time: 2008,

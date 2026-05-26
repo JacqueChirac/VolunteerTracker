@@ -9,6 +9,7 @@ import { hashSync, compareSync } from "bcrypt-ts";
 
 // name of the cookie we store the session in
 const SESSION_COOKIE = "session";
+const RECOVERY_COOKIE = "recovery_token";
 
 // creates a new user and hashes their password before saving
 export async function createUser(
@@ -56,6 +57,12 @@ export function createSessionToken(userId: number): string {
   );
 }
 
+export function createRecoveryToken(email: string): string {
+  return Buffer.from(JSON.stringify({ email, ts: Date.now() })).toString(
+    "base64",
+  );
+}
+
 // reads that base64 cookie back into a userId
 export function parseSessionToken(token: string): { userId: number } | null {
   try {
@@ -67,4 +74,14 @@ export function parseSessionToken(token: string): { userId: number } | null {
   }
 }
 
-export { SESSION_COOKIE };
+export function parseRecoveryToken(token: string): { email: string } | null {
+  try {
+    const data = JSON.parse(Buffer.from(token, "base64").toString());
+    if (typeof data.email === "string") return { email: data.email };
+    return null;
+  } catch {
+    return null;
+  }
+}
+
+export { SESSION_COOKIE, RECOVERY_COOKIE };

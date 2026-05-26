@@ -161,6 +161,13 @@ export const email_setting = pgTable('email_settings', {
 	lastLogin: text('last_login').notNull()
 });
 
+export const passwordResetTokens = pgTable("password_reset_tokens", {
+  id: serial("id").primaryKey(),
+  email: text("email").notNull(),
+  link: text("link").notNull(), 
+  timeCreated: timestamp("time_created").defaultNow().notNull(),
+});
+
 // -- views: live-computed totals, queryable like a regular table --
 
 // total hours and donation $ per volunteer, summed from contributions

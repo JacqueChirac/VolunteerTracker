@@ -1,4 +1,3 @@
-import emailjs from "@emailjs/browser";
 import { neon } from "@neondatabase/serverless";
 import { DATABASE_URL } from "$env/static/private";
 
@@ -19,6 +18,22 @@ export const SERVICES = [
   },
 ];
 
+export async function getTime(){
+      const response = await fetch('https://timeapi.io/api/v1/time/current/utc');
+    if (!response.ok) {
+      throw new Error(`Failed to fetch time: ${response.status}`);
+    }
+    const newDatePackage = await response.json();
+    if (!newDatePackage || !newDatePackage.utc_time) {
+      throw new Error("Invalid response from time API");
+    }
+    const newDate = new Date(newDatePackage.utc_time);
+    if (isNaN(newDate.getTime())) {
+      throw new Error("Invalid UTC time from API");
+    }
+    return newDate;
+}
+
 export async function init() {
   const nodes = await sql`SELECT service_id, token FROM nodes ORDER BY id ASC`;
   
@@ -27,22 +42,48 @@ export async function init() {
     return -1;
   }
 
-  const service = SERVICES[nodeIndex];
-
-  emailjs.init({
-    publicKey: service.publicKey,
-    blockHeadless: true,
-  });
   return nodeIndex;
 }
 
+export async function initWithNode(node:number) {
+  const service = SERVICES[node];
 
-export async function sendEmailUniversal(node: number, templateId: string, params: Record<string, any>) {
+  // Removed browser-specific initialization
+  return node;
+}
+
+//example message params
+  // let messageParams = $state({
+  //   // Parameters defined in the template
+  //   subject: "Morning!",
+  //   name: "Kelp",
+  //   message: "I send you a message!",
+  //   time: 2008,
+  //   recipient: "liuzilin375@gmail.com",
+  // });
+export async function sendEmailUniversal(node: number, templateId: string, params: any) {
   if(node===-1){
     throw new Error("No tokens available");
   }
   const service = SERVICES[node];
-  const response = await emailjs.send(service.serviceID, templateId, params);
+  
+  const response = await fetch("https://api.emailjs.com/api/v1.0/email/send", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      service_id: service.serviceID,
+      template_id: templateId,
+      user_id: service.publicKey,
+      template_params: params,
+    }),
+  });
+
+  if (!response.ok) {
+    const errorBody = await response.text();
+    throw new Error(`Email failed to send: ${errorBody}`);
+  }
   
   // Update tokens in DB
   const cost = params.recipient

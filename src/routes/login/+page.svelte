@@ -34,6 +34,7 @@
 						{showPassword ? ($lang === 'en' ? 'Hide' : 'Masquer') : ($lang === 'en' ? 'Show' : 'Afficher')}
 					</button>
 				</div>
+				<a href="/login/recovery">Forgot Password</a>
 			</div>
 			<button type="submit" class="btn btn-primary" style="width:100%">{t[$lang].login}</button>
 		</form>
