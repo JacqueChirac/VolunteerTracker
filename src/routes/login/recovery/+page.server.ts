@@ -7,7 +7,6 @@ import { sendEmailUniversal } from "$lib/emailLogic";
 import {init} from "$lib/emailLogic";
 import {SERVICES} from "$lib/emailLogic";
 import { getTime } from "$lib/emailLogic";
-import { formatDate } from "date-fns";
 
 const sql = neon(DATABASE_URL);
 
