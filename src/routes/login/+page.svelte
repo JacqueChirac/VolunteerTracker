@@ -11,7 +11,6 @@
 </script>
 
 
-<p> Come on what's wrong with this page</p>
 <div class="login-page">
 	<div class="login-box card">
 		<div style="display:flex;justify-content:flex-end;margin-bottom:8px;">
