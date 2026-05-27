@@ -33,9 +33,8 @@
 					<button type="button" class="pw-toggle" onclick={() => showPassword = !showPassword}>
 						{showPassword ? ($lang === 'en' ? 'Hide' : 'Masquer') : ($lang === 'en' ? 'Show' : 'Afficher')}
 					</button>
-					<a href="/login/recovery">Forgot Password</a>
 				</div>
-				//Old password location
+				<a href="/login/recovery">Forgot Password</a>
 			</div>
 			<button type="submit" class="btn btn-primary" style="width:100%">{t[$lang].login}</button>
 		</form>
