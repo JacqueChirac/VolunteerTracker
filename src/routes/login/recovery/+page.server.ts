@@ -12,8 +12,15 @@ const sql = neon(DATABASE_URL);
 
 export const load = async () => {
   await dateCheck();
+  deleteExpiredVerificationLinks();
   return {};
 };
+
+async function deleteExpiredVerificationLinks() {
+  const now = await getTime();
+  const oneHourAgo = new Date(now.getTime() - 60 * 60 * 1000); // One hour in milliseconds
+  await sql`DELETE FROM password_reset_tokens WHERE time_created < ${oneHourAgo.toISOString()}`;
+}
 
 
 
@@ -23,6 +30,8 @@ async function initiatePasswordReset(email:string) {
   await sql`INSERT INTO password_reset_tokens (email, link, time_created) VALUES (${email}, ${token}, ${time})`;
   return token;
 }
+
+
 
 export const actions = {
   
