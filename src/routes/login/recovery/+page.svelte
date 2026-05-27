@@ -58,7 +58,8 @@
 				if (result.type === 'success') {
 					showToast($lang === 'en' ? 'Code sent successfully' : 'Code envoyé avec succès', 'success');
 				} else if (result.type === 'failure') {
-					showToast(result.data?.message || 'Error', 'error');
+					const message = typeof result.data?.message === 'string' ? result.data.message : 'Error';
+					showToast(message, 'error');
 				} else if (result.type === 'error') {
 					showToast($lang === 'en' ? 'System error' : 'Erreur système', 'error');
 				}
@@ -95,7 +96,8 @@
 					if (result.type === 'success') {
 						showToast($lang === 'en' ? 'Code verified' : 'Code vérifié', 'success');
 					} else if (result.type === 'failure') {
-						showToast(result.data?.message || 'Invalid code', 'error');
+						const message = typeof result.data?.message === 'string' ? result.data.message : ($lang === 'en' ? 'Invalid code' : 'Code invalide');
+						showToast(message, 'error');
 					}
 					await applyAction(result);
 				};
@@ -125,7 +127,8 @@
 					if (result.type === 'success') {
 						showToast($lang === 'en' ? 'Resent successfully' : 'Renvoyé avec succès', 'success');
 					} else if (result.type === 'failure') {
-						showToast(result.data?.message || 'Error', 'error');
+						const message = typeof result.data?.message === 'string' ? result.data.message : 'Error';
+						showToast(message, 'error');
 					}
 					await applyAction(result);
 				};
