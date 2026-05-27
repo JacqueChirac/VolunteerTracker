@@ -34,6 +34,12 @@ export const actions = {
       return fail(503, { message: "You cannot reset password at this moment" });
     }
 
+    //Check if email exists
+    const user = await sql`SELECT id FROM users WHERE email = ${email} LIMIT 1`;
+    if (user.length === 0) {
+      return { success: true };
+    }
+
     const token = await initiatePasswordReset(email);
 
     const messageParams = {
