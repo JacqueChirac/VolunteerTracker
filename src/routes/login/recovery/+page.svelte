@@ -130,7 +130,9 @@
 						const message = typeof result.data?.message === 'string' ? result.data.message : 'Error';
 						showToast(message, 'error');
 					}
+					await startCooldown();
 					await applyAction(result);
+					
 				};
 			}} style="margin-top: 10px;">
 				<input type="hidden" name="email" value={email} />
