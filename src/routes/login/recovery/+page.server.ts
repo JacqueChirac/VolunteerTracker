@@ -7,6 +7,8 @@ import { sendEmailUniversal } from "$lib/emailLogic";
 import {init} from "$lib/emailLogic";
 import {SERVICES} from "$lib/emailLogic";
 import { getTime } from "$lib/emailLogic";
+import crypto from "crypto";
+
 
 const sql = neon(DATABASE_URL);
 
@@ -26,7 +28,7 @@ async function deleteExpiredVerificationLinks() {
 
 async function initiatePasswordReset(email:string) {
   const time = await getTime();
-  const token = Math.floor(100000 + Math.random() * 900000).toString();
+  const token = crypto.randomInt(100000, 999999).toString();
   await sql`INSERT INTO password_reset_tokens (email, link, time_created) VALUES (${email}, ${token}, ${time})`;
   return token;
 }
@@ -99,6 +101,7 @@ export const actions = {
       path: "/",
       httpOnly: true,
       sameSite: "lax",
+      secure: true,
       maxAge: 60 * 10, // 10 minutes
     });
 
