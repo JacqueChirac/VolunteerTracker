@@ -458,7 +458,6 @@
   </div>
 {/if}
 
-<p>THis is a test message</p>
 
 <style>
   .toast {
