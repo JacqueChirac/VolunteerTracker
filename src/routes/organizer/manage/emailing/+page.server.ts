@@ -3,55 +3,14 @@ import { DATABASE_URL } from "$env/static/private";
 import { json } from "@sveltejs/kit";
 import { check } from "drizzle-orm/gel-core";
 import { fail } from "@sveltejs/kit";
+import { sendEmailUniversal } from "$lib/emailLogic.js";
+import { dateCheck } from "$lib/emailLogic.js";
 
 const sql = neon(DATABASE_URL);
 
 
-async function dateCheck() {
-  try {
-    const date = await sql`SELECT last_login FROM email_settings`;
-    if (!date || date.length === 0) {
-      throw new Error("No email_settings found");
-    }
-    const oldDateString = date[0].last_login;
-    if (!oldDateString) {
-      throw new Error("Invalid last_login value");
-    }
-    const oldDate = new Date(oldDateString);
-    if (isNaN(oldDate.getTime())) {
-      throw new Error("Invalid date format in last_login");
-    }
-    
-    const response = await fetch('https://timeapi.io/api/v1/time/current/utc');
-    if (!response.ok) {
-      throw new Error(`Failed to fetch time: ${response.status}`);
-    }
-    const newDatePackage = await response.json();
-    if (!newDatePackage || !newDatePackage.utc_time) {
-      throw new Error("Invalid response from time API");
-    }
-    const newDate = new Date(newDatePackage.utc_time);
-    if (isNaN(newDate.getTime())) {
-      throw new Error("Invalid UTC time from API");
-    }
-    
-    // Reset every 20th
-    if ((oldDate.getDate() < 20 || oldDate.getMonth() < newDate.getMonth()) && newDate.getDate() >= 20) {
-      await sql`UPDATE nodes SET token = 200 WHERE service_id = 'service_cpwd0'`;
-    }
-    // Reset every 5th
-    if ((oldDate.getDate() < 5 || oldDate.getMonth() < newDate.getMonth()) && newDate.getDate() >= 5) {
-      await sql`UPDATE nodes SET token = 200 WHERE service_id IN ('service_cpwd1', 'service_cpwd2')`;
-    }
-    
-    await sql`UPDATE email_settings SET last_login = ${newDate.toISOString()}`;
-    console.log(newDate);
-    return newDate;
-  } catch (error) {
-    console.error("Error in dateCheck:", error);
-    throw error; // Re-throw to handle in load or elsewhere
-  }
-}
+dateCheck();
+
 
 export async function load() {
   try {
@@ -132,12 +91,12 @@ async function getBadEmails() {
 
 async function badChildren() {
   try {
-    const children = await getChildren();
-    return children.filter(c => c.hours < 30).map(c => c.id);
+    const stats = await sql`SELECT * FROM child_totals`
+    return stats.filter(c => c.hours < 30).map(c => c.id);
   } catch (error) {
     console.error("Error in badChildren:", error);
     return [];
-  }
+  } 
 }
 
 async function getChildren() {
@@ -224,3 +183,4 @@ export const actions = {
     // Placeholder 
   },
 };
+

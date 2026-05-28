@@ -87,3 +87,12 @@ Proton Mail: cpwdSwimTeam2
 Password: cpwd222222
 Recov: apart essay faint hidden blue jealous accident diagram ladder rural ugly region
 Email password: cpwd222222
+
+backup nodes: 
+Gmail: liuzilin375@gmail.com
+Emailjs password: cpwd333333
+
+Email: zilin.liu@northstaracademy.ca
+Emailjs password: cpwd444444
+
+

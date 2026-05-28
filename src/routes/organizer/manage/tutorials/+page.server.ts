@@ -5,22 +5,23 @@ export const load: PageServerLoad = async () => {
 	return { tut: await getTutorialContent() };
 };
 
-const STEP_FIELDS = ['title', 'body', 'link_text', 'link_url'] as const;
-const FAQ_FIELDS = ['q', 'a'] as const;
+// _fr variants are stored alongside EN fields; link_url is language-neutral
+const STEP_FIELDS  = ['title', 'body', 'link_text', 'link_url', 'title_fr', 'body_fr', 'link_text_fr'] as const;
+const FAQ_FIELDS   = ['q', 'a', 'q_fr', 'a_fr'] as const;
 
 export const actions: Actions = {
 	saveTutorial: async ({ request }) => {
 		const fd = await request.formData();
 		const tut = await getTutorialContent();
 		const stepCount = Number(tut.tut_step_count || '5');
-		const faqCount = Number(tut.tut_faq_count || '4');
+		const faqCount  = Number(tut.tut_faq_count  || '4');
 
 		const keys = [
-			'tut_title', 'tut_subtitle',
+			'tut_title', 'tut_subtitle', 'tut_title_fr', 'tut_subtitle_fr',
 			...Array.from({ length: stepCount }, (_, i) => i + 1).flatMap((n) =>
 				STEP_FIELDS.map((f) => `tut_step${n}_${f}`)
 			),
-			'tut_faq_title',
+			'tut_faq_title', 'tut_faq_title_fr',
 			...Array.from({ length: faqCount }, (_, i) => i + 1).flatMap((n) =>
 				FAQ_FIELDS.map((f) => `tut_faq${n}_${f}`)
 			),
@@ -37,10 +38,13 @@ export const actions: Actions = {
 		const tut = await getTutorialContent();
 		const count = Number(tut.tut_step_count || '5');
 		const n = count + 1;
-		await updateTutorialSetting(`tut_step${n}_title`, `Step ${n}`);
-		await updateTutorialSetting(`tut_step${n}_body`, '');
-		await updateTutorialSetting(`tut_step${n}_link_text`, '');
-		await updateTutorialSetting(`tut_step${n}_link_url`, '');
+		await updateTutorialSetting(`tut_step${n}_title`,       `Step ${n}`);
+		await updateTutorialSetting(`tut_step${n}_title_fr`,    `Étape ${n}`);
+		await updateTutorialSetting(`tut_step${n}_body`,        '');
+		await updateTutorialSetting(`tut_step${n}_body_fr`,     '');
+		await updateTutorialSetting(`tut_step${n}_link_text`,   '');
+		await updateTutorialSetting(`tut_step${n}_link_text_fr`,'');
+		await updateTutorialSetting(`tut_step${n}_link_url`,    '');
 		await updateTutorialSetting('tut_step_count', String(n));
 		return { success: true };
 	},
@@ -69,8 +73,10 @@ export const actions: Actions = {
 		const tut = await getTutorialContent();
 		const count = Number(tut.tut_faq_count || '4');
 		const n = count + 1;
-		await updateTutorialSetting(`tut_faq${n}_q`, '');
-		await updateTutorialSetting(`tut_faq${n}_a`, '');
+		await updateTutorialSetting(`tut_faq${n}_q`,    '');
+		await updateTutorialSetting(`tut_faq${n}_q_fr`, '');
+		await updateTutorialSetting(`tut_faq${n}_a`,    '');
+		await updateTutorialSetting(`tut_faq${n}_a_fr`, '');
 		await updateTutorialSetting('tut_faq_count', String(n));
 		return { success: true };
 	},

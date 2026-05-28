@@ -10,6 +10,7 @@
   let showPassword = $state(false);
 </script>
 
+
 <div class="login-page">
 	<div class="login-box card">
 		<div style="display:flex;justify-content:flex-end;margin-bottom:8px;">
@@ -34,6 +35,7 @@
 						{showPassword ? ($lang === 'en' ? 'Hide' : 'Masquer') : ($lang === 'en' ? 'Show' : 'Afficher')}
 					</button>
 				</div>
+				<a href="/login/recovery">{($lang === 'en' ? 'Forgot Password' : 'Mot de passe oublié')}</a>
 			</div>
 			<button type="submit" class="btn btn-primary" style="width:100%">{t[$lang].login}</button>
 		</form>

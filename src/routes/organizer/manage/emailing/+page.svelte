@@ -1,30 +1,35 @@
 <script lang="ts">
   //Imports
   import emailjs from "@emailjs/browser";
-  import { singlestoreDatabase } from "drizzle-orm/singlestore-core";
   import { invalidate } from "$app/navigation";
   import { invalidateAll } from "$app/navigation";
   import { lang } from "$lib/stores/lang";
   import { t } from "$lib/i18n";
   import { json } from "@sveltejs/kit";
-
   let { data } = $props(); //Imported data from server.ts
 
   //Variables Declare
-  const services = [
-    {
-      serviceID: "service_cpwd0",
-      publicKey: "InRSRMYq3D8DEYnU9",
-    },
-    {
-      serviceID: "service_cpwd1",
-      publicKey: "UmIK54UYI1rc8XP2I",
-    },
-    {
-      serviceID: "service_cpwd2",
-      publicKey: "tJvhr_u5xNaHdHRTp",
-    },
-  ];
+ const services = [
+  {
+    serviceID: "service_cpwd0",
+    publicKey: "InRSRMYq3D8DEYnU9",
+  },
+  {
+    serviceID: "service_cpwd1",
+    publicKey: "UmIK54UYI1rc8XP2I",
+  },
+  {
+    serviceID: "service_cpwd2",
+    publicKey: "tJvhr_u5xNaHdHRTp",
+  },
+  {
+    serviceID: "service_cpwd3",
+    publicKey: "_Qizqrs3OM1ySu5oH",
+  },{
+    serviceID: "service_cpwd4",
+    publicKey: "YjLyiRcQ1yGpobedI",
+  },
+];
 
   const templates = ["message", "reminder"];
   const badEmails = $derived(data.badEmails); //Bad emails as [] strings
@@ -35,7 +40,7 @@
   let selected = $state("message");
   let messageParams = $state({
     // Parameters defined in the template
-    subject: "Morning!",
+    subject: "CPWD communication",
     name: "Kelp",
     message: "I send you a message!",
     time: 2008,
@@ -457,6 +462,7 @@
     {toastMsg}
   </div>
 {/if}
+
 
 <style>
   .toast {
