@@ -58,9 +58,17 @@
 				if (result.type === 'success') {
 					showToast($lang === 'en' ? 'Code sent successfully' : 'Code envoyé avec succès', 'success');
 				} else if (result.type === 'failure') {
-					const message = typeof result.data?.message === 'string' ? result.data.message : 'Error';
-					showToast(message, 'error');
+					if (result.status === 429) {
+						showToast($lang === 'en' ? 'Too many requests. Please try again later.' : 'Trop de requêtes. Veuillez réessayer plus tard.', 'error');
+					} else {
+						const message = typeof result.data?.message === 'string' ? result.data.message : 'Error';
+						showToast(message, 'error');
+					}
 				} else if (result.type === 'error') {
+					if (result.status === 429) {
+						showToast($lang === 'en' ? 'Too many requests. Please try again later.' : 'Trop de requêtes. Veuillez réessayer plus tard.', 'error');
+						return;
+					}
 					showToast($lang === 'en' ? 'System error' : 'Erreur système', 'error');
 				}
 				await applyAction(result);

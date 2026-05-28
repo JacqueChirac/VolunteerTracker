@@ -8,11 +8,27 @@ import {init} from "$lib/emailLogic";
 import {SERVICES} from "$lib/emailLogic";
 import { getTime } from "$lib/emailLogic";
 import crypto from "crypto";
+import { error } from '@sveltejs/kit';
+import { RateLimiter } from 'sveltekit-rate-limiter/server';
 
 
 const sql = neon(DATABASE_URL);
 
-export const load = async () => {
+const limiter = new RateLimiter({
+  IP: [5, 'h'], // IP address limiter
+  IPUA: [5, 'm'], // IP + User Agent limiter
+  cookie: {
+    // Cookie limiter
+    name: 'resetLimiter', // Unique cookie name for this limiter
+    secret: 'SECRETKEY-SERVER-ONLY', // Use $env/static/private
+    rate: [2, 'm'],
+    preflight: true // Require preflight call (see load function)
+  }
+});
+
+
+export const load = async (event) => {
+  await limiter.cookieLimiter?.preflight(event);
   await dateCheck();
   deleteExpiredVerificationLinks();
   return {};
@@ -37,7 +53,9 @@ async function initiatePasswordReset(email:string) {
 
 export const actions = {
   
-  sendKey: async ({ request }) => {
+  sendKey: async (event) => {
+    const request = event.request;
+    if (await limiter.isLimited(event)) throw error(429, "too many requests");
     const formData = await request.formData();
     const email = formData.get("email") as string;
     const node = await init();
