@@ -14,7 +14,7 @@ import { RateLimiter } from 'sveltekit-rate-limiter/server';
 
 const sql = neon(DATABASE_URL);
 
-const limiter = new RateLimiter({
+const sendLimiter = new RateLimiter({
   IP: [5, 'd'], // IP address limiter
   IPUA: [5, 'd'], // IP + User Agent limiter
   cookie: {
@@ -26,9 +26,21 @@ const limiter = new RateLimiter({
   }
 });
 
+const checkLimiter = new RateLimiter({
+  IP: [5, 'm'], // IP address limiter
+  IPUA: [5, 'm'], // IP + User Agent limiter
+  cookie: {
+    // Cookie limiter
+    name: 'resetLimiter', // Unique cookie name for this limiter
+    secret: 'SECRETKEY-SERVER-ONLY', // Use $env/static/private
+    rate: [5, 'm'],
+    preflight: true // Require preflight call (see load function)
+  }
+});
+
 
 export const load = async (event) => {
-  await limiter.cookieLimiter?.preflight(event);
+  await sendLimiter.cookieLimiter?.preflight(event);
   await dateCheck();
   deleteExpiredVerificationLinks();
   return {};
@@ -55,7 +67,7 @@ export const actions = {
   
   sendKey: async (event) => {
     const request = event.request;
-    if (await limiter.isLimited(event)) throw error(429, "too many requests");
+    if (await sendLimiter.isLimited(event)) throw error(429, "too many requests");
     const formData = await request.formData();
     const email = formData.get("email") as string;
     const node = await init();
@@ -87,7 +99,10 @@ export const actions = {
     }
   },
 
-  checkKey: async ({ request, cookies }) => {
+  checkKey: async (event) => {
+    const cookies = event.cookies;
+    const request = event.request;
+    if (await checkLimiter.isLimited(event)) throw error(429, "too many requests");
     const formData = await request.formData();
     const email = formData.get("email") as string;
     const key = formData.get("key") as string;
