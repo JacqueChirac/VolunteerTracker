@@ -15,7 +15,7 @@ import { RateLimiter } from 'sveltekit-rate-limiter/server';
 const sql = neon(DATABASE_URL);
 
 const limiter = new RateLimiter({
-  IP: [5, 'h'], // IP address limiter
+  IP: [5, 'd'], // IP address limiter
   IPUA: [5, 'm'], // IP + User Agent limiter
   cookie: {
     // Cookie limiter
