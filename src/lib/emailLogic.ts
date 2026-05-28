@@ -16,6 +16,13 @@ export const SERVICES = [
     serviceID: "service_cpwd2",
     publicKey: "tJvhr_u5xNaHdHRTp",
   },
+  {
+    serviceID: "service_cpwd3",
+    publicKey: "_Qizqrs3OM1ySu5oH",
+  },{
+    serviceID: "service_cpwd4",
+    publicKey: "YjLyiRcQ1yGpobedI",
+  },
 ];
 
 export async function getTime(){
@@ -125,11 +132,15 @@ export async function dateCheck() {
     
     // Reset every 20th
     if ((oldDate.getDate() < 20 || oldDate.getMonth() < newDate.getMonth()) && newDate.getDate() >= 20) {
-      await sql`UPDATE nodes SET token = 200 WHERE service_id = 'service_cpwd0'`;
+      await sql`UPDATE nodes SET token = 200 WHERE service_id IN ('service_cpwd0', 'service_cpwd3') `;
     }
     // Reset every 5th
     if ((oldDate.getDate() < 5 || oldDate.getMonth() < newDate.getMonth()) && newDate.getDate() >= 5) {
       await sql`UPDATE nodes SET token = 200 WHERE service_id IN ('service_cpwd1', 'service_cpwd2')`;
+    }
+    // Reset every 27th
+        if ((oldDate.getDate() < 27 || oldDate.getMonth() < newDate.getMonth()) && newDate.getDate() >= 27) {
+      await sql`UPDATE nodes SET token = 200 WHERE service_id = 'service_cpwd4'`;
     }
     
     await sql`UPDATE email_settings SET last_login = ${newDate.toISOString()}`;
