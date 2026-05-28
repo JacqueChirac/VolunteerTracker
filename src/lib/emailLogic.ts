@@ -144,7 +144,6 @@ export async function dateCheck() {
     }
     
     await sql`UPDATE email_settings SET last_login = ${newDate.toISOString()}`;
-    console.log(newDate);
     return newDate;
   } catch (error) {
     console.error("Error in dateCheck:", error);
