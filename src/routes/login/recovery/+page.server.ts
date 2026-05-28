@@ -16,7 +16,7 @@ const sql = neon(DATABASE_URL);
 
 const limiter = new RateLimiter({
   IP: [5, 'd'], // IP address limiter
-  IPUA: [5, 'm'], // IP + User Agent limiter
+  IPUA: [10, 'd'], // IP + User Agent limiter
   cookie: {
     // Cookie limiter
     name: 'resetLimiter', // Unique cookie name for this limiter
