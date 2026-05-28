@@ -33,8 +33,6 @@
 					<span class="login-label">{t[$lang].login}</span>
 				</a>
 			</div>
-
-			<p class="register-link">{t[$lang].newVolunteer} <a href="/register">{t[$lang].createAccount}</a></p>
 		{/if}
 	</div>
 </div>
@@ -52,8 +50,6 @@
 	.login-card { display: flex; flex-direction: column; align-items: center; gap: 8px; padding: 24px 40px; border-radius: 12px; font-size: 1rem; text-decoration: none; transition: transform 0.2s; }
 	.login-card:hover { transform: translateY(-2px); text-decoration: none; }
 	.login-label { font-weight: 600; }
-	.register-link { font-size: 0.9rem; opacity: 0.8; }
-	.register-link a { color: white; text-decoration: underline; }
 	.logged-in { margin-top: 24px; }
 	.logged-in p { margin-bottom: 16px; font-size: 1.2rem; }
 	.logged-in .btn { background: white; color: #1a5276; }

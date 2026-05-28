@@ -59,7 +59,6 @@
 		{/if}
 
 		<div class="links">
-			<a href="/register">{t[$lang].createAccount}</a>
 			<a href="/">{t[$lang].backToHome}</a>
 		</div>
 	</div>

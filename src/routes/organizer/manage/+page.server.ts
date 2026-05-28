@@ -181,7 +181,10 @@ export const actions: Actions = {
 		return { settingsSuccess: true };
 	},
 
-	addVolunteer: async ({ request }) => {
+	addVolunteer: async ({ request, locals }) => {
+		if (!locals.user || locals.user.role !== 'organizer') {
+			return fail(403, { volunteerError: 'Not authorized.' });
+		}
 		const fd = await request.formData();
 		const firstName = fd.get('firstName')?.toString().trim() ?? '';
 		const lastName = fd.get('lastName')?.toString().trim() ?? '';

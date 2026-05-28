@@ -1,26 +1,24 @@
-// registration server logic — creates a new volunteer account
+// registration server logic — admin (organizer) creates a volunteer account
 import type { Actions, PageServerLoad } from "./$types";
 import { fail, redirect } from "@sveltejs/kit";
-import {
-  createUser,
-  createSessionToken,
-  SESSION_COOKIE,
-} from "$lib/server/auth";
+import { createUser } from "$lib/server/auth";
 import { db } from "$lib/server/db";
 import { users } from "$lib/server/db/schema";
 import { eq } from "drizzle-orm";
 
 export const load: PageServerLoad = async ({ locals }) => {
-  if (locals.user) {
-    throw redirect(
-      302,
-      locals.user.role === "volunteer" ? "/volunteer" : "/organizer",
-    );
+  // only organizers (admins) may create volunteer accounts
+  if (!locals.user || locals.user.role !== "organizer") {
+    throw redirect(302, "/login?role=organizer");
   }
 };
 
 export const actions: Actions = {
-  default: async ({ request, cookies }) => {
+  default: async ({ request, locals }) => {
+    if (!locals.user || locals.user.role !== "organizer") {
+      throw redirect(302, "/login?role=organizer");
+    }
+
     const formData = await request.formData();
     const password = formData.get("password")?.toString() ?? "";
     const confirmPassword = formData.get("confirmPassword")?.toString() ?? "";
@@ -67,22 +65,9 @@ export const actions: Actions = {
       });
     }
 
-    const user = await createUser(
-      password,
-      firstName,
-      lastName,
-      email,
-      "volunteer",
-    );
+    await createUser(password, firstName, lastName, email, "volunteer");
 
-    const token = createSessionToken(user.id);
-    cookies.set(SESSION_COOKIE, token, {
-      path: "/",
-      httpOnly: true,
-      sameSite: "lax",
-      maxAge: 60 * 60 * 24 * 30,
-    });
-
-    throw redirect(302, "/volunteer");
+    // keep the admin's own session; send them back to the people list
+    throw redirect(302, "/organizer/manage");
   },
 };

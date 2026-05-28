@@ -9,46 +9,51 @@
 		sections: [
 			{
 				icon: 'home',
+				link: '/organizer',
 				title: 'The Home Dashboard',
 				body: "The home page shows headline stats (total volunteers, total hours, kids who've met their goal) and quick-link tiles to every section. Recent announcements are pinned at the bottom.",
 				tips: [
-					'Stats reload on every page visit — refresh after large changes.',
 					'Use the tiles to jump quickly to Events, Volunteers, Manage, or this tutorial.',
 				],
 			},
 			{
 				icon: 'calendar',
+				link: '/organizer/events',
 				title: 'Managing Events',
-				body: 'The Events tab is where you create and maintain the schedule volunteers sign up for. Click "+ Add New Event" to create one. Existing events can be edited or deleted inline.',
+				body: 'The Events tab is where you create and maintain the schedule volunteers sign up for. Click "+ Add New Event" to create one. Existing events can be edited or deleted.',
 				tips: [
 					'Past events stay visible (greyed out) until you delete them or archive the season.',
-					'The "Event Type" dropdown is populated from the activity types you set in Manage.',
-					'Dates are capped at 2 years in the future to prevent typos.',
+					'You cannot enter dates that is more 2 years from now to prevent typos.',
 				],
 			},
 			{
 				icon: 'users',
+				link: '/organizer/volunteers',
 				title: 'Volunteers',
-				body: 'The Volunteers tab lists every volunteer account with their hours and linked children. Click a volunteer to see their full contribution history and edit details.',
+				body: 'The Volunteers tab lists every volunteer account with their hours and linked children. It also shows all children on the team. Click a volunteer to see their full contribution history and edit details.',
 				tips: [
 					'Hours shown are cumulative for the current season.',
 					'To add a new volunteer, go to Manage → People → Add Volunteer.',
+					'You can manually mark a volunteer as "met requirements" in the volunteer page',
+					'You can also export children/volunteers as tables',
 				],
 			},
 			{
 				icon: 'settings',
+				link: '/organizer/manage',
 				title: 'The Manage Page',
 				body: 'Manage is the control panel. Each section is collapsible:',
 				tips: [
-					'Announcements — post messages that appear on the volunteer home page.',
-					'Settings — hours required per membership tier, donation conversion rate, swim levels, activity types, and season start/end dates.',
-					'People — create volunteer accounts, add children, link guardians to children.',
-					'Manual Entry & Mark as Met — log hours on behalf of a volunteer, or top them up to meet the requirement in one click.',
-					'Export & Archive — download a CSV of all contributions, or archive the season to reset for next year.',
+					'Announcements: post messages that appear on the volunteer home page.',
+					'Settings: you can change hours required per membership tier, donations/hours conversion rate, swim team levels, activity types, and season start/end dates.',
+					'People: create volunteer accounts, add children, link guardians to children.',
+					'Manual Entry & Mark as Met: log hours on behalf of a volunteer, or top them up to meet the requirement in one click.',
+					'Export & Archive:  download a CSV of all contributions, or archive the season to reset for next year.',
 				],
 			},
 			{
 				icon: 'mail',
+				link: '/organizer/manage/emailing',
 				title: 'Emailing',
 				body: 'From Manage, click the Emailing banner to send announcements, reminders, or custom emails to volunteers. Templates can be edited from there.',
 				tips: [
