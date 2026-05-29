@@ -158,12 +158,15 @@ export const actions: Actions = {
     const fd = await request.formData();
     const currentPassword = fd.get("currentPassword")?.toString() ?? "";
     const newPassword = fd.get("newPassword")?.toString() ?? "";
-    if (!currentPassword || !newPassword)
-      return fail(400, { passwordError: "Both fields are required." });
+    const confirmNewPassword = fd.get("confirmNewPassword")?.toString() ?? "";
+    if (!currentPassword || !newPassword || !confirmNewPassword)
+      return fail(400, { passwordError: "All fields are required." });
     if (newPassword.length < 6)
       return fail(400, {
-        passwordError: "New password must be at least 4 characters.",
+        passwordError: "New password must be at least 6 characters.",
       });
+    if (newPassword !== confirmNewPassword)
+      return fail(400, { passwordError: "New passwords do not match." });
 
 			//Needs to be changed to add forgot password below change password
     const [user] = await db

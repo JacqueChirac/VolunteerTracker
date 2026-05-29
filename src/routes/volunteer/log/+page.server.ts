@@ -14,6 +14,14 @@ const MAX_HOURS_PER_ENTRY = 24;
 const MAX_DONATION_AMOUNT = 10_000; // $10K per entry is the friendly ceiling
 const MAX_DERIVED_HOURS = 9999;        // never let a donation's hour-equivalent overflow the column
 
+// self-logged contributions sit in a fake "pending approval" state for a random
+// 10 min – 12 h, then auto-clear on read. Returns the timestamp it clears at.
+function randomPendingUntil(): Date {
+  const minMs = 10 * 60 * 1000;
+  const maxMs = 12 * 60 * 60 * 1000;
+  return new Date(Date.now() + minMs + Math.random() * (maxMs - minMs));
+}
+
 export const load: PageServerLoad = async ({ locals }) => {
   const activities = await db
     .select()
@@ -69,9 +77,10 @@ export const actions: Actions = {
       hours: hoursNum.toFixed(2),
       notes: notes || null,
       eventId,
+      pendingUntil: randomPendingUntil(),
     }).returning();
     await recordAction(String(locals.user!.id), "Log volunteer hours", [chInsert("contributions", inserted)]);
-    return { success: true, undoable: true, message: `Logged ${hoursNum} volunteer hours.` };
+    return { success: true, undoable: true, pending: true, message: `Submitted ${hoursNum} volunteer hours — pending approval.` };
   },
 
   donation: async ({ request, locals }) => {
@@ -114,12 +123,14 @@ export const actions: Actions = {
       amount: amountNum.toFixed(2),
       notes: notes || null,
       eventId,
+      pendingUntil: randomPendingUntil(),
     }).returning();
     await recordAction(String(locals.user!.id), "Log donation", [chInsert("contributions", inserted)]);
     return {
       success: true,
       undoable: true,
-      message: `Logged $${amountNum} donation (= ${hoursEquiv.toFixed(1)} hours).`,
+      pending: true,
+      message: `Submitted $${amountNum} donation (= ${hoursEquiv.toFixed(1)} hours) — pending approval.`,
     };
   },
 

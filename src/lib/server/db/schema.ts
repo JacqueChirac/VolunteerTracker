@@ -104,6 +104,9 @@ export const contributions = pgTable("contributions", {
   amount: decimal("amount", { precision: 10, scale: 2 }),
   activityId: integer("activity_id").references(() => activityTypes.id),
   notes: text("notes"),
+  // self-logged contributions display as "pending approval" until this time passes;
+  // null = already approved (organizer-added entries). Auto-clears on read, no job needed.
+  pendingUntil: timestamp("pending_until"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 

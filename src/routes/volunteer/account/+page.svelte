@@ -285,6 +285,10 @@
             </button>
           </div>
         </div>
+        <div class="form-group">
+          <label for="confirmNewPassword">{t[$lang].confirmPassword}</label>
+          <input id="confirmNewPassword" name="confirmNewPassword" type={showNewPw ? 'text' : 'password'} required />
+        </div>
         <button type="submit" class="btn btn-primary" style="width:100%;"
           >{t[$lang].changePasswordBtn}</button
         >

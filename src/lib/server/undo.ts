@@ -65,7 +65,7 @@ const REGISTRY = {
   siteSettings: { table: siteSettings, pkCol: siteSettings.key, pkName: "key", depth: 0, tsCols: [] },
   childVolunteerLinks: { table: childVolunteerLinks, pkCol: childVolunteerLinks.id, pkName: "id", depth: 1, tsCols: [] },
   eventSignups: { table: eventSignups, pkCol: eventSignups.id, pkName: "id", depth: 1, tsCols: ["signedUpAt"] },
-  contributions: { table: contributions, pkCol: contributions.id, pkName: "id", depth: 1, tsCols: ["createdAt"] },
+  contributions: { table: contributions, pkCol: contributions.id, pkName: "id", depth: 1, tsCols: ["createdAt", "pendingUntil"] },
 } satisfies Record<string, TableMeta>;
 
 export type TableName = keyof typeof REGISTRY;

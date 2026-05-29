@@ -11,6 +11,12 @@
   let submitting = $state(false);
   const dateMax = today();
   const dateMin = daysAgo(365);
+
+  // a self-logged contribution shows as "pending approval" until pendingUntil passes
+  function isPending(c: { pendingUntil?: string | Date | null }) {
+    return !!c.pendingUntil && new Date(c.pendingUntil).getTime() > Date.now();
+  }
+  let formPending = $derived(Boolean((form as { pending?: boolean } | null | undefined)?.pending));
 </script>
 
 <h1>{t[$lang].logHoursTitle}</h1>
@@ -19,9 +25,9 @@
 {#if form?.success}
   <div
     class="card"
-    style="background:#d4edda;border:1px solid #c3e6cb;margin-bottom:16px;"
+    style="background:{formPending ? '#fff3cd' : '#d4edda'};border:1px solid {formPending ? '#ffeeba' : '#c3e6cb'};margin-bottom:16px;"
   >
-    <p style="color:#155724;">{form.message}</p>
+    <p style="color:{formPending ? '#856404' : '#155724'};">{form.message}</p>
   </div>
 {/if}
 {#if form?.error}<p class="error" style="margin-bottom:16px;">
@@ -38,7 +44,8 @@
 
 		<!-- Log events with date constraints -->
 		{#if tab === 'volunteering'}
-			<form method="POST" action="?/volunteering" use:enhance={() => {
+			<form method="POST" action="?/volunteering" use:enhance={({ cancel }) => {
+				if (submitting) return cancel();
 				submitting = true;
 				return async ({ update }) => { await update(); submitting = false; };
 			}}>
@@ -70,7 +77,8 @@
 				</button>
 			</form>
 		{:else}
-			<form method="POST" action="?/donation" use:enhance={() => {
+			<form method="POST" action="?/donation" use:enhance={({ cancel }) => {
+				if (submitting) return cancel();
 				submitting = true;
 				return async ({ update }) => { await update(); submitting = false; };
 			}}>
@@ -114,7 +122,10 @@
 						{#each data.contributions as c (c.id)}
 							<tr>
 								<td>{c.date}</td>
-								<td>{c.type === 'donation' ? `$${c.amount}` : t[$lang].vol}</td>
+								<td>
+									{c.type === 'donation' ? `$${c.amount}` : t[$lang].vol}
+									{#if isPending(c)}<span class="pending-badge">{$lang === 'en' ? 'Pending approval' : 'En attente'}</span>{/if}
+								</td>
 								<td>{c.hours}h</td>
 								<td style="max-width:120px;overflow:hidden;text-overflow:ellipsis;">{c.notes ?? '-'}</td>
 								<td>
@@ -131,3 +142,19 @@
 		{/if}
 	</div>
 </div>
+
+<style>
+	.pending-badge {
+		display: inline-block;
+		margin-left: 6px;
+		padding: 1px 7px;
+		border-radius: 999px;
+		background: #fff3cd;
+		color: #856404;
+		border: 1px solid #ffeeba;
+		font-size: 0.7rem;
+		font-weight: 600;
+		white-space: nowrap;
+		vertical-align: middle;
+	}
+</style>
