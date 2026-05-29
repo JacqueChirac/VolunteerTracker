@@ -10,6 +10,7 @@ import { getTime } from "$lib/emailLogic";
 import crypto from "crypto";
 import { error } from '@sveltejs/kit';
 import { RateLimiter } from 'sveltekit-rate-limiter/server';
+import { hashSync, compareSync } from "bcrypt-ts";
 
 
 const sql = neon(DATABASE_URL);
@@ -57,7 +58,8 @@ async function deleteExpiredVerificationLinks() {
 async function initiatePasswordReset(email:string) {
   const time = await getTime();
   const token = crypto.randomInt(100000, 999999).toString();
-  await sql`INSERT INTO password_reset_tokens (email, link, time_created) VALUES (${email}, ${token}, ${time})`;
+  const hashToken = hashSync(token, 10);
+  await sql`INSERT INTO password_reset_tokens (email, link, time_created) VALUES (${email}, ${hashToken}, ${time})`;
   return token;
 }
 
@@ -110,14 +112,15 @@ export const actions = {
     if (!email || !key) {
       return fail(400, { message: "Email and verification key are required" });
     }
-
     const results = await sql`
-      SELECT time_created FROM password_reset_tokens 
-      WHERE email = ${email} AND link = ${key} 
+      SELECT link, time_created FROM password_reset_tokens 
+      WHERE email = ${email}  
       ORDER BY time_created DESC LIMIT 1
     `;
-
     if (results.length === 0) {
+      return fail(400, { message: "Invalid email or verification key" });
+    }
+    if(compareSync(key, results[0].link) === false){
       return fail(400, { message: "Invalid email or verification key" });
     }
 
