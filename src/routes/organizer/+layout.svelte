@@ -5,8 +5,9 @@
 	import { Home, Calendar, Users, Settings, BookOpen, LogOut, Menu, X } from 'lucide-svelte';
 	import { lang } from '$lib/stores/lang';
 	import { t } from '$lib/i18n';
+	import UndoControls from '$lib/components/UndoControls.svelte';
 
-	let { children } = $props();
+	let { children, data } = $props();
 	let menuOpen = $state(false);
 
 	function isActive(path: string) {
@@ -44,6 +45,8 @@
 <main id="main-content" class="container" style="padding-top:20px;padding-bottom:40px;" tabindex="-1">
 	{@render children()}
 </main>
+
+<UndoControls undoState={data.undoState} />
 
 <style>
 	.brand-logo { height: 28px; vertical-align: middle; border-radius: 4px; }

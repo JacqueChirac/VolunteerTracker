@@ -6,6 +6,7 @@ import { eq, desc, asc } from 'drizzle-orm';
 import { fail } from '@sveltejs/kit';
 import { getAllSettings, updateSetting, getSetting, getDonationRate, getHoursRequired, getSwimLevels } from '$lib/server/settings';
 import { createUser } from '$lib/server/auth';
+import { recordAction, chInsert, chUpdate, chDelete } from '$lib/server/undo';
 
 function advanceOneYear(dateStr: string): string {
 	const d = new Date(dateStr + 'T00:00:00Z');
@@ -82,59 +83,80 @@ export const load: PageServerLoad = async () => {
 };
 
 export const actions: Actions = {
-	addActivity: async ({ request }) => {
+	addActivity: async ({ request, locals }) => {
 		const fd = await request.formData();
 		const name = fd.get('name')?.toString().trim() ?? '';
 		if (!name) return fail(400, { activityError: 'Activity name is required.' });
-		await db.insert(activityTypes).values({ name });
-		return { activitySuccess: true };
+		const [row] = await db.insert(activityTypes).values({ name }).returning();
+		await recordAction(String(locals.user!.id), `Add activity "${name}"`, [chInsert('activityTypes', row)]);
+		return { activitySuccess: true, success: true, undoable: true, message: `Added activity "${name}".` };
 	},
 
-	editActivity: async ({ request }) => {
+	editActivity: async ({ request, locals }) => {
 		const fd = await request.formData();
 		const id = Number(fd.get('id'));
 		const name = fd.get('name')?.toString().trim() ?? '';
 		if (!id || !name) return fail(400, { activityError: 'Name is required.' });
+		const [before] = await db.select().from(activityTypes).where(eq(activityTypes.id, id));
+		if (!before) return fail(400, { activityError: 'Activity not found.' });
+		const after = { ...before, name };
 		await db.update(activityTypes).set({ name }).where(eq(activityTypes.id, id));
-		return { activitySuccess: true };
+		await recordAction(String(locals.user!.id), `Edit activity "${name}"`, [chUpdate('activityTypes', before, after)]);
+		return { activitySuccess: true, success: true, undoable: true, message: `Updated activity "${name}".` };
 	},
 
-	deleteActivity: async ({ request }) => {
+	deleteActivity: async ({ request, locals }) => {
 		const fd = await request.formData();
 		const id = Number(fd.get('id'));
 		if (!id) return fail(400, { activityError: 'Invalid activity.' });
+		const [activity] = await db.select().from(activityTypes).where(eq(activityTypes.id, id));
+		if (!activity) return fail(400, { activityError: 'Activity not found.' });
+		const affected = await db.select().from(contributions).where(eq(contributions.activityId, id));
 		await db.update(contributions).set({ activityId: null }).where(eq(contributions.activityId, id));
 		await db.delete(activityTypes).where(eq(activityTypes.id, id));
-		return { activitySuccess: true };
+		const changes = [
+			chDelete('activityTypes', activity),
+			...affected.map((c) => chUpdate('contributions', c, { ...c, activityId: null })),
+		];
+		await recordAction(String(locals.user!.id), `Delete activity "${activity.name}"`, changes);
+		return { activitySuccess: true, success: true, undoable: true, message: `Deleted activity "${activity.name}".` };
 	},
 
-	addAnnouncement: async ({ request }) => {
+	addAnnouncement: async ({ request, locals }) => {
 		const fd = await request.formData();
 		const title = fd.get('title')?.toString().trim() ?? '';
 		const content = fd.get('content')?.toString().trim() ?? '';
 		if (!title || !content) return fail(400, { announcementError: 'Title and content are required.' });
-		await db.insert(announcements).values({ title, content });
-		return { announcementSuccess: true };
+		const [row] = await db.insert(announcements).values({ title, content }).returning();
+		await recordAction(String(locals.user!.id), `Post announcement "${title}"`, [chInsert('announcements', row)]);
+		return { announcementSuccess: true, success: true, undoable: true, message: `Posted "${title}".` };
 	},
 
-	editAnnouncement: async ({ request }) => {
+	editAnnouncement: async ({ request, locals }) => {
 		const fd = await request.formData();
 		const id = Number(fd.get('id'));
 		const title = fd.get('title')?.toString().trim() ?? '';
 		const content = fd.get('content')?.toString().trim() ?? '';
 		if (!id || !title || !content) return fail(400, { announcementError: 'Title and content are required.' });
+		const [before] = await db.select().from(announcements).where(eq(announcements.id, id));
+		if (!before) return fail(400, { announcementError: 'Announcement not found.' });
+		const after = { ...before, title, content };
 		await db.update(announcements).set({ title, content }).where(eq(announcements.id, id));
-		return { announcementSuccess: true };
+		await recordAction(String(locals.user!.id), `Edit announcement "${title}"`, [chUpdate('announcements', before, after)]);
+		return { announcementSuccess: true, success: true, undoable: true, message: `Updated "${title}".` };
 	},
 
-	deleteAnnouncement: async ({ request }) => {
+	deleteAnnouncement: async ({ request, locals }) => {
 		const fd = await request.formData();
 		const id = Number(fd.get('id'));
+		const [before] = await db.select().from(announcements).where(eq(announcements.id, id));
+		if (!before) return fail(400, { announcementError: 'Announcement not found.' });
 		await db.delete(announcements).where(eq(announcements.id, id));
-		return { announcementSuccess: true };
+		await recordAction(String(locals.user!.id), `Delete announcement "${before.title}"`, [chDelete('announcements', before)]);
+		return { announcementSuccess: true, success: true, undoable: true, message: `Deleted "${before.title}".` };
 	},
 
-	addManualHours: async ({ request }) => {
+	addManualHours: async ({ request, locals }) => {
 		const fd = await request.formData();
 		const userId = Number(fd.get('userId'));
 		const type = fd.get('type')?.toString() as 'volunteering' | 'donation';
@@ -146,6 +168,7 @@ export const actions: Actions = {
 		const num = parseFloat(value);
 		if (isNaN(num) || num <= 0) return fail(400, { manualError: 'Value must be a positive number.' });
 
+		let inserted;
 		if (type === 'donation') {
 			if (num > MAX_MANUAL_DONATION) {
 				return fail(400, {
@@ -159,16 +182,17 @@ export const actions: Actions = {
 					manualError: `The amount you entered is too large to be accepted. With the current conversion rate ($${rate}/hr), this donation would convert to more than ${MAX_DERIVED_HOURS} hours.`,
 				});
 			}
-			await db.insert(contributions).values({ userId, type: 'donation', date, hours: hoursEquiv.toFixed(2), amount: num.toFixed(2), notes: notes || null });
+			[inserted] = await db.insert(contributions).values({ userId, type: 'donation', date, hours: hoursEquiv.toFixed(2), amount: num.toFixed(2), notes: notes || null }).returning();
 		} else {
 			if (num > MAX_MANUAL_HOURS) {
 				return fail(400, {
 					manualError: `The amount you entered is too large to be accepted. Hours cannot exceed ${MAX_MANUAL_HOURS} per entry.`,
 				});
 			}
-			await db.insert(contributions).values({ userId, type: 'volunteering', date, hours: num.toFixed(2), notes: notes || null });
+			[inserted] = await db.insert(contributions).values({ userId, type: 'volunteering', date, hours: num.toFixed(2), notes: notes || null }).returning();
 		}
-		return { manualSuccess: true };
+		await recordAction(String(locals.user!.id), 'Add manual entry', [chInsert('contributions', inserted)]);
+		return { manualSuccess: true, success: true, undoable: true, message: 'Manual entry added.' };
 	},
 
 	updateSettings: async ({ request }) => {
@@ -206,11 +230,12 @@ export const actions: Actions = {
 			return fail(400, { volunteerError: 'A user with this email already exists.' });
 		}
 
-		await createUser(password, firstName, lastName, email, 'volunteer');
-		return { volunteerSuccess: `Created volunteer ${firstName} ${lastName}.` };
+		const user = await createUser(password, firstName, lastName, email, 'volunteer');
+		await recordAction(String(locals.user!.id), `Add volunteer ${firstName} ${lastName}`, [chInsert('users', user)]);
+		return { volunteerSuccess: `Created volunteer ${firstName} ${lastName}.`, success: true, undoable: true, message: `Created volunteer ${firstName} ${lastName}.` };
 	},
 
-	addChild: async ({ request }) => {
+	addChild: async ({ request, locals }) => {
 		const fd = await request.formData();
 		const firstName = fd.get('firstName')?.toString().trim() ?? '';
 		const lastName = fd.get('lastName')?.toString().trim() ?? '';
@@ -228,15 +253,18 @@ export const actions: Actions = {
 			level: level || null
 		}).returning();
 
+		const changes = [chInsert('children', child)];
 		const linkUserId = Number(linkUserIdRaw);
 		if (linkUserId && Number.isFinite(linkUserId)) {
-			await db.insert(childVolunteerLinks).values({ childId: child.id, userId: linkUserId });
+			const [link] = await db.insert(childVolunteerLinks).values({ childId: child.id, userId: linkUserId }).returning();
+			changes.push(chInsert('childVolunteerLinks', link));
 		}
 
-		return { childSuccess: `Added child ${firstName} ${lastName}.` };
+		await recordAction(String(locals.user!.id), `Add child ${firstName} ${lastName}`, changes);
+		return { childSuccess: `Added child ${firstName} ${lastName}.`, success: true, undoable: true, message: `Added child ${firstName} ${lastName}.` };
 	},
 
-	linkChild: async ({ request }) => {
+	linkChild: async ({ request, locals }) => {
 		const fd = await request.formData();
 		const childId = Number(fd.get('childId'));
 		const userId = Number(fd.get('userId'));
@@ -248,11 +276,12 @@ export const actions: Actions = {
 			return fail(400, { linkError: 'That volunteer is already linked to this child.' });
 		}
 
-		await db.insert(childVolunteerLinks).values({ childId, userId });
-		return { linkSuccess: true };
+		const [row] = await db.insert(childVolunteerLinks).values({ childId, userId }).returning();
+		await recordAction(String(locals.user!.id), 'Link child to volunteer', [chInsert('childVolunteerLinks', row)]);
+		return { linkSuccess: true, success: true, undoable: true, message: 'Linked child to volunteer.' };
 	},
 
-	unlinkChild: async ({ request }) => {
+	unlinkChild: async ({ request, locals }) => {
 		const fd = await request.formData();
 		const childId = Number(fd.get('childId'));
 		const userId = Number(fd.get('userId'));
@@ -261,19 +290,25 @@ export const actions: Actions = {
 		const target = all.find((l) => l.userId === userId);
 		if (target) {
 			await db.delete(childVolunteerLinks).where(eq(childVolunteerLinks.id, target.id));
+			await recordAction(String(locals.user!.id), 'Unlink child from volunteer', [chDelete('childVolunteerLinks', target)]);
 		}
-		return { linkSuccess: true };
+		return { linkSuccess: true, success: true, undoable: !!target, message: 'Unlinked child from volunteer.' };
 	},
 
-	deleteChild: async ({ request }) => {
+	deleteChild: async ({ request, locals }) => {
 		const fd = await request.formData();
 		const childId = Number(fd.get('childId'));
 		if (!childId) return fail(400, { childError: 'Invalid child.' });
+		const [child] = await db.select().from(children).where(eq(children.id, childId));
+		if (!child) return fail(400, { childError: 'Child not found.' });
+		const links = await db.select().from(childVolunteerLinks).where(eq(childVolunteerLinks.childId, childId));
 		await db.delete(children).where(eq(children.id, childId));
-		return { childSuccess: 'Child removed.' };
+		const changes = [chDelete('children', child), ...links.map((l) => chDelete('childVolunteerLinks', l))];
+		await recordAction(String(locals.user!.id), `Delete child ${child.firstName} ${child.lastName}`, changes);
+		return { childSuccess: 'Child removed.', success: true, undoable: true, message: `Removed ${child.firstName} ${child.lastName}.` };
 	},
 
-	markMet: async ({ request }) => {
+	markMet: async ({ request, locals }) => {
 		const fd = await request.formData();
 		const userId = Number(fd.get('userId'));
 		if (!userId) return fail(400, { markMetError: 'Invalid volunteer.' });
@@ -294,7 +329,7 @@ export const actions: Actions = {
 		}
 
 		const today = new Date().toISOString().split('T')[0];
-		await db.insert(contributions).values({
+		const [inserted] = await db.insert(contributions).values({
 			userId,
 			eventId: null,
 			type: 'volunteering' as const,
@@ -303,38 +338,47 @@ export const actions: Actions = {
 			amount: null,
 			activityId: null,
 			notes: 'Manually marked as met by organizer'
-		});
+		}).returning();
 
-		return { markMetSuccess: true };
+		await recordAction(String(locals.user!.id), 'Mark requirements met', [chInsert('contributions', inserted)]);
+		return { markMetSuccess: true, success: true, undoable: true, message: 'Marked requirements as met.' };
 	},
 
-	addSwimLevel: async ({ request }) => {
+	addSwimLevel: async ({ request, locals }) => {
 		const fd = await request.formData();
 		const value = fd.get('value')?.toString().trim() ?? '';
 		const name = fd.get('name')?.toString().trim() ?? '';
 		const description = fd.get('description')?.toString().trim() ?? '';
 		if (!value || !name) return fail(400, { swimLevelError: 'Value and name are required.' });
 		const existing = await db.select().from(swimLevelSettings);
-		await db.insert(swimLevelSettings).values({ value, name, description: description || null, displayOrder: existing.length });
-		return { swimLevelSuccess: true };
+		const [row] = await db.insert(swimLevelSettings).values({ value, name, description: description || null, displayOrder: existing.length }).returning();
+		await recordAction(String(locals.user!.id), `Add swim level "${name}"`, [chInsert('swimLevelSettings', row)]);
+		return { swimLevelSuccess: true, success: true, undoable: true, message: `Added swim level "${name}".` };
 	},
 
-	editSwimLevel: async ({ request }) => {
+	editSwimLevel: async ({ request, locals }) => {
 		const fd = await request.formData();
 		const id = Number(fd.get('id'));
 		const name = fd.get('name')?.toString().trim() ?? '';
 		const description = fd.get('description')?.toString().trim() ?? '';
 		if (!id || !name) return fail(400, { swimLevelError: 'Name is required.' });
+		const [before] = await db.select().from(swimLevelSettings).where(eq(swimLevelSettings.id, id));
+		if (!before) return fail(400, { swimLevelError: 'Level not found.' });
+		const after = { ...before, name, description: description || null };
 		await db.update(swimLevelSettings).set({ name, description: description || null }).where(eq(swimLevelSettings.id, id));
-		return { swimLevelSuccess: true };
+		await recordAction(String(locals.user!.id), `Edit swim level "${name}"`, [chUpdate('swimLevelSettings', before, after)]);
+		return { swimLevelSuccess: true, success: true, undoable: true, message: `Updated swim level "${name}".` };
 	},
 
-	deleteSwimLevel: async ({ request }) => {
+	deleteSwimLevel: async ({ request, locals }) => {
 		const fd = await request.formData();
 		const id = Number(fd.get('id'));
 		if (!id) return fail(400, { swimLevelError: 'Invalid level.' });
+		const [before] = await db.select().from(swimLevelSettings).where(eq(swimLevelSettings.id, id));
+		if (!before) return fail(400, { swimLevelError: 'Level not found.' });
 		await db.delete(swimLevelSettings).where(eq(swimLevelSettings.id, id));
-		return { swimLevelSuccess: true };
+		await recordAction(String(locals.user!.id), `Delete swim level "${before.name}"`, [chDelete('swimLevelSettings', before)]);
+		return { swimLevelSuccess: true, success: true, undoable: true, message: `Deleted swim level "${before.name}".` };
 	},
 
 	archiveSeason: async ({ request }) => {

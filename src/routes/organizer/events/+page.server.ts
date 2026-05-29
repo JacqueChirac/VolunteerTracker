@@ -1,10 +1,11 @@
 // organizer events dashboard — loads events, handles add/edit/delete
 import type { PageServerLoad, Actions } from "./$types";
 import { db } from "$lib/server/db";
-import { events, eventSignups, activityTypes } from "$lib/server/db/schema";
+import { events, eventSignups, activityTypes, contributions } from "$lib/server/db/schema";
 import { desc, eq } from "drizzle-orm";
 import { fail } from "@sveltejs/kit";
 import { today, daysFromNow } from "$lib/dateBounds";
+import { recordAction, chInsert, chUpdate, chDelete } from "$lib/server/undo";
 
 export const load: PageServerLoad = async () => {
   const allEvents = await db.select().from(events).orderBy(desc(events.date));
@@ -30,7 +31,7 @@ export const load: PageServerLoad = async () => {
 };
 
 export const actions: Actions = {
-  addEvent: async ({ request }) => {
+  addEvent: async ({ request, locals }) => {
     const fd = await request.formData();
     const title = fd.get("title")?.toString().trim() ?? "";
     const date = fd.get("date")?.toString() ?? "";
@@ -52,19 +53,26 @@ export const actions: Actions = {
         error: "Event date is too far in the future (max 2 years).",
       });
 
-    await db.insert(events).values({
-      title,
-      date,
-      startTime,
-      endTime: endTime || null,
-      location: location || null,
-      description: description || null,
-      type: type || "other",
-    });
-    return { success: true };
+    const [row] = await db
+      .insert(events)
+      .values({
+        title,
+        date,
+        startTime,
+        endTime: endTime || null,
+        location: location || null,
+        description: description || null,
+        type: type || "other",
+      })
+      .returning();
+
+    await recordAction(String(locals.user!.id), `Add event "${title}"`, [
+      chInsert("events", row),
+    ]);
+    return { success: true, undoable: true, message: `Added event "${title}".` };
   },
 
-  editEvent: async ({ request }) => {
+  editEvent: async ({ request, locals }) => {
     const fd = await request.formData();
     const id = Number(fd.get("id"));
     const title = fd.get("title")?.toString().trim() ?? "";
@@ -79,6 +87,20 @@ export const actions: Actions = {
       return fail(400, { error: "Missing required fields." });
     }
 
+    const [before] = await db.select().from(events).where(eq(events.id, id));
+    if (!before) return fail(400, { error: "Event not found." });
+
+    const after = {
+      ...before,
+      title,
+      date,
+      startTime,
+      endTime: endTime || null,
+      location: location || null,
+      description: description || null,
+      type: type || "other",
+    };
+
     await db
       .update(events)
       .set({
@@ -92,14 +114,42 @@ export const actions: Actions = {
       })
       .where(eq(events.id, id));
 
-    return { success: true };
+    await recordAction(String(locals.user!.id), `Edit event "${title}"`, [
+      chUpdate("events", before, after),
+    ]);
+    return { success: true, undoable: true, message: `Updated event "${title}".` };
   },
 
-  deleteEvent: async ({ request }) => {
+  deleteEvent: async ({ request, locals }) => {
     const fd = await request.formData();
     const eventId = Number(fd.get("eventId"));
     if (!eventId) return fail(400, { error: "Invalid event." });
+
+    const [eventRow] = await db
+      .select()
+      .from(events)
+      .where(eq(events.id, eventId));
+    if (!eventRow) return fail(400, { error: "Event not found." });
+
+    // capture cascade: signups are deleted; contributions have eventId nulled
+    const signups = await db
+      .select()
+      .from(eventSignups)
+      .where(eq(eventSignups.eventId, eventId));
+    const linkedContribs = await db
+      .select()
+      .from(contributions)
+      .where(eq(contributions.eventId, eventId));
+
+    const changes = [
+      chDelete("events", eventRow),
+      ...signups.map((s) => chDelete("eventSignups", s)),
+      ...linkedContribs.map((c) => chUpdate("contributions", c, { ...c, eventId: null })),
+    ];
+
     await db.delete(events).where(eq(events.id, eventId));
-    return { success: true };
+
+    await recordAction(String(locals.user!.id), `Delete event "${eventRow.title}"`, changes);
+    return { success: true, undoable: true, message: `Deleted event "${eventRow.title}".` };
   },
 };

@@ -164,8 +164,19 @@ export const email_setting = pgTable('email_settings', {
 export const passwordResetTokens = pgTable("password_reset_tokens", {
   id: serial("id").primaryKey(),
   email: text("email").notNull(),
-  link: text("link").notNull(), 
+  link: text("link").notNull(),
   timeCreated: timestamp("time_created").defaultNow().notNull(),
+});
+
+// undo/redo history — one row per reversible action, scoped per user.
+// `changes` is a JSON array of row-level before/after snapshots (see lib/server/undo.ts).
+export const actionLog = pgTable("action_log", {
+  id: serial("id").primaryKey(),
+  scope: text("scope").notNull(), // the actor's user id, as a string
+  label: text("label").notNull(), // human-readable description e.g. "Delete event"
+  changes: text("changes").notNull(), // JSON: Change[]
+  status: text("status").notNull().default("active"), // active | undone | invalidated
+  createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
 // -- views: live-computed totals, queryable like a regular table --

@@ -11,6 +11,7 @@ import { eq, sql } from "drizzle-orm";
 import { fail } from "@sveltejs/kit";
 import { hashSync, compareSync } from "bcrypt-ts";
 import { getHoursRequired, getDonationRate } from "$lib/server/settings";
+import { recordAction, chInsert, chDelete } from "$lib/server/undo";
 
 //Run on page load and load the variables
 export const load: PageServerLoad = async ({ locals }) => {
@@ -104,10 +105,15 @@ export const actions: Actions = {
         status: status || "full_member",
       })
       .returning();
-    await db
+    const [link] = await db
       .insert(childVolunteerLinks)
-      .values({ childId: child.id, userId: locals.user!.id });
-    return { success: true };
+      .values({ childId: child.id, userId: locals.user!.id })
+      .returning();
+    await recordAction(String(locals.user!.id), `Add child ${firstName} ${lastName}`, [
+      chInsert("children", child),
+      chInsert("childVolunteerLinks", link),
+    ]);
+    return { success: true, undoable: true, message: `Added ${firstName} ${lastName}.` };
   },
 
 	//Unlink child from user when user press unlink button
@@ -120,11 +126,13 @@ export const actions: Actions = {
       .from(childVolunteerLinks)
       .where(eq(childVolunteerLinks.userId, locals.user!.id));
     const link = links.find((l) => l.childId === childId);
-    if (link)
+    if (link) {
       await db
         .delete(childVolunteerLinks)
         .where(eq(childVolunteerLinks.id, link.id));
-    return { unlinkSuccess: true };
+      await recordAction(String(locals.user!.id), "Unlink child", [chDelete("childVolunteerLinks", link)]);
+    }
+    return { unlinkSuccess: true, success: true, undoable: !!link, message: "Unlinked child." };
   },
 
 //Link children
@@ -138,10 +146,12 @@ export const actions: Actions = {
       .where(eq(childVolunteerLinks.userId, locals.user!.id));
     if (existing.some((l) => l.childId === childId))
       return fail(400, { error: "Already linked." });
-    await db
+    const [link] = await db
       .insert(childVolunteerLinks)
-      .values({ childId, userId: locals.user!.id });
-    return { linkSuccess: true };
+      .values({ childId, userId: locals.user!.id })
+      .returning();
+    await recordAction(String(locals.user!.id), "Link child", [chInsert("childVolunteerLinks", link)]);
+    return { linkSuccess: true, success: true, undoable: true, message: "Linked child." };
   },
 
   changePassword: async ({ request, locals }) => {

@@ -6,6 +6,7 @@ import { fail } from "@sveltejs/kit";
 import { getDonationRate } from "$lib/server/settings";
 import { today, daysAgo } from "$lib/dateBounds";
 import { activityTypes, contributions, events } from '$lib/server/db/schema';
+import { recordAction, chInsert, chDelete } from "$lib/server/undo";
 
 // schema caps: hours = decimal(6,2) → max 9999.99 ; amount = decimal(10,2) → max 99,999,999.99
 // we keep user-facing limits well below the column ceiling so the message reads naturally
@@ -61,15 +62,16 @@ export const actions: Actions = {
     const eventIdRaw = fd.get("eventId")?.toString();
     const eventId = eventIdRaw ? Number(eventIdRaw) : null;
 
-    await db.insert(contributions).values({
+    const [inserted] = await db.insert(contributions).values({
       userId: locals.user!.id,
       type: "volunteering",
       date,
       hours: hoursNum.toFixed(2),
       notes: notes || null,
       eventId,
-    });
-    return { success: true, message: `Logged ${hoursNum} volunteer hours.` };
+    }).returning();
+    await recordAction(String(locals.user!.id), "Log volunteer hours", [chInsert("contributions", inserted)]);
+    return { success: true, undoable: true, message: `Logged ${hoursNum} volunteer hours.` };
   },
 
   donation: async ({ request, locals }) => {
@@ -104,7 +106,7 @@ export const actions: Actions = {
         error: `The amount you entered is too large to be accepted. With the current conversion rate ($${rate}/hr), this donation would convert to more than ${MAX_DERIVED_HOURS} hours.`,
       });
 
-    await db.insert(contributions).values({
+    const [inserted] = await db.insert(contributions).values({
       userId: locals.user!.id,
       type: "donation",
       date,
@@ -112,9 +114,11 @@ export const actions: Actions = {
       amount: amountNum.toFixed(2),
       notes: notes || null,
       eventId,
-    });
+    }).returning();
+    await recordAction(String(locals.user!.id), "Log donation", [chInsert("contributions", inserted)]);
     return {
       success: true,
+      undoable: true,
       message: `Logged $${amountNum} donation (= ${hoursEquiv.toFixed(1)} hours).`,
     };
   },
@@ -130,6 +134,7 @@ export const actions: Actions = {
     if (!contrib || contrib.userId !== locals.user!.id)
       return fail(403, { error: "Not authorized." });
     await db.delete(contributions).where(eq(contributions.id, id));
-    return { success: true, message: "Contribution deleted." };
+    await recordAction(String(locals.user!.id), "Delete contribution", [chDelete("contributions", contrib)]);
+    return { success: true, undoable: true, message: "Contribution deleted." };
   },
 };

@@ -1,10 +1,11 @@
 // guard — only volunteer users can access /volunteer/* pages
 import { redirect } from '@sveltejs/kit';
 import type { LayoutServerLoad } from './$types';
+import { getUndoState } from '$lib/server/undo';
 
 export const load: LayoutServerLoad = async ({ locals }) => {
 	if (!locals.user || locals.user.role !== 'volunteer') {
 		throw redirect(302, '/login?role=volunteer');
 	}
-	return { user: locals.user };
+	return { user: locals.user, undoState: await getUndoState(String(locals.user.id)) };
 };

@@ -1,0 +1,20 @@
+Undo/redo needed
+
+Organizer Side:
+Edit events
+Delete Events
+Edit/Delete Volunteers AND Children
+Edit/Delete Post Announcements
+Swim Levels
+Activity Type
+Tutorial Edit
+
+Volunteer Side:
+Log/Delete Contributions
+Maybe redo/undo for link child as well?
+
+Other features
+Confirm new password twice instead of once
+Scare volunteers with fake notification that their contributions is waiting to be approved, is it possible for the contributions to stay "pending" until a randomnized values (10 minutes-12H) is gone is it possible to
+
+Also there's an issue that some cases that its to easy to submit contributions twice if click too hard (double click) I am not sure about whether the issue exists or not, the scope, and the cause
