@@ -7,6 +7,7 @@ import { fail } from '@sveltejs/kit';
 import { getAllSettings, updateSetting, getSetting, getDonationRate, getHoursRequired, getSwimLevels } from '$lib/server/settings';
 import { createUser } from '$lib/server/auth';
 import { recordAction, chInsert, chUpdate, chDelete } from '$lib/server/undo';
+import {init, sendEmailUniversal, getTime} from "$lib/emailLogic"
 
 function advanceOneYear(dateStr: string): string {
 	const d = new Date(dateStr + 'T00:00:00Z');
@@ -232,6 +233,16 @@ export const actions: Actions = {
 
 		const user = await createUser(password, firstName, lastName, email, 'volunteer');
 		await recordAction(String(locals.user!.id), `Add volunteer ${firstName} ${lastName}`, [chInsert('users', user)]);
+		const node = await init();
+ 		 const messageParams = {
+  		  subject: "CPWD: your account has been created",
+		    name: "CPWD security",
+		    message: `Greetings ${lastName}. Your Carlton Place Water Dragons swim team account has been created by the admin. Your account sign in credential is ${email} and your temporaray password is ${password}. Please don't share your account password with anyone and change it to your own password when you have logged`,
+		    time: getTime(),
+		    recipient: email,
+		  };
+		  sendEmailUniversal(node,"message", messageParams);
+		
 		return { volunteerSuccess: `Created volunteer ${firstName} ${lastName}.`, success: true, undoable: true, message: `Created volunteer ${firstName} ${lastName}.` };
 	},
 
