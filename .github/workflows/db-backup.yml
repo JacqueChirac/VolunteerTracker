@@ -1,0 +1,51 @@
+name: Backup Neon database
+
+# Runs weekly (Sun 03:00 UTC) and on demand. Uses pg_dump via the postgres:17
+# Docker image so the client version stays compatible with the Neon server
+# (change the image tag if your Neon project is on a different major version).
+# The dump is uploaded as a workflow artifact with 90-day retention.
+
+on:
+  schedule:
+    - cron: '0 3 * * 0'
+  workflow_dispatch: {}
+
+permissions:
+  contents: read
+
+jobs:
+  backup:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Dump database
+        shell: bash
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+        run: |
+          set -euo pipefail
+          if [ -z "${DATABASE_URL:-}" ]; then
+            echo "::error::DATABASE_URL secret is not set in repo settings"
+            exit 1
+          fi
+          ts=$(date -u +%Y%m%d-%H%M)
+          file="backup-${ts}.sql.gz"
+          docker run --rm -e DATABASE_URL postgres:17 \
+            pg_dump --no-owner --no-privileges --clean --if-exists "$DATABASE_URL" \
+            | gzip > "$file"
+          size=$(stat -c%s "$file")
+          echo "Wrote $file ($size bytes)"
+          # Sanity check: a real dump should be well above 1 KB.
+          if [ "$size" -lt 1024 ]; then
+            echo "::error::Backup file is suspiciously small ($size bytes); aborting"
+            exit 1
+          fi
+          echo "BACKUP_FILE=$file" >> "$GITHUB_ENV"
+
+      - name: Upload backup artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: neon-backup-${{ github.run_id }}
+          path: ${{ env.BACKUP_FILE }}
+          retention-days: 90
+          if-no-files-found: error
