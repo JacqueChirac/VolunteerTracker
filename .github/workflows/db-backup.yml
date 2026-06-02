@@ -17,6 +17,9 @@ jobs:
   backup:
     runs-on: ubuntu-latest
     timeout-minutes: 15
+    env:
+      # Opt JS actions into Node 24 ahead of the June 16, 2026 default switch.
+      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: 'true'
     steps:
       - name: Dump database
         shell: bash
