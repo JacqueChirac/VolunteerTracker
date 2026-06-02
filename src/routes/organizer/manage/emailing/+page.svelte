@@ -47,6 +47,7 @@
     recipient: "liuzilin375@gmail.com",
   });
 
+
   let inputElement: HTMLInputElement;
   let focus = $state(0);
   let tokens = $derived(
@@ -111,7 +112,7 @@
       },
       limitRate: {
         id: "app",
-        throttle: 3000, // Cool down in ms
+        throttle: 0, // Cool down in ms
       },
     });
   }
@@ -131,6 +132,9 @@
   let toastMsg = $state('');
   let toastType = $state<'success' | 'error'>('success');
   let toastTimer: ReturnType<typeof setTimeout>;
+  let isCooldown = $state(false);
+  let cooldown = $state(0);
+
 
   function showToast(msg: string, type: 'success' | 'error' = 'success') {
     clearTimeout(toastTimer);
@@ -183,10 +187,23 @@
   }
   //Email logics
   function SendEmail(params: any) {
+    if (isCooldown) return;
+
     if(tokens[node] <= 0){
       showToast("Node messgae limit hit", "error");
       return;
     }
+
+    isCooldown = true;
+    cooldown = 3;
+    const interval = setInterval(() => {
+      cooldown -= 1;
+      if (cooldown <= 0) {
+        isCooldown = false;
+        clearInterval(interval);
+      }
+    }, 1000);
+
     if (selected === "message") {
       emailjs.send(services[node].serviceID, templates[0], params).then(
         (response) => {
@@ -367,8 +384,13 @@
   </div>
 
   <div style="margin-top: 12px;">
-    <button class="btn btn-primary" style="width: 100%; padding: 14px;" onclick={() => SendEmail(messageParams)}>
-      {t[$lang].sendEmail}
+    <button 
+      class="btn btn-primary" 
+      style="width: 100%; padding: 14px;" 
+      disabled={isCooldown}
+      onclick={() => SendEmail(messageParams)}
+    >
+      {isCooldown ? ($lang === 'en' ? `Send Email(${cooldown}s)` : `Envoyer le courriel(${cooldown}s)`) : t[$lang].sendEmail}
     </button>
   </div>
 </div>
