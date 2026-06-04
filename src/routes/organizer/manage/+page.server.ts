@@ -1,7 +1,7 @@
 // manage page server — settings, activity types, announcements, manual entries, archives
 import type { PageServerLoad, Actions } from './$types';
 import { db } from '$lib/server/db';
-import { activityTypes, announcements, users, contributions, children, childVolunteerLinks, seasonArchives, swimLevelSettings } from '$lib/server/db/schema';
+import { announcements, users, contributions, children, childVolunteerLinks, seasonArchives, swimLevelSettings } from '$lib/server/db/schema';
 import { eq, desc, asc } from 'drizzle-orm';
 import { fail } from '@sveltejs/kit';
 import { getAllSettings, updateSetting, getSetting, getDonationRate, getHoursRequired, getSwimLevels } from '$lib/server/settings';
@@ -21,7 +21,6 @@ const MAX_MANUAL_DONATION = 1_000_000;
 const MAX_DERIVED_HOURS = 9999;
 
 export const load: PageServerLoad = async () => {
-	const activities = await db.select().from(activityTypes);
 	const news = await db.select().from(announcements).orderBy(desc(announcements.createdAt));
 	const volunteers = await db.select({ id: users.id, firstName: users.firstName, lastName: users.lastName, email: users.email }).from(users).where(eq(users.role, 'volunteer')).orderBy(asc(users.firstName));
 	const allChildren = await db.select().from(children).orderBy(asc(children.firstName));
@@ -76,7 +75,7 @@ export const load: PageServerLoad = async () => {
 
 	const swimLevels = await getSwimLevels();
 	return {
-		activities, announcements: news, volunteers, children: childrenWithLinks,
+		announcements: news, volunteers, children: childrenWithLinks,
 		archives, settings, donationRate, swimLevels,
 		seasonDates: { start: seasonStartDate, end: seasonEndDate },
 		autoArchived
@@ -84,45 +83,6 @@ export const load: PageServerLoad = async () => {
 };
 
 export const actions: Actions = {
-	addActivity: async ({ request, locals }) => {
-		const fd = await request.formData();
-		const name = fd.get('name')?.toString().trim() ?? '';
-		if (!name) return fail(400, { activityError: 'Activity name is required.' });
-		const [row] = await db.insert(activityTypes).values({ name }).returning();
-		await recordAction(String(locals.user!.id), `Add activity "${name}"`, [chInsert('activityTypes', row)]);
-		return { activitySuccess: true, success: true, undoable: true, message: `Added activity "${name}".` };
-	},
-
-	editActivity: async ({ request, locals }) => {
-		const fd = await request.formData();
-		const id = Number(fd.get('id'));
-		const name = fd.get('name')?.toString().trim() ?? '';
-		if (!id || !name) return fail(400, { activityError: 'Name is required.' });
-		const [before] = await db.select().from(activityTypes).where(eq(activityTypes.id, id));
-		if (!before) return fail(400, { activityError: 'Activity not found.' });
-		const after = { ...before, name };
-		await db.update(activityTypes).set({ name }).where(eq(activityTypes.id, id));
-		await recordAction(String(locals.user!.id), `Edit activity "${name}"`, [chUpdate('activityTypes', before, after)]);
-		return { activitySuccess: true, success: true, undoable: true, message: `Updated activity "${name}".` };
-	},
-
-	deleteActivity: async ({ request, locals }) => {
-		const fd = await request.formData();
-		const id = Number(fd.get('id'));
-		if (!id) return fail(400, { activityError: 'Invalid activity.' });
-		const [activity] = await db.select().from(activityTypes).where(eq(activityTypes.id, id));
-		if (!activity) return fail(400, { activityError: 'Activity not found.' });
-		const affected = await db.select().from(contributions).where(eq(contributions.activityId, id));
-		await db.update(contributions).set({ activityId: null }).where(eq(contributions.activityId, id));
-		await db.delete(activityTypes).where(eq(activityTypes.id, id));
-		const changes = [
-			chDelete('activityTypes', activity),
-			...affected.map((c) => chUpdate('contributions', c, { ...c, activityId: null })),
-		];
-		await recordAction(String(locals.user!.id), `Delete activity "${activity.name}"`, changes);
-		return { activitySuccess: true, success: true, undoable: true, message: `Deleted activity "${activity.name}".` };
-	},
-
 	addAnnouncement: async ({ request, locals }) => {
 		const fd = await request.formData();
 		const title = fd.get('title')?.toString().trim() ?? '';
@@ -356,7 +316,6 @@ export const actions: Actions = {
 			date: today,
 			hours: remaining.toFixed(2),
 			amount: null,
-			activityId: null,
 			notes: 'Manually marked as met by organizer'
 		}).returning();
 

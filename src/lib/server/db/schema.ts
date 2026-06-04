@@ -73,7 +73,6 @@ export const events = pgTable("events", {
   location: text("location"),
   description: text("description"),
   volunteersNeeded: integer("volunteers_needed"),
-  type: text("type").default("other"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
@@ -102,19 +101,11 @@ export const contributions = pgTable("contributions", {
   date: date("date").notNull(),
   hours: decimal("hours", { precision: 6, scale: 2 }),
   amount: decimal("amount", { precision: 10, scale: 2 }),
-  activityId: integer("activity_id").references(() => activityTypes.id),
   notes: text("notes"),
   // self-logged contributions display as "pending approval" until this time passes;
   // null = already approved (organizer-added entries). Auto-clears on read, no job needed.
   pendingUntil: timestamp("pending_until"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
-});
-
-// types of volunteer work / events (organizer can add/remove these)
-export const activityTypes = pgTable("activity_types", {
-  id: serial("id").primaryKey(),
-  name: text("name").notNull(),
-  active: boolean("active").notNull().default(true),
 });
 
 // news posts shown on the dashboard

@@ -6,10 +6,7 @@
 	import { lang } from '$lib/stores/lang';
 	import { t } from '$lib/i18n';
 
-  type OrganizerEventsPageData = PageData & {
-    activityTypes: Array<{ name: string }>;
-  };
-  let { data, form }: { data: OrganizerEventsPageData; form: ActionData } = $props();
+  let { data, form }: { data: PageData; form: ActionData } = $props();
   let showAddEvent = $state(false);
 
   const dateMin = today();
@@ -47,14 +44,6 @@
 				<div class="form-group"><label for="add_end">{t[$lang].endTime}</label><input id="add_end" name="endTime" type="time" /></div>
 				<div class="form-group"><label for="add_loc">{t[$lang].location}</label><input id="add_loc" name="location" type="text" /></div>
 				<div class="form-group"><label for="add_needed">{t[$lang].peopleNeeded} <span style="color:var(--text-light);font-weight:normal;">({t[$lang].optional})</span></label><input id="add_needed" name="volunteersNeeded" type="number" min="0" step="1" placeholder={t[$lang].peopleNeededPlaceholder} /></div>
-				<div class="form-group"><label for="add_type">{t[$lang].eventType}</label>
-					<select id="add_type" name="type">
-							<option value="other" selected>{t[$lang].other}</option>
-							{#each data.activityTypes as at}
-								<option value={at.name}>{at.name}</option>
-							{/each}
-						</select>
-				</div>
 			</div>
 			<div class="form-group"><label for="add_desc">{t[$lang].description}</label><textarea id="add_desc" name="description" rows="3"></textarea></div>
 			<button type="submit" class="btn btn-primary">{t[$lang].createEvent}</button>
@@ -74,7 +63,7 @@
 						<h3>{event.title}</h3>
 						<p style="font-size:0.9rem;color:var(--text-light);">{event.date} at {event.startTime}{event.endTime ? ` - ${event.endTime}` : ''}{#if event.location} &middot; {event.location}{/if}</p>
 						{#if event.description}<p style="margin-top:4px;font-size:0.9rem;">{event.description}</p>{/if}
-						<p style="font-size:0.85rem;color:var(--text-light);margin-top:4px;">{event.volunteersNeeded != null ? t[$lang].volunteersSignedUpOfNeeded(event.signupCount, event.volunteersNeeded) : t[$lang].volunteersCount(event.signupCount)}{#if event.type} &middot; {event.type}{/if}</p>
+						<p style="font-size:0.85rem;color:var(--text-light);margin-top:4px;">{event.volunteersNeeded != null ? t[$lang].volunteersSignedUpOfNeeded(event.signupCount, event.volunteersNeeded) : t[$lang].volunteersCount(event.signupCount)}</p>
 					</div>
 					<div style="display:flex;gap:6px;">
 						<button type="button" class="btn btn-outline" style="padding:4px 10px;font-size:0.8rem;" onclick={() => (editingId = event.id)}>Edit</button>
@@ -105,9 +94,6 @@
 							<label>Location<input name="location" type="text" value={event.location ?? ""} /></label>
 						</div>
 						<div class="form-group">
-							<label>Type<input name="type" type="text" value={event.type ?? "other"} /></label>
-						</div>
-						<div class="form-group">
 							<label>{t[$lang].peopleNeeded} <span style="color:var(--text-light);font-weight:normal;">({t[$lang].optional})</span><input name="volunteersNeeded" type="number" min="0" step="1" value={event.volunteersNeeded ?? ""} placeholder={t[$lang].peopleNeededPlaceholder} /></label>
 						</div>
 					</div>
@@ -131,7 +117,7 @@
 					<h3>{event.title}</h3>
 					<p style="font-size:0.9rem;color:var(--text-light);">{event.date} at {event.startTime}{event.endTime ? ` - ${event.endTime}` : ''}{#if event.location} &middot; {event.location}{/if}</p>
 					{#if event.description}<p style="margin-top:4px;font-size:0.9rem;">{event.description}</p>{/if}
-					<p style="font-size:0.85rem;color:var(--text-light);margin-top:4px;">{t[$lang].volunteersCount(event.signupCount)}{#if event.type} &middot; {event.type}{/if}</p>
+					<p style="font-size:0.85rem;color:var(--text-light);margin-top:4px;">{event.volunteersNeeded != null ? t[$lang].volunteersSignedUpOfNeeded(event.signupCount, event.volunteersNeeded) : t[$lang].volunteersCount(event.signupCount)}</p>
 				</div>
 				<form method="POST" action="?/deleteEvent" use:enhance style="display:inline;">
 					<input type="hidden" name="eventId" value={event.id} />

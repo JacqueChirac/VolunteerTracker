@@ -35,7 +35,7 @@
 						<h3><a href="/volunteer/events/{event.id}">{event.title}</a></h3>
 						<p style="font-size:0.9rem;color:var(--text-light);">{event.date} at {event.startTime}{event.endTime ? ` - ${event.endTime}` : ''}{#if event.location} &middot; {event.location}{/if}</p>
 						{#if event.description}<p style="margin-top:8px;">{event.description}</p>{/if}
-						<p style="font-size:0.85rem;color:var(--text-light);margin-top:4px;">{event.volunteersNeeded != null ? t[$lang].volunteersSignedUpOfNeeded(event.signupCount, event.volunteersNeeded) : t[$lang].volunteersSignedUp(event.signupCount)}{#if event.type} &middot; {event.type}{/if}</p>
+						<p style="font-size:0.85rem;color:var(--text-light);margin-top:4px;">{event.volunteersNeeded != null ? t[$lang].volunteersSignedUpOfNeeded(event.signupCount, event.volunteersNeeded) : t[$lang].volunteersSignedUp(event.signupCount)}</p>
 					</div>
 					<div>
 						{#if event.signedUp}
@@ -63,7 +63,7 @@
 						<h3><a href="/volunteer/events/{event.id}">{event.title}</a></h3>
 						<p style="font-size:0.9rem;color:var(--text-light);">{event.date} at {event.startTime}{event.endTime ? ` - ${event.endTime}` : ''}{#if event.location} &middot; {event.location}{/if}</p>
 						{#if event.description}<p style="margin-top:8px;">{event.description}</p>{/if}
-						<p style="font-size:0.85rem;color:var(--text-light);margin-top:4px;">{event.volunteersNeeded != null ? t[$lang].volunteersSignedUpOfNeeded(event.signupCount, event.volunteersNeeded) : t[$lang].volunteersSignedUp(event.signupCount)}{#if event.type} &middot; {event.type}{/if}</p>
+						<p style="font-size:0.85rem;color:var(--text-light);margin-top:4px;">{event.volunteersNeeded != null ? t[$lang].volunteersSignedUpOfNeeded(event.signupCount, event.volunteersNeeded) : t[$lang].volunteersSignedUp(event.signupCount)}</p>
 						<p style="font-size:0.85rem;margin-top:8px;">
 							{#if event.signedUp}<span style="color:var(--success,#1a7f37);">✓ You signed up</span>{:else}<span style="color:var(--text-light);">— Did not attend</span>{/if}
 							{#if event.myHours > 0}

@@ -1,7 +1,7 @@
 // organizer events dashboard — loads events, handles add/edit/delete
 import type { PageServerLoad, Actions } from "./$types";
 import { db } from "$lib/server/db";
-import { events, eventSignups, activityTypes, contributions } from "$lib/server/db/schema";
+import { events, eventSignups, contributions } from "$lib/server/db/schema";
 import { desc, eq } from "drizzle-orm";
 import { fail } from "@sveltejs/kit";
 import { today, daysFromNow } from "$lib/dateBounds";
@@ -16,17 +16,11 @@ export const load: PageServerLoad = async () => {
     signupCounts[s.eventId] = (signupCounts[s.eventId] || 0) + 1;
   }
 
-  const activeActivities = await db
-    .select()
-    .from(activityTypes)
-    .where(eq(activityTypes.active, true));
-
   return {
     events: allEvents.map((e) => ({
       ...e,
       signupCount: signupCounts[e.id] || 0,
     })),
-    activityTypes: activeActivities,
   };
 };
 
@@ -39,7 +33,6 @@ export const actions: Actions = {
     const endTime = fd.get("endTime")?.toString() ?? "";
     const location = fd.get("location")?.toString().trim() ?? "";
     const description = fd.get("description")?.toString().trim() ?? "";
-    const type = fd.get("type")?.toString() ?? "other";
     const neededRaw = fd.get("volunteersNeeded")?.toString().trim() ?? "";
     const volunteersNeeded = neededRaw === "" ? null : Number(neededRaw);
     if (volunteersNeeded !== null && (!Number.isInteger(volunteersNeeded) || volunteersNeeded < 0)) {
@@ -67,7 +60,6 @@ export const actions: Actions = {
         endTime: endTime || null,
         location: location || null,
         description: description || null,
-        type: type || "other",
         volunteersNeeded,
       })
       .returning();
@@ -87,7 +79,6 @@ export const actions: Actions = {
     const endTime = fd.get("endTime")?.toString() ?? "";
     const location = fd.get("location")?.toString().trim() ?? "";
     const description = fd.get("description")?.toString().trim() ?? "";
-    const type = fd.get("type")?.toString() ?? "other";
     const neededRaw = fd.get("volunteersNeeded")?.toString().trim() ?? "";
     const volunteersNeeded = neededRaw === "" ? null : Number(neededRaw);
     if (volunteersNeeded !== null && (!Number.isInteger(volunteersNeeded) || volunteersNeeded < 0)) {
@@ -109,7 +100,6 @@ export const actions: Actions = {
       endTime: endTime || null,
       location: location || null,
       description: description || null,
-      type: type || "other",
       volunteersNeeded,
     };
 
@@ -122,7 +112,6 @@ export const actions: Actions = {
         endTime: endTime || null,
         location: location || null,
         description: description || null,
-        type: type || "other",
         volunteersNeeded,
       })
       .where(eq(events.id, id));

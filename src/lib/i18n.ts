@@ -65,8 +65,6 @@ export const t = {
     startTime: "Start Time",
     endTime: "End Time",
     location: "Location",
-    eventType: "Event Type",
-    other: "Other",
     description: "Description",
     createEvent: "Create Event",
     noEventsYet: "No events yet. Create one above.",
@@ -125,8 +123,6 @@ export const t = {
     remove: "Remove",
     removeChildConfirm: (name: string) =>
       `Remove ${name}? This will also remove their volunteer links.`,
-    activityTypes: "Activity Types",
-    newActivityPlaceholder: "New activity name...",
     add: "Add",
     disable: "Disable",
     enable: "Enable",
@@ -254,7 +250,6 @@ export const t = {
     // ── Event detail (volunteer) ──────────────────────────────
     backToEvents: "← Back to Events",
     locationLabel: "Location:",
-    typeLabel: "Type:",
     cancelSignUpBtn: "Cancel Sign Up",
     signUpForEvent: "Sign Up for This Event",
     signedUpVolunteers: (n: number) => `Signed Up Volunteers (${n})`,
@@ -413,8 +408,6 @@ export const t = {
     startTime: "Heure de début",
     endTime: "Heure de fin",
     location: "Lieu",
-    eventType: "Type d'événement",
-    other: "Autre",
     description: "Description",
     createEvent: "Créer l'événement",
     noEventsYet: "Aucun événement pour l'instant. Créez-en un ci-dessus.",
@@ -474,8 +467,6 @@ export const t = {
     remove: "Retirer",
     removeChildConfirm: (name: string) =>
       `Retirer ${name}? Cela supprimera également ses liens avec les bénévoles.`,
-    activityTypes: "Types d'activités",
-    newActivityPlaceholder: "Nom de la nouvelle activité...",
     add: "Ajouter",
     disable: "Désactiver",
     enable: "Activer",
@@ -606,7 +597,6 @@ export const t = {
     // ── Event detail (volunteer) ──────────────────────────────
     backToEvents: "← Retour aux événements",
     locationLabel: "Lieu:",
-    typeLabel: "Type:",
     cancelSignUpBtn: "Annuler l'inscription",
     signUpForEvent: "S'inscrire à cet événement",
     signedUpVolunteers: (n: number) => `Bénévoles inscrits (${n})`,

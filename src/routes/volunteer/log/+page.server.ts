@@ -5,7 +5,7 @@ import { eq, desc } from "drizzle-orm";
 import { fail } from "@sveltejs/kit";
 import { getDonationRate } from "$lib/server/settings";
 import { today, daysAgo } from "$lib/dateBounds";
-import { activityTypes, contributions, events } from '$lib/server/db/schema';
+import { contributions, events } from '$lib/server/db/schema';
 import { recordAction, chInsert, chDelete } from "$lib/server/undo";
 
 // schema caps: hours = decimal(6,2) → max 9999.99 ; amount = decimal(10,2) → max 99,999,999.99
@@ -23,10 +23,6 @@ function randomPendingUntil(): Date {
 }
 
 export const load: PageServerLoad = async ({ locals }) => {
-  const activities = await db
-    .select()
-    .from(activityTypes)
-    .where(eq(activityTypes.active, true));
   const userContributions = await db
     .select()
     .from(contributions)
@@ -37,7 +33,6 @@ export const load: PageServerLoad = async ({ locals }) => {
   const allEvents = await db.select().from(events).orderBy(desc(events.date));
 
   return {
-    activities,
     contributions: userContributions,
     donationRate: await getDonationRate(),
     allEvents,
