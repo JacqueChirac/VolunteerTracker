@@ -1,6 +1,11 @@
 import { fail, redirect } from "@sveltejs/kit";
 import type { Actions, PageServerLoad } from "./$types";
-import { RECOVERY_COOKIE, parseRecoveryToken } from "$lib/server/auth";
+import {
+  RECOVERY_COOKIE,
+  parseRecoveryToken,
+  BCRYPT_COST,
+  PASSWORD_MIN_LENGTH,
+} from "$lib/server/auth";
 import { hashSync } from "bcrypt-ts";
 import { neon } from "@neondatabase/serverless";
 import { DATABASE_URL } from "$env/static/private";
@@ -27,6 +32,10 @@ export const actions: Actions = {
 			return fail(400, { error: "Both password fields are required." });
 		}
 
+		if (password.length < PASSWORD_MIN_LENGTH) {
+			return fail(400, { error: `Password must be at least ${PASSWORD_MIN_LENGTH} characters.` });
+		}
+
 		if (password !== confirmPassword) {
 			return fail(400, { error: "Passwords do not match." });
 		}
@@ -38,7 +47,7 @@ export const actions: Actions = {
 			throw redirect(302, "/login/recovery");
 		}
 
-		const newPasswordHash = hashSync(password, 10);
+		const newPasswordHash = hashSync(password, BCRYPT_COST);
 		const userEmail = recovery.email;
 
 		//Update

@@ -10,6 +10,7 @@ import {
 import { eq, sql } from "drizzle-orm";
 import { fail } from "@sveltejs/kit";
 import { hashSync, compareSync } from "bcrypt-ts";
+import { BCRYPT_COST, PASSWORD_MIN_LENGTH } from "$lib/server/auth";
 import { getHoursRequired, getDonationRate } from "$lib/server/settings";
 import { recordAction, chInsert, chDelete } from "$lib/server/undo";
 
@@ -161,9 +162,9 @@ export const actions: Actions = {
     const confirmNewPassword = fd.get("confirmNewPassword")?.toString() ?? "";
     if (!currentPassword || !newPassword || !confirmNewPassword)
       return fail(400, { passwordError: "All fields are required." });
-    if (newPassword.length < 6)
+    if (newPassword.length < PASSWORD_MIN_LENGTH)
       return fail(400, {
-        passwordError: "New password must be at least 6 characters.",
+        passwordError: `New password must be at least ${PASSWORD_MIN_LENGTH} characters.`,
       });
     if (newPassword !== confirmNewPassword)
       return fail(400, { passwordError: "New passwords do not match." });
@@ -178,7 +179,7 @@ export const actions: Actions = {
 
     await db
       .update(users)
-      .set({ passwordHash: hashSync(newPassword, 10) })
+      .set({ passwordHash: hashSync(newPassword, BCRYPT_COST) })
       .where(eq(users.id, locals.user!.id));
     return { passwordSuccess: true };
   },

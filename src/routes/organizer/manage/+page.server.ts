@@ -5,7 +5,7 @@ import { announcements, users, contributions, children, childVolunteerLinks, sea
 import { eq, desc, asc } from 'drizzle-orm';
 import { fail } from '@sveltejs/kit';
 import { getAllSettings, updateSetting, getSetting, getDonationRate, getHoursRequired, getSwimLevels } from '$lib/server/settings';
-import { createUser } from '$lib/server/auth';
+import { createUser, PASSWORD_MIN_LENGTH } from '$lib/server/auth';
 import { recordAction, chInsert, chUpdate, chDelete } from '$lib/server/undo';
 import {init, sendEmailUniversal, getTime} from "$lib/emailLogic"
 
@@ -179,8 +179,8 @@ export const actions: Actions = {
 		if (!firstName || !lastName || !email || !password) {
 			return fail(400, { volunteerError: 'All fields are required.' });
 		}
-		if (password.length < 4) {
-			return fail(400, { volunteerError: 'Password must be at least 4 characters.' });
+		if (password.length < PASSWORD_MIN_LENGTH) {
+			return fail(400, { volunteerError: `Password must be at least ${PASSWORD_MIN_LENGTH} characters.` });
 		}
 		const emailRe = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 		if (!emailRe.test(email)) {

@@ -19,7 +19,7 @@ const fks = await sql`
 		and c.contype = 'f'
 `;
 for (const { conname } of fks) {
-	await sql(`ALTER TABLE contributions DROP CONSTRAINT "${conname}"`);
+	await sql.query(`ALTER TABLE contributions DROP CONSTRAINT "${conname}"`);
 	console.log(`dropped FK constraint contributions.${conname}`);
 }
 

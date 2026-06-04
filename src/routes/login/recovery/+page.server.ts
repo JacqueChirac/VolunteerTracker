@@ -1,8 +1,14 @@
 import { neon } from "@neondatabase/serverless";
 import { DATABASE_URL } from "$env/static/private";
+import { env } from "$env/dynamic/private";
 import { dateCheck } from "$lib/emailLogic.js";
 import { fail, redirect } from "@sveltejs/kit";
-import { RECOVERY_COOKIE, createRecoveryToken } from "$lib/server/auth";
+import {
+  RECOVERY_COOKIE,
+  RECOVERY_COOKIE_OPTS,
+  createRecoveryToken,
+  BCRYPT_COST,
+} from "$lib/server/auth";
 import { sendEmailUniversal } from "$lib/emailLogic";
 import {init} from "$lib/emailLogic";
 import {SERVICES} from "$lib/emailLogic";
@@ -14,16 +20,16 @@ import { hashSync, compareSync } from "bcrypt-ts";
 
 
 const sql = neon(DATABASE_URL);
+const rateSecret = env.SESSION_SECRET ?? 'dev-rate-limit-secret';
 
 const sendLimiter = new RateLimiter({
   IP: [5, 'd'], // IP address limiter
   IPUA: [5, 'd'], // IP + User Agent limiter
   cookie: {
-    // Cookie limiter
-    name: 'resetLimiter', // Unique cookie name for this limiter
-    secret: 'SECRETKEY-SERVER-ONLY', // Use $env/static/private
+    name: 'resetLimiter',
+    secret: rateSecret,
     rate: [2, 'm'],
-    preflight: true // Require preflight call (see load function)
+    preflight: true
   }
 });
 
@@ -31,11 +37,10 @@ const checkLimiter = new RateLimiter({
   IP: [5, 'm'], // IP address limiter
   IPUA: [5, 'm'], // IP + User Agent limiter
   cookie: {
-    // Cookie limiter
-    name: 'resetLimiter', // Unique cookie name for this limiter
-    secret: 'SECRETKEY-SERVER-ONLY', // Use $env/static/private
+    name: 'resetLimiter',
+    secret: rateSecret,
     rate: [5, 'm'],
-    preflight: true // Require preflight call (see load function)
+    preflight: true
   }
 });
 
@@ -58,7 +63,7 @@ async function deleteExpiredVerificationLinks() {
 async function initiatePasswordReset(email:string) {
   const time = await getTime();
   const token = crypto.randomInt(100000, 999999).toString();
-  const hashToken = hashSync(token, 10);
+  const hashToken = hashSync(token, BCRYPT_COST);
   await sql`INSERT INTO password_reset_tokens (email, link, time_created) VALUES (${email}, ${hashToken}, ${time})`;
   return token;
 }
@@ -133,13 +138,7 @@ export const actions = {
     }
 
     const recoveryToken = createRecoveryToken(email);
-    cookies.set(RECOVERY_COOKIE, recoveryToken, {
-      path: "/",
-      httpOnly: true,
-      sameSite: "lax",
-      secure: true,
-      maxAge: 60 * 10, // 10 minutes
-    });
+    cookies.set(RECOVERY_COOKIE, recoveryToken, RECOVERY_COOKIE_OPTS);
 
     throw redirect(302, "/login/reset");
   },
