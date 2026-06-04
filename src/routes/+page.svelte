@@ -32,7 +32,7 @@
 				<a href="/login" class="btn btn-primary login-card">
 					<span class="login-label">{t[$lang].login}</span>
 				</a>
-				<p>THe essence of the page, definitely useful and not garbage</p>
+				<p>THe essence of the page, definitely useful and not garbage?</p>
 			</div>
 		{/if}
 	</div>
