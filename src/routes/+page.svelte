@@ -31,7 +31,6 @@
 			<div class="login-options">
 				<a href="/login" class="btn btn-primary login-card">
 					<span class="login-label">{t[$lang].login}</span>
-					<span class="login-label">Not hello world</span>
 
 				</a>
 			</div>
