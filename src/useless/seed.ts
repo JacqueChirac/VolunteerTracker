@@ -60,25 +60,6 @@ async function seed() {
   }
   console.log("Sample volunteers created (password: password)");
 
-  // types of volunteer work volunteers can log
-  const activities = [
-    "Repair",
-    "Trophies",
-    "Sort Supplies",
-    "Set Up Pool",
-    "Cleanup",
-    "Concession Stand",
-    "Timing",
-    "Registration Desk",
-  ];
-  for (const name of activities) {
-    await db
-      .insert(schema.activityTypes)
-      .values({ name })
-      .onConflictDoNothing();
-  }
-  console.log("Activity types created");
-
   // wipe old sample events/announcements so re-running seed doesn't duplicate
   await db.delete(schema.events);
   await db.delete(schema.announcements);

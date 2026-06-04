@@ -21,3 +21,6 @@ Thumbs.db
 # Vite
 vite.config.js.timestamp-*
 vite.config.ts.timestamp-*
+
+# DB backup dumps (contain password hashes — keep out of git)
+/db-backups

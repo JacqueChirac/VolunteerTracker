@@ -1,7 +1,7 @@
 // individual volunteer profile — server logic for viewing + editing children
 import type { PageServerLoad, Actions } from './$types';
 import { db } from '$lib/server/db';
-import { users, children, childVolunteerLinks, contributions, activityTypes, eventSignups } from '$lib/server/db/schema';
+import { users, children, childVolunteerLinks, contributions, eventSignups } from '$lib/server/db/schema';
 import { eq, desc, asc, and } from 'drizzle-orm';
 import { error, fail, redirect } from '@sveltejs/kit';
 import { getHoursRequired } from '$lib/server/settings';
@@ -12,11 +12,7 @@ export const load: PageServerLoad = async ({ params }) => {
 	const [volunteer] = await db.select().from(users).where(eq(users.id, userId));
 	if (!volunteer || volunteer.role !== 'volunteer') throw error(404, 'Volunteer not found');
 
-	const allActivities = await db.select().from(activityTypes);
-	const activityMap = new Map(allActivities.map(a => [a.id, a.name]));
-
 	const contribs = await db.select().from(contributions).where(eq(contributions.userId, userId)).orderBy(desc(contributions.date));
-	const contributionsWithActivity = contribs.map(c => ({ ...c, activityName: c.activityId ? activityMap.get(c.activityId) ?? null : null }));
 
 	const [links, allChildren, allContribs, allLinks2] = await Promise.all([
 		db.select().from(childVolunteerLinks).where(eq(childVolunteerLinks.userId, userId)),
@@ -45,7 +41,7 @@ export const load: PageServerLoad = async ({ params }) => {
 
 	return {
 		volunteer: { id: volunteer.id, firstName: volunteer.firstName, lastName: volunteer.lastName, email: volunteer.email, manuallyApproved: volunteer.manuallyApproved },
-		contributions: contributionsWithActivity,
+		contributions: contribs,
 		children: childrenData,
 		allChildren,
 		linkedChildIds: [...linkedChildIds],

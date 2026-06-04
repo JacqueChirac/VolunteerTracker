@@ -18,9 +18,6 @@
 	{#if data.event.description}<p style="margin-top:12px;">{data.event.description}</p>{/if}
 
 	<div style="margin-top:12px;display:flex;flex-wrap:wrap;gap:8px;">
-		{#if data.event.type}
-			<div style="padding:8px 16px;background:var(--bg);border-radius:6px;">{t[$lang].typeLabel} <strong>{data.event.type}</strong></div>
-		{/if}
 		<div style="padding:8px 16px;background:var(--bg);border-radius:6px;">
 			{#if data.event.volunteersNeeded != null}
 				{t[$lang].volunteersSignedUpOfNeeded(data.volunteers.length, data.event.volunteersNeeded)}
