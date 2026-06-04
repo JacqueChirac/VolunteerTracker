@@ -5,6 +5,7 @@ import { check } from "drizzle-orm/gel-core";
 import { fail } from "@sveltejs/kit";
 import { sendEmailUniversal } from "$lib/emailLogic.js";
 import { dateCheck } from "$lib/emailLogic.js";
+import {getTime} from "$lib/emailLogic.js"
 
 const sql = neon(DATABASE_URL);
 
@@ -19,6 +20,7 @@ export async function load() {
     const badEmails = await getBadEmails();
     const allMails = await getAllMails();
     const allNames = await getNames();
+    const time = await getTime();
     let nodes = await sql`SELECT id, service_id, token FROM nodes`;
     nodes = nodes.sort((a, b) => a.id - b.id);
     return {
@@ -28,6 +30,7 @@ export async function load() {
       badEmails,
       volunteers: await getVolunteers(), // Moved to function
       newDate,
+      time,
     };
   } catch (error) {
     console.error("Error in load:", error);

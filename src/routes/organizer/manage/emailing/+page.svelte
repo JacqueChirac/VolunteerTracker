@@ -6,6 +6,7 @@
   import { lang } from "$lib/stores/lang";
   import { t } from "$lib/i18n";
   import { json } from "@sveltejs/kit";
+
   let { data } = $props(); //Imported data from server.ts
 
   //Variables Declare
@@ -42,7 +43,7 @@
     subject: "CPWD communication",
     name: "Admin",
     message: "I send you a message!",
-    time: 2008,
+    time: data.time,
     recipient: "liuzilin375@gmail.com",
   });
 
