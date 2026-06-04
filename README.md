@@ -89,9 +89,11 @@ Recov: apart essay faint hidden blue jealous accident diagram ladder rural ugly 
 Email password: cpwd222222
 
 backup nodes: 
+B1
 Gmail: liuzilin375@gmail.com
 Emailjs password: cpwd333333
 
+B2
 Email: zilin.liu@northstaracademy.ca
 Emailjs password: cpwd444444
 
