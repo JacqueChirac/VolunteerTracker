@@ -34,6 +34,7 @@
 					<span class="login-label">Hello World</span>
 
 				</a>
+				<p>THe essence of the page, definitely useful and not garbage</p>
 			</div>
 		{/if}
 	</div>
