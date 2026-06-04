@@ -31,17 +31,16 @@
   },
 ];
 
-  const templates = ["message", "reminder"];
+  const templates = ["message"];
   const badEmails = $derived(data.badEmails); //Bad emails as [] strings
   const allMails = $derived(data.allMails); //All emails as [] strings
   const allNames = $derived(data.allNames); //All names as [] strings
   const volunteers = $derived(data.volunteers);
   let node = $state(Number(0));
-  let selected = $state("message");
   let messageParams = $state({
     // Parameters defined in the template
     subject: "CPWD communication",
-    name: "Kelp",
+    name: "Admin",
     message: "I send you a message!",
     time: 2008,
     recipient: "liuzilin375@gmail.com",
@@ -115,11 +114,6 @@
         throttle: 0, // Cool down in ms
       },
     });
-  }
-
-  //Page logic
-  function select(option: string) {
-    selected = option;
   }
 
   //Autofill logic (Quality of life)
@@ -204,26 +198,24 @@
       }
     }, 1000);
 
-    if (selected === "message") {
-      emailjs.send(services[node].serviceID, templates[0], params).then(
-        (response) => {
-          console.log("SUCCESS!", response.status, response.text);
-          let cost = messageParams.recipient
-            .split(",")
-            .map((s) => s.trim())
-            .filter(Boolean).length;
-          showToast(cost > 1
-            ? `${$lang === 'en' ? 'Email sent to' : 'Courriel envoyé à'} ${cost} ${$lang === 'en' ? 'recipients' : 'destinataires'}`
-            : ($lang === 'en' ? 'Email sent successfully.' : 'Courriel envoyé avec succès.')
-          );
-          sendCost(services[node].serviceID, cost);
-        },
-        (err) => {
-          console.log("FAILED...", err);
-          showToast($lang === 'en' ? 'Failed to send email. Please try again.' : 'Échec de l\'envoi. Veuillez réessayer.', 'error');
-        },
-      );
-    }
+    emailjs.send(services[node].serviceID, templates[0], params).then(
+      (response) => {
+        console.log("SUCCESS!", response.status, response.text);
+        let cost = messageParams.recipient
+          .split(",")
+          .map((s) => s.trim())
+          .filter(Boolean).length;
+        showToast(cost > 1
+          ? `${$lang === 'en' ? 'Email sent to' : 'Courriel envoyé à'} ${cost} ${$lang === 'en' ? 'recipients' : 'destinataires'}`
+          : ($lang === 'en' ? 'Email sent successfully.' : 'Courriel envoyé avec succès.')
+        );
+        sendCost(services[node].serviceID, cost);
+      },
+      (err) => {
+        console.log("FAILED...", err);
+        showToast($lang === 'en' ? 'Failed to send email. Please try again.' : 'Échec de l\'envoi. Veuillez réessayer.', 'error');
+      },
+    );
   }
 
   const sendCost = async (service: string, cost: number) => {
@@ -243,19 +235,6 @@
       console.error("Failed to update token:", error);
     }
   };
-
-  //!Unfishied
-  //   else {
-  //       emailjs.send("service_tni7nrg", "newTemplate", newParams).then(
-  //     (response) => {
-  //       console.log("SUCCESS!", response.status, response.text);
-  //     },
-  //     (error) => {
-  //       console.log("FAILED...", error);
-  //     },
-  //   );
-  //   }
-  // }
 
   function selectGroup(group: number) {
     switch (group) {
@@ -318,25 +297,6 @@
 </section>
 
 <div class="card email-composer">
-  <div class="composer-header">
-    <div class="toggle-container">
-      <button
-        class="toggle-option"
-        class:active={selected === "message"}
-        onclick={() => select("message")}
-      >
-        {t[$lang].message}
-      </button>
-      <button
-        class="toggle-option"
-        class:active={selected === "reminder"}
-        onclick={() => select("reminder")}
-      >
-        {t[$lang].reminder}
-      </button>
-    </div>
-  </div>
-
   <div class="form-group">
     <label for="recipient">{t[$lang].recipient}</label>
     <div class="recipient-wrapper">
@@ -351,6 +311,7 @@
         oninput={handleInput}
         onclick={handleClick}
       />
+
 
       <div class="dropdown-wrapper">
         {#if showDropdown === true && recipientPrompted.length > 0}
@@ -370,17 +331,34 @@
     </div>
   </div>
 
+  <div style="display: flex; gap: 16px;">
+    <div class="form-group" style="flex: 3;">
+      <label for="subject">{$lang === 'en' ? 'Subject' : 'Sujet'}</label>
+      <input
+        id="subject"
+        type="text"
+        bind:value={messageParams.subject}
+      />
+    </div>
+    <div class="form-group" style="flex: 1;">
+      <label for="signature">{$lang === 'en' ? 'Signature' : 'Signature'}</label>
+      <input
+        id="signature"
+        type="text"
+        bind:value={messageParams.name}
+      />
+    </div>
+  </div>
+
   <div class="form-group">
     <label for="message-body">{$lang === 'en' ? 'Message' : 'Message'}</label>
-      {#if selected === "message"}
-        <textarea
-          id="message-body"
-          rows="10"
-          placeholder={t[$lang].typeMessageHere}
-          bind:value={messageParams.message}
-          style="width: 100%; padding: 12px; font-size: 1rem; border-radius: 12px; border: 1px solid var(--border); resize: vertical;"
-        ></textarea>
-      {/if}
+    <textarea
+      id="message-body"
+      rows="10"
+      placeholder={t[$lang].typeMessageHere}
+      bind:value={messageParams.message}
+      style="width: 100%; padding: 12px; font-size: 1rem; border-radius: 12px; border: 1px solid var(--border); resize: vertical;"
+    ></textarea>
   </div>
 
   <div style="margin-top: 12px;">
@@ -522,12 +500,6 @@
     padding: 32px;
   }
 
-  .composer-header {
-    display: flex;
-    justify-content: center;
-    margin-bottom: 32px;
-  }
-
   .section-label {
     font-weight: 700;
     font-size: 0.85rem;
@@ -535,43 +507,6 @@
     letter-spacing: 0.5px;
     color: var(--text-light);
     margin-bottom: 8px;
-  }
-
-  .toggle-container {
-    display: flex;
-    background: rgba(30, 30, 30, 0.85); /* subtle dark with transparency */
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    border-radius: 9999px;
-    padding: 5px;
-    width: 100%;
-    max-width: 420px; /* limits overall width while allowing buttons to grow */
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.25);
-  }
-
-  .toggle-option {
-    flex: 1 1 40%; /* Takes about 40% each */
-    padding: 8px 16px;
-    font-size: 14px;
-    font-weight: 500;
-    color: #ccc;
-    background: transparent;
-    border: none;
-    border-radius: 9999px;
-    cursor: pointer;
-    transition: all 0.25s ease;
-    text-align: center;
-    margin: 0 3px;
-  }
-
-  .toggle-option:hover {
-    color: #fff;
-    background: rgba(255, 255, 255, 0.08);
-  }
-
-  .toggle-option.active {
-    background: #3b82f6;
-    color: white;
-    box-shadow: 0 2px 6px rgba(59, 130, 246, 0.3);
   }
 
   .dropdown-wrapper {
