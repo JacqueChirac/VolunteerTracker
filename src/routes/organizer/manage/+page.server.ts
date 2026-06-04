@@ -237,7 +237,16 @@ export const actions: Actions = {
  		 const messageParams = {
   		  subject: "CPWD: your account has been created",
 		    name: "CPWD security",
-		    message: `Greetings ${lastName}. Your Carlton Place Water Dragons swim team account has been created by the admin. Your account sign in credential is ${email} and your temporaray password is ${password}. Please don't share your account password with anyone and change it to your own password when you have logged`,
+		    message: `Greetings ${lastName},
+			
+			Your Carleton Place Water Dragons swim team account has been created by an administrator.
+
+			You can sign in at https://volunteer-tracker-git-main-jacquechiracs-projects.vercel.app/ using the following credentials:
+
+			Email: ${email}
+			Temporary Password: ${password}
+
+			Please do not share your password with anyone. For security reasons, we strongly recommend changing your password after your first login.`,
 		    time: getTime(),
 		    recipient: email,
 		  };
