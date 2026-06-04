@@ -197,7 +197,7 @@ export const actions: Actions = {
  		 const messageParams = {
   		  subject: "CPWD: your account has been created",
 		    name: "CPWD security",
-		    message: `Greetings ${lastName},
+		    message: `Greetings ${lastName} ${firstName},
 			
 			Your Carleton Place Water Dragons swim team account has been created by an administrator.
 
