@@ -40,6 +40,11 @@ export const actions: Actions = {
     const location = fd.get("location")?.toString().trim() ?? "";
     const description = fd.get("description")?.toString().trim() ?? "";
     const type = fd.get("type")?.toString() ?? "other";
+    const neededRaw = fd.get("volunteersNeeded")?.toString().trim() ?? "";
+    const volunteersNeeded = neededRaw === "" ? null : Number(neededRaw);
+    if (volunteersNeeded !== null && (!Number.isInteger(volunteersNeeded) || volunteersNeeded < 0)) {
+      return fail(400, { error: "People needed must be a non-negative whole number." });
+    }
 
     if (!title || !date || !startTime) {
       return fail(400, { error: "Title, date, and start time are required." });
@@ -63,6 +68,7 @@ export const actions: Actions = {
         location: location || null,
         description: description || null,
         type: type || "other",
+        volunteersNeeded,
       })
       .returning();
 
@@ -82,6 +88,11 @@ export const actions: Actions = {
     const location = fd.get("location")?.toString().trim() ?? "";
     const description = fd.get("description")?.toString().trim() ?? "";
     const type = fd.get("type")?.toString() ?? "other";
+    const neededRaw = fd.get("volunteersNeeded")?.toString().trim() ?? "";
+    const volunteersNeeded = neededRaw === "" ? null : Number(neededRaw);
+    if (volunteersNeeded !== null && (!Number.isInteger(volunteersNeeded) || volunteersNeeded < 0)) {
+      return fail(400, { error: "People needed must be a non-negative whole number." });
+    }
 
     if (!id || !title || !date || !startTime) {
       return fail(400, { error: "Missing required fields." });
@@ -99,6 +110,7 @@ export const actions: Actions = {
       location: location || null,
       description: description || null,
       type: type || "other",
+      volunteersNeeded,
     };
 
     await db
@@ -111,6 +123,7 @@ export const actions: Actions = {
         location: location || null,
         description: description || null,
         type: type || "other",
+        volunteersNeeded,
       })
       .where(eq(events.id, id));
 

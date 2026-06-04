@@ -72,7 +72,7 @@ export const events = pgTable("events", {
   endTime: text("end_time"),
   location: text("location"),
   description: text("description"),
-  // volunteersNeeded: integer('volunteers_needed'), // not needed for now
+  volunteersNeeded: integer("volunteers_needed"),
   type: text("type").default("other"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });

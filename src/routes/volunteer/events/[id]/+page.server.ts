@@ -1,7 +1,7 @@
 // single event detail — shows info, volunteers signed up, signup/cancel actions
 import type { PageServerLoad, Actions } from './$types';
 import { db } from '$lib/server/db';
-import { events, eventSignups, users } from '$lib/server/db/schema';
+import { events, eventSignups, users, contributions } from '$lib/server/db/schema';
 import { eq } from 'drizzle-orm';
 import { error, fail } from '@sveltejs/kit';
 
@@ -11,13 +11,27 @@ export const load: PageServerLoad = async ({ params, locals }) => {
 	if (!event) throw error(404, 'Event not found');
 
 	const signups = await db.select().from(eventSignups).where(eq(eventSignups.eventId, eventId));
+	const eventContribs = await db.select().from(contributions).where(eq(contributions.eventId, eventId));
+	const hoursByUser: Record<number, number> = {};
+	for (const c of eventContribs) {
+		hoursByUser[c.userId] = (hoursByUser[c.userId] || 0) + parseFloat(c.hours ?? '0');
+	}
+
 	const volunteers = [];
 	for (const s of signups) {
 		const [user] = await db.select().from(users).where(eq(users.id, s.userId));
-		if (user) volunteers.push({ id: user.id, firstName: user.firstName, lastName: user.lastName });
+		if (user) volunteers.push({
+			id: user.id,
+			firstName: user.firstName,
+			lastName: user.lastName,
+			hours: hoursByUser[user.id] || 0
+		});
 	}
 
-	return { event, volunteers, isSignedUp: signups.some(s => s.userId === locals.user!.id) };
+	const today = new Date().toISOString().split('T')[0];
+	const isPast = event.date < today;
+
+	return { event, volunteers, isPast, isSignedUp: signups.some(s => s.userId === locals.user!.id) };
 };
 
 export const actions: Actions = {
