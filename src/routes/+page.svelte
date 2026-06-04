@@ -31,10 +31,9 @@
 			<div class="login-options">
 				<a href="/login" class="btn btn-primary login-card">
 					<span class="login-label">{t[$lang].login}</span>
-					<span class="login-label">Hello Zilin</span>
+					<span class="login-label">Not hello world</span>
 
 				</a>
-				<p>THe essence of the page, definitely useful and not garbage</p>
 			</div>
 		{/if}
 	</div>
