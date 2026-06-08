@@ -50,7 +50,10 @@ export const handle: Handle = async ({ event, resolve }) => {
 			if (isApiCall) throw error(401, 'Not authenticated');
 			throw redirect(302, '/login?role=volunteer');
 		}
-		if (event.locals.user.role !== 'volunteer') {
+		// /volunteer/tutorial is the merged display+editor — organizers need access
+		// to use the inline edit mode. Every other /volunteer/* route is volunteer-only.
+		const isTutorial = path === '/volunteer/tutorial' || path.startsWith('/volunteer/tutorial/');
+		if (event.locals.user.role !== 'volunteer' && !isTutorial) {
 			if (isApiCall) throw error(403, 'Forbidden');
 			throw redirect(302, '/login?role=volunteer');
 		}

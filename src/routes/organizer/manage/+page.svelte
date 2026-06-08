@@ -62,7 +62,7 @@
 			<p class="email-banner-desc">{$lang === 'en' ? 'Edit the step-by-step guide shown to volunteers.' : 'Modifier le guide étape par étape affiché aux bénévoles.'}</p>
 		</div>
 	</div>
-	<a href="/organizer/manage/tutorials" class="btn" style="white-space:nowrap;flex-shrink:0;background:rgba(255,255,255,0.2);color:white;border:1px solid rgba(255,255,255,0.5);">{$lang === 'en' ? '→ Edit' : '→ Modifier'}</a>
+	<a href="/volunteer/tutorial?edit=1" class="btn" style="white-space:nowrap;flex-shrink:0;background:rgba(255,255,255,0.2);color:white;border:1px solid rgba(255,255,255,0.5);">{$lang === 'en' ? '→ Edit tutorial' : '→ Modifier le tutoriel'}</a>
 </div>
 
 <!-- announcements -->

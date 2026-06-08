@@ -4,6 +4,7 @@
 	import type { PageData, ActionData } from './$types';
 	import { lang } from '$lib/stores/lang';
 	import { t } from '$lib/i18n';
+	import { formatEventDateTime } from '$lib/formatEventDate';
 
 	let { data, form }: { data: PageData; form: ActionData } = $props();
 
@@ -12,8 +13,8 @@
 <a href="/volunteer/events" style="font-size:0.9rem;">{t[$lang].backToEvents}</a>
 
 <div class="card" style="margin-top:12px;">
-	<h1>{data.event.title}</h1>
-	<p style="color:var(--text-light);margin-top:4px;">{data.event.date} at {data.event.startTime}{data.event.endTime ? ` - ${data.event.endTime}` : ''}</p>
+	<h1>{data.event.title}{#if data.event.datePrecision === 'month'} <span class="tentative-badge">{t[$lang].tentative}</span>{/if}</h1>
+	<p style="color:var(--text-light);margin-top:4px;">{formatEventDateTime(data.event, $lang)}</p>
 	{#if data.event.location}<p style="margin-top:4px;">{t[$lang].locationLabel} <strong>{data.event.location}</strong></p>{/if}
 	{#if data.event.description}<p style="margin-top:12px;">{data.event.description}</p>{/if}
 
@@ -59,3 +60,19 @@
 		{/each}
 	</div>
 {/if}
+
+<style>
+	.tentative-badge {
+		display: inline-block;
+		background: #fff3cd;
+		color: #856404;
+		border: 1px solid #ffeeba;
+		border-radius: 999px;
+		font-size: 0.7rem;
+		font-weight: 600;
+		padding: 1px 8px;
+		margin-left: 6px;
+		vertical-align: middle;
+		letter-spacing: 0.3px;
+	}
+</style>

@@ -4,15 +4,16 @@
 	import type { PageData, ActionData } from './$types';
 	import { lang } from '$lib/stores/lang';
 	import { t } from '$lib/i18n';
+	import { formatEventDateTime, isEventPast } from '$lib/formatEventDate';
 
   let { data, form }: { data: PageData; form: ActionData } = $props();
 
   const today = new Date().toISOString().split("T")[0];
   let upcomingEvents = $derived(
-    data.events.filter((e: (typeof data.events)[0]) => e.date >= today),
+    data.events.filter((e: (typeof data.events)[0]) => !isEventPast(e, today)),
   );
   let pastEvents = $derived(
-    data.events.filter((e: (typeof data.events)[0]) => e.date < today),
+    data.events.filter((e: (typeof data.events)[0]) => isEventPast(e, today)),
   );
 </script>
 
@@ -33,7 +34,7 @@
 				<div style="display:flex;justify-content:space-between;align-items:start;gap:16px;flex-wrap:wrap;">
 					<div style="flex:1;">
 						<h3><a href="/volunteer/events/{event.id}">{event.title}</a></h3>
-						<p style="font-size:0.9rem;color:var(--text-light);">{event.date} at {event.startTime}{event.endTime ? ` - ${event.endTime}` : ''}{#if event.location} &middot; {event.location}{/if}</p>
+						<p style="font-size:0.9rem;color:var(--text-light);">{formatEventDateTime(event, $lang)}{#if event.location} &middot; {event.location}{/if}{#if event.datePrecision === 'month'} <span class="tentative-badge">{t[$lang].tentative}</span>{/if}</p>
 						{#if event.description}<p style="margin-top:8px;">{event.description}</p>{/if}
 						<p style="font-size:0.85rem;color:var(--text-light);margin-top:4px;">{event.volunteersNeeded != null ? t[$lang].volunteersSignedUpOfNeeded(event.signupCount, event.volunteersNeeded) : t[$lang].volunteersSignedUp(event.signupCount)}</p>
 					</div>
@@ -61,7 +62,7 @@
 				<div style="display:flex;justify-content:space-between;align-items:start;gap:16px;flex-wrap:wrap;">
 					<div style="flex:1;">
 						<h3><a href="/volunteer/events/{event.id}">{event.title}</a></h3>
-						<p style="font-size:0.9rem;color:var(--text-light);">{event.date} at {event.startTime}{event.endTime ? ` - ${event.endTime}` : ''}{#if event.location} &middot; {event.location}{/if}</p>
+						<p style="font-size:0.9rem;color:var(--text-light);">{formatEventDateTime(event, $lang)}{#if event.location} &middot; {event.location}{/if}{#if event.datePrecision === 'month'} <span class="tentative-badge">{t[$lang].tentative}</span>{/if}</p>
 						{#if event.description}<p style="margin-top:8px;">{event.description}</p>{/if}
 						<p style="font-size:0.85rem;color:var(--text-light);margin-top:4px;">{event.volunteersNeeded != null ? t[$lang].volunteersSignedUpOfNeeded(event.signupCount, event.volunteersNeeded) : t[$lang].volunteersSignedUp(event.signupCount)}</p>
 						<p style="font-size:0.85rem;margin-top:8px;">
@@ -82,3 +83,19 @@
 		{/each}
 	</div>
 {/if}
+
+<style>
+	.tentative-badge {
+		display: inline-block;
+		background: #fff3cd;
+		color: #856404;
+		border: 1px solid #ffeeba;
+		border-radius: 999px;
+		font-size: 0.7rem;
+		font-weight: 600;
+		padding: 1px 8px;
+		margin-left: 6px;
+		vertical-align: middle;
+		letter-spacing: 0.3px;
+	}
+</style>
