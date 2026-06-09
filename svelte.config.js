@@ -13,6 +13,8 @@ const config = {
 		adapter: adapter(),
 		// CSP — SvelteKit auto-adds hashes/nonces for its own inline scripts.
 		// 'unsafe-inline' on styles stays because the app uses many inline style="" attrs.
+		// connect-src whitelist: api.emailjs.com is required by @emailjs/browser
+		// (the emailing page sends mail directly from the client through EmailJS).
 		csp: {
 			mode: 'auto',
 			directives: {
@@ -21,7 +23,7 @@ const config = {
 				'style-src': ['self', 'unsafe-inline'],
 				'img-src': ['self', 'data:'],
 				'font-src': ['self', 'data:'],
-				'connect-src': ['self'],
+				'connect-src': ['self', 'https://api.emailjs.com'],
 				'frame-ancestors': ['none'],
 				'base-uri': ['self'],
 				'form-action': ['self']
