@@ -48,6 +48,14 @@ export const actions: Actions = {
     const fd = await request.formData();
     const eventId = Number(fd.get("eventId"));
     if (!eventId) return fail(400, { error: "Invalid event." });
+
+    // can't sign up for an event that has already happened
+    const [ev] = await db.select().from(events).where(eq(events.id, eventId));
+    if (!ev) return fail(400, { error: "Event not found." });
+    const today = new Date().toISOString().split("T")[0];
+    if (ev.date < today)
+      return fail(400, { error: "This event has already passed — you can no longer sign up for it." });
+
     const existing = await db
       .select()
       .from(eventSignups)

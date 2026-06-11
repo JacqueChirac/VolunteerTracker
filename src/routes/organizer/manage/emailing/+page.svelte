@@ -40,11 +40,12 @@
   let node = $state(Number(0));
   let messageParams = $state({
     // Parameters defined in the template
-    subject: "CPWD communication",
-    name: "Admin",
-    message: "I send you a message!",
+    subject: data.emailDefaults?.subject || "CPWD communication",
+    name: data.emailDefaults?.signature || "Admin",
+    message: "",
     time: data.time,
-    recipient: "liuzilin375@gmail.com",
+    // pre-filled from the event page's "Email registrants" button, otherwise empty
+    recipient: data.prefillRecipients || "",
   });
 
 
@@ -185,7 +186,7 @@
     if (isCooldown) return;
 
     if(tokens[node] <= 0){
-      showToast("Node messgae limit hit", "error");
+      showToast($lang === 'en' ? 'This node has hit its message limit.' : 'Ce nœud a atteint sa limite de messages.', "error");
       return;
     }
 
@@ -282,9 +283,12 @@
 
 <h1>{$lang === 'en' ? 'Emailing' : 'Courriels'}</h1>
 
-<p style="color:var(--text-light);margin-bottom:24px;">
-  {$lang === 'en' ? 'Select a service node and compose messages to your volunteers.' : 'Sélectionnez un nœud de service et composez des messages pour vos bénévoles.'}
-</p>
+<div style="display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:24px;">
+  <p style="color:var(--text-light);margin:0;">
+    {$lang === 'en' ? 'Select a service node and compose messages to your volunteers.' : 'Sélectionnez un nœud de service et composez des messages pour vos bénévoles.'}
+  </p>
+  <a href="/organizer/manage/email_settings" class="btn btn-outline btn-sm" style="white-space:nowrap;">{$lang === 'en' ? 'Edit defaults & templates →' : 'Modifier les valeurs et modèles →'}</a>
+</div>
 
 <section class="nodes-grid">
   {#each services as s, i}
@@ -350,6 +354,17 @@
       />
     </div>
   </div>
+
+  {#if data.emailDefaults?.templates?.length}
+    <div class="form-group">
+      <p class="section-label">{$lang === 'en' ? 'Insert a template' : 'Insérer un modèle'}</p>
+      <div style="display:flex;flex-wrap:wrap;gap:8px;">
+        {#each data.emailDefaults.templates as tpl (tpl.name)}
+          <button type="button" class="btn btn-outline btn-sm" onclick={() => (messageParams.message = tpl.body)}>{tpl.name}</button>
+        {/each}
+      </div>
+    </div>
+  {/if}
 
   <div class="form-group">
     <label for="message-body">{$lang === 'en' ? 'Message' : 'Message'}</label>

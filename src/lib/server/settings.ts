@@ -30,6 +30,10 @@ export async function getSetting(key: string): Promise<string> {
   return DEFAULTS[key]?.value ?? "";
 }
 
+// these key prefixes hold text/JSON settings (tutorial copy, season dates,
+// email defaults) and must NOT leak into the numeric "Settings" grid on /manage
+const NON_NUMERIC_PREFIXES = ["tut_", "season_", "email_"];
+
 // get all settings, merged with defaults
 export async function getAllSettings() {
   const rows = await db.select().from(siteSettings);
@@ -40,8 +44,9 @@ export async function getAllSettings() {
     result[key] = { ...def };
   }
 
-  // override with whatever is in the db
+  // override with whatever is in the db (skipping non-numeric settings)
   for (const row of rows) {
+    if (NON_NUMERIC_PREFIXES.some((p) => row.key.startsWith(p))) continue;
     if (result[row.key]) {
       result[row.key].value = row.value;
     } else {
@@ -146,6 +151,47 @@ export async function updateTutorialSetting(key: string, value: string) {
 	} else {
 		await db.insert(siteSettings).values({ key, value, label });
 	}
+}
+
+// -- Email composer defaults + reusable templates --
+// stored in site_settings under the "email_" prefix (kept out of the numeric grid)
+
+export type EmailTemplate = { name: string; body: string };
+export type EmailSettings = { subject: string; signature: string; templates: EmailTemplate[] };
+
+const EMAIL_DEFAULTS = {
+	subject: 'CPWD communication',
+	signature: 'CPWD'
+};
+
+export async function getEmailSettings(): Promise<EmailSettings> {
+	const subject = (await getSetting('email_default_subject')) || EMAIL_DEFAULTS.subject;
+	const signature = (await getSetting('email_default_signature')) || EMAIL_DEFAULTS.signature;
+	const templatesRaw = await getSetting('email_templates');
+
+	let templates: EmailTemplate[] = [];
+	if (templatesRaw) {
+		try {
+			const parsed = JSON.parse(templatesRaw);
+			if (Array.isArray(parsed)) {
+				templates = parsed
+					.filter((tpl) => tpl && typeof tpl.name === 'string' && typeof tpl.body === 'string')
+					.map((tpl) => ({ name: tpl.name, body: tpl.body }));
+			}
+		} catch {
+			templates = [];
+		}
+	}
+	return { subject, signature, templates };
+}
+
+export async function saveEmailDefaults(subject: string, signature: string) {
+	await updateSetting('email_default_subject', subject);
+	await updateSetting('email_default_signature', signature);
+}
+
+export async function saveEmailTemplates(templates: EmailTemplate[]) {
+	await updateSetting('email_templates', JSON.stringify(templates));
 }
 
 // get swim levels from DB, seeding from hardcoded list if empty

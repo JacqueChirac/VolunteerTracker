@@ -149,15 +149,35 @@
 
 <!-- contribution history -->
 <h2 style="margin-bottom:12px;">{t[$lang].contributionHistory}</h2>
+{#if form?.deleteContribSuccess}
+	<div style="background:#d4edda;padding:8px 12px;border-radius:8px;margin-bottom:12px;"><p style="color:#155724;font-size:0.9rem;">{$lang === 'en' ? 'Entry deleted.' : 'Entrée supprimée.'}</p></div>
+{/if}
+{#if form?.contribError}<p class="error" style="margin-bottom:8px;">{form.contribError}</p>{/if}
 {#if data.contributions.length === 0}
 	<div class="card"><p style="color:var(--text-light);">{t[$lang].noContributionsYet}</p></div>
 {:else}
 	<div class="table-wrap">
 		<table>
-			<thead><tr><th>{t[$lang].dateCol}</th><th>{t[$lang].hoursCol}</th><th>{t[$lang].notesCol}</th></tr></thead>
+			<thead><tr><th>{t[$lang].dateCol}</th><th>{t[$lang].hoursCol}</th><th>{t[$lang].notesCol}</th><th></th></tr></thead>
 			<tbody>
 				{#each data.contributions as c (c.id)}
-					<tr><td>{c.date}</td><td>{c.hours}h</td><td style="max-width:200px;overflow:hidden;text-overflow:ellipsis;">{c.notes ?? '-'}</td></tr>
+					<tr>
+						<td>{c.date}</td>
+						<td>{c.hours}h</td>
+						<td style="max-width:200px;overflow:hidden;text-overflow:ellipsis;">{c.notes ?? '-'}</td>
+						<td style="text-align:right;">
+							<form method="POST" action="?/deleteContribution" use:enhance>
+								<input type="hidden" name="contributionId" value={c.id} />
+								<button
+									type="submit"
+									class="btn btn-danger"
+									style="padding:2px 8px;font-size:0.75rem;"
+									aria-label={$lang === 'en' ? `Delete entry from ${c.date}` : `Supprimer l'entrée du ${c.date}`}
+									onclick={(e) => { if (!confirm($lang === 'en' ? `Delete this ${c.hours}h entry from ${c.date}? This can be undone with the undo button.` : `Supprimer cette entrée de ${c.hours}h du ${c.date}? Annulable avec le bouton d'annulation.`)) e.preventDefault(); }}
+								>{t[$lang].delete}</button>
+							</form>
+						</td>
+					</tr>
 				{/each}
 			</tbody>
 		</table>

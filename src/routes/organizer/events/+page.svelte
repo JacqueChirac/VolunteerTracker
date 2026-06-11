@@ -60,7 +60,7 @@
 				<!-- DISPLAY MODE -->
 				<div style="display:flex;justify-content:space-between;align-items:start;gap:16px;flex-wrap:wrap;">
 					<div style="flex:1;">
-						<h3>{event.title}</h3>
+						<h3><a href="/organizer/events/{event.id}">{event.title}</a></h3>
 						<p style="font-size:0.9rem;color:var(--text-light);">{event.date} at {event.startTime}{event.endTime ? ` - ${event.endTime}` : ''}{#if event.location} &middot; {event.location}{/if}</p>
 						{#if event.description}<p style="margin-top:4px;font-size:0.9rem;">{event.description}</p>{/if}
 						<p style="font-size:0.85rem;color:var(--text-light);margin-top:4px;">{event.volunteersNeeded != null ? t[$lang].volunteersSignedUpOfNeeded(event.signupCount, event.volunteersNeeded) : t[$lang].volunteersCount(event.signupCount)}</p>
@@ -114,7 +114,7 @@
 		<div class="card" style="margin-bottom:12px;opacity:0.75;">
 			<div style="display:flex;justify-content:space-between;align-items:start;gap:16px;flex-wrap:wrap;">
 				<div style="flex:1;">
-					<h3>{event.title}</h3>
+					<h3><a href="/organizer/events/{event.id}">{event.title}</a></h3>
 					<p style="font-size:0.9rem;color:var(--text-light);">{event.date} at {event.startTime}{event.endTime ? ` - ${event.endTime}` : ''}{#if event.location} &middot; {event.location}{/if}</p>
 					{#if event.description}<p style="margin-top:4px;font-size:0.9rem;">{event.description}</p>{/if}
 					<p style="font-size:0.85rem;color:var(--text-light);margin-top:4px;">{event.volunteersNeeded != null ? t[$lang].volunteersSignedUpOfNeeded(event.signupCount, event.volunteersNeeded) : t[$lang].volunteersCount(event.signupCount)}</p>

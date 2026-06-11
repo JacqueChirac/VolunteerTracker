@@ -126,6 +126,21 @@ export const actions: Actions = {
 		redirect(302, '/organizer/volunteers');
 	},
 
+	deleteContribution: async ({ request, params, locals }) => {
+		const fd = await request.formData();
+		const contributionId = Number(fd.get('contributionId'));
+		if (!contributionId) return fail(400, { contribError: 'Invalid entry.' });
+
+		const [before] = await db.select().from(contributions).where(eq(contributions.id, contributionId));
+		if (!before) return fail(400, { contribError: 'Entry not found.' });
+		// guard: only allow deleting an entry that belongs to the volunteer on this page
+		if (before.userId !== Number(params.id)) return fail(400, { contribError: 'That entry does not belong to this volunteer.' });
+
+		await db.delete(contributions).where(eq(contributions.id, contributionId));
+		await recordAction(String(locals.user!.id), 'Delete contribution', [chDelete('contributions', before)]);
+		return { deleteContribSuccess: true, success: true, undoable: true, message: 'Deleted entry.' };
+	},
+
 };
 
 

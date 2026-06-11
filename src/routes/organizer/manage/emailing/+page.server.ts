@@ -6,6 +6,7 @@ import { fail } from "@sveltejs/kit";
 import { sendEmailUniversal } from "$lib/emailLogic.js";
 import { dateCheck } from "$lib/emailLogic.js";
 import {getTime} from "$lib/emailLogic.js"
+import { getEmailSettings } from "$lib/server/settings";
 
 const sql = neon(DATABASE_URL);
 
@@ -13,7 +14,7 @@ const sql = neon(DATABASE_URL);
 dateCheck();
 
 
-export async function load() {
+export async function load({ url }) {
   try {
     const newDate = await dateCheck();
     const children = await sql`SELECT * FROM child_volunteer_links`;
@@ -23,6 +24,9 @@ export async function load() {
     const time = await getTime();
     let nodes = await sql`SELECT id, service_id, token FROM nodes`;
     nodes = nodes.sort((a, b) => a.id - b.id);
+    // optional recipient list passed in from the event page ("Email registrants")
+    const prefillRecipients = url.searchParams.get("recipients") ?? "";
+    const emailDefaults = await getEmailSettings();
     return {
       nodes,
       allNames,
@@ -31,6 +35,8 @@ export async function load() {
       volunteers: await getVolunteers(), // Moved to function
       newDate,
       time,
+      prefillRecipients,
+      emailDefaults,
     };
   } catch (error) {
     console.error("Error in load:", error);

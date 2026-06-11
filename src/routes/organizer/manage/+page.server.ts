@@ -1,7 +1,7 @@
 // manage page server — settings, activity types, announcements, manual entries, archives
 import type { PageServerLoad, Actions } from './$types';
 import { db } from '$lib/server/db';
-import { announcements, users, contributions, children, childVolunteerLinks, seasonArchives, swimLevelSettings } from '$lib/server/db/schema';
+import { announcements, users, contributions, children, childVolunteerLinks, seasonArchives, swimLevelSettings, events } from '$lib/server/db/schema';
 import { eq, desc, asc } from 'drizzle-orm';
 import { fail } from '@sveltejs/kit';
 import { getAllSettings, updateSetting, getSetting, getDonationRate, getHoursRequired, getSwimLevels } from '$lib/server/settings';
@@ -194,11 +194,18 @@ export const actions: Actions = {
 		const user = await createUser(password, firstName, lastName, email, 'volunteer');
 		await recordAction(String(locals.user!.id), `Add volunteer ${firstName} ${lastName}`, [chInsert('users', user)]);
 		const node = await init();
- 		 const messageParams = {
-  		  subject: "CPWD: your account has been created",
-		    name: "CPWD security",
-		    message: `Greetings ${lastName} ${firstName},
-			
+		// fetch the timestamp safely — a failed time API must not block account creation
+		let emailTime: unknown;
+		try {
+			emailTime = await getTime();
+		} catch {
+			emailTime = new Date().toISOString();
+		}
+		const messageParams = {
+			subject: "CPWD: your account has been created",
+			name: "CPWD security",
+			message: `Greetings ${firstName} ${lastName},
+
 			Your Carleton Place Water Dragons swim team account has been created by an administrator.
 
 			You can sign in at https://volunteer-tracker-git-main-jacquechiracs-projects.vercel.app/ using the following credentials:
@@ -207,10 +214,13 @@ export const actions: Actions = {
 			Temporary Password: ${password}
 
 			Please do not share your password with anyone. For security reasons, we strongly recommend changing your password after your first login.`,
-		    time: getTime(),
-		    recipient: email,
-		  };
-		  sendEmailUniversal(node,"message", messageParams);
+			time: emailTime,
+			recipient: email,
+		};
+		// fire-and-forget: a failed welcome email shouldn't fail the whole action
+		sendEmailUniversal(node, "message", messageParams).catch((err) =>
+			console.error("Welcome email failed to send:", err),
+		);
 		
 		return { volunteerSuccess: `Created volunteer ${firstName} ${lastName}.`, success: true, undoable: true, message: `Created volunteer ${firstName} ${lastName}.` };
 	},
@@ -375,5 +385,64 @@ export const actions: Actions = {
 		await db.delete(contributions);
 
 		return { archiveSuccess: true };
+	},
+
+	// bring back the contributions saved in a past archive (re-adds them on top of current data)
+	restoreSeason: async ({ request, locals }) => {
+		const fd = await request.formData();
+		const id = Number(fd.get('archiveId'));
+		if (!id) return fail(400, { archiveError: 'Invalid archive.' });
+
+		const [archive] = await db.select().from(seasonArchives).where(eq(seasonArchives.id, id));
+		if (!archive) return fail(400, { archiveError: 'Archive not found.' });
+
+		let parsed: { contributions?: any[] };
+		try {
+			parsed = JSON.parse(archive.data);
+		} catch {
+			return fail(400, { archiveError: 'This archive is corrupted and cannot be restored.' });
+		}
+		const archivedContribs = parsed.contributions ?? [];
+		if (archivedContribs.length === 0) {
+			return fail(400, { archiveError: 'This archive has no contributions to restore.' });
+		}
+
+		// only restore entries whose volunteer still exists; drop links to events that are gone
+		const existingUsers = new Set((await db.select({ id: users.id }).from(users)).map((u) => u.id));
+		const existingEvents = new Set((await db.select({ id: events.id }).from(events)).map((e) => e.id));
+
+		// insert with fresh ids (omit the archived id) to avoid clashing with current rows
+		const toInsert = archivedContribs
+			.filter((c) => existingUsers.has(c.userId))
+			.map((c) => ({
+				userId: c.userId,
+				eventId: c.eventId && existingEvents.has(c.eventId) ? c.eventId : null,
+				type: c.type,
+				date: c.date,
+				hours: c.hours ?? null,
+				amount: c.amount ?? null,
+				notes: c.notes ?? null,
+				pendingUntil: null
+			}));
+
+		if (toInsert.length === 0) {
+			return fail(400, { archiveError: 'None of the volunteers in this archive still exist, so nothing could be restored.' });
+		}
+
+		const inserted = await db.insert(contributions).values(toInsert).returning();
+		await recordAction(
+			String(locals.user!.id),
+			`Restore archive "${archive.label}"`,
+			inserted.map((r) => chInsert('contributions', r))
+		);
+		const skipped = archivedContribs.length - inserted.length;
+		return {
+			restoreSuccess: true,
+			success: true,
+			undoable: true,
+			message: skipped > 0
+				? `Restored ${inserted.length} entries from "${archive.label}" (${skipped} skipped — volunteer no longer exists).`
+				: `Restored ${inserted.length} entries from "${archive.label}".`
+		};
 	}
 };

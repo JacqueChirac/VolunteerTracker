@@ -22,6 +22,10 @@
 	let openEntry = $state(true);
 	let openExport = $state(false);
 
+	// typed confirmation for the destructive "archive & reset everything" action
+	let archiveConfirmText = $state('');
+	const ARCHIVE_KEYWORD = 'ARCHIVE';
+
   let filteredChildren = $derived.by(() => {
     const q = childSearch.trim().toLowerCase();
     if (!q) return data.children;
@@ -257,15 +261,8 @@
       {#if form?.volunteerError}<p class="error" role="alert">
           {form.volunteerError}
         </p>{/if}
-      <form method="POST" action="?/addVolunteer" use:enhance={({ formData }) => {
-          const firstName = formData.get('firstName')?.toString() ?? '';
-          const email     = formData.get('email')?.toString() ?? '';
-          const password  = formData.get('password')?.toString() ?? '';
-          return async ({ result, update }) => {
-            await update();
-            if (result.type === 'success') sendWelcomeEmail(firstName, email, password);
-          };
-        }}>
+      <!-- welcome email is sent server-side in the addVolunteer action -->
+      <form method="POST" action="?/addVolunteer" use:enhance>
         <div class="grid-2">
           <div class="form-group">
             <label for="v_first">{t[$lang].firstNameLabel}</label><input
@@ -592,17 +589,32 @@
 		{#if form?.archiveSuccess}
 			<div style="background:#d4edda;padding:8px 12px;border-radius:6px;margin-bottom:12px;"><p style="color:#155724;font-size:0.9rem;">{t[$lang].seasonArchivedSuccess}</p></div>
 		{/if}
+		{#if form?.restoreSuccess}
+			<div style="background:#d4edda;padding:8px 12px;border-radius:6px;margin-bottom:12px;"><p style="color:#155724;font-size:0.9rem;">{form.message ?? ($lang === 'en' ? 'Archive restored.' : 'Archive restaurée.')}</p></div>
+		{/if}
 		{#if form?.archiveError}<p class="error" style="margin-bottom:8px;">{form.archiveError}</p>{/if}
-		<form method="POST" action="?/archiveSeason" use:enhance onsubmit={(e) => { if (!confirm(t[$lang].archiveConfirm)) e.preventDefault(); }}>
+		<form method="POST" action="?/archiveSeason" use:enhance={() => async ({ update }) => { await update(); archiveConfirmText = ''; }} onsubmit={(e) => { if (!confirm(t[$lang].archiveConfirm)) e.preventDefault(); }}>
 			<div class="form-group"><label for="archiveLabel">{t[$lang].seasonLabel}</label><input id="archiveLabel" name="label" type="text" placeholder={t[$lang].seasonLabelPlaceholder} required /></div>
-			<button type="submit" class="btn btn-danger" style="width:100%;">{t[$lang].archiveReset}</button>
+			<div class="form-group">
+				<label for="archiveConfirm" style="color:var(--danger,#b91c1c);font-weight:600;">
+					{$lang === 'en' ? `This wipes ALL hours. Type ${ARCHIVE_KEYWORD} to confirm.` : `Cela efface TOUTES les heures. Tapez ${ARCHIVE_KEYWORD} pour confirmer.`}
+				</label>
+				<input id="archiveConfirm" type="text" autocomplete="off" bind:value={archiveConfirmText} placeholder={ARCHIVE_KEYWORD} />
+			</div>
+			<button type="submit" class="btn btn-danger" style="width:100%;" disabled={archiveConfirmText.trim().toUpperCase() !== ARCHIVE_KEYWORD}>{t[$lang].archiveReset}</button>
 		</form>
 		{#if data.archives.length > 0}
 			<h4 style="margin-top:16px;">{t[$lang].pastArchives}</h4>
 			{#each data.archives as archive}
-				<div style="padding:8px 0;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;">
-					<span>{archive.label}</span>
-					<span style="font-size:0.85rem;color:var(--text-light);">{new Date(archive.archivedAt).toLocaleDateString()}</span>
+				<div style="padding:8px 0;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;">
+					<div style="display:flex;flex-direction:column;">
+						<span>{archive.label}</span>
+						<span style="font-size:0.85rem;color:var(--text-light);">{new Date(archive.archivedAt).toLocaleDateString()}</span>
+					</div>
+					<form method="POST" action="?/restoreSeason" use:enhance onsubmit={(e) => { if (!confirm($lang === 'en' ? `Restore "${archive.label}"? This re-adds that season's hours on top of the current data.` : `Restaurer « ${archive.label} »? Cela rajoute les heures de cette saison aux données actuelles.`)) e.preventDefault(); }}>
+						<input type="hidden" name="archiveId" value={archive.id} />
+						<button type="submit" class="btn btn-outline" style="padding:4px 12px;font-size:0.8rem;">{$lang === 'en' ? 'Restore' : 'Restaurer'}</button>
+					</form>
 				</div>
 			{/each}
 		{/if}

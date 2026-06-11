@@ -35,7 +35,7 @@
 		<form method="POST" action="?/reset" use:enhance={() => {
 			return async ({ result }) => {
 				if (result.type === 'failure') {
-					showToast(result.data?.error || 'Error', 'error');
+					showToast(String(result.data?.error || 'Error'), 'error');
 				}
 				await applyAction(result);
 			};

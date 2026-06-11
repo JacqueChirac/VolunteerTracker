@@ -70,13 +70,6 @@
 								&middot; <strong>{event.myHours}h</strong> logged{/if}
 						</p>
 					</div>
-					<div>
-						{#if event.signedUp}
-							<form method="POST" action="?/cancel" use:enhance><input type="hidden" name="eventId" value={event.id} /><button type="submit" class="btn btn-danger">{t[$lang].cancelSignUp}</button></form>
-						{:else}
-							<form method="POST" action="?/signup" use:enhance><input type="hidden" name="eventId" value={event.id} /><button type="submit" class="btn btn-accent">{t[$lang].signUp}</button></form>
-						{/if}
-					</div>
 				</div>
 			</div>
 		{/each}
