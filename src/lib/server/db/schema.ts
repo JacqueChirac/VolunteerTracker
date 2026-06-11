@@ -67,8 +67,10 @@ export const childVolunteerLinks = pgTable("child_volunteer_links", {
 export const events = pgTable("events", {
   id: serial("id").primaryKey(),
   title: text("title").notNull(),
-  date: date("date").notNull(),
-  startTime: text("start_time").notNull(),
+  date: date("date").notNull(), // for precision='month', stored as YYYY-MM-01
+  // 'day' = specific date with required time; 'month' = month-only, time is optional
+  datePrecision: text("date_precision").notNull().default("day"),
+  startTime: text("start_time"), // optional for month-only events
   endTime: text("end_time"),
   location: text("location"),
   description: text("description"),

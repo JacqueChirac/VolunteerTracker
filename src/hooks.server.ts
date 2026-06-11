@@ -50,7 +50,10 @@ export const handle: Handle = async ({ event, resolve }) => {
 			if (isApiCall) throw error(401, 'Not authenticated');
 			throw redirect(302, '/login?role=volunteer');
 		}
-		if (event.locals.user.role !== 'volunteer') {
+		// /volunteer/tutorial is the merged display+editor — organizers need access
+		// to use the inline edit mode. Every other /volunteer/* route is volunteer-only.
+		const isTutorial = path === '/volunteer/tutorial' || path.startsWith('/volunteer/tutorial/');
+		if (event.locals.user.role !== 'volunteer' && !isTutorial) {
 			if (isApiCall) throw error(403, 'Forbidden');
 			throw redirect(302, '/login?role=volunteer');
 		}
@@ -60,6 +63,8 @@ export const handle: Handle = async ({ event, resolve }) => {
 	}
 
 	// ── 3. resolve + security headers ────────────────────────────────────
+	// CSP itself is configured in svelte.config.js → kit.csp so SvelteKit can
+	// auto-hash/nonce its own inline hydration scripts.
 	const response = await resolve(event);
 
 	// HSTS only over HTTPS in prod (browsers ignore it on http://localhost anyway)
@@ -70,12 +75,6 @@ export const handle: Handle = async ({ event, resolve }) => {
 	response.headers.set('X-Frame-Options', 'DENY');
 	response.headers.set('Referrer-Policy', 'strict-origin-when-cross-origin');
 	response.headers.set('Permissions-Policy', 'camera=(), microphone=(), geolocation=()');
-	// CSP — Vite needs 'unsafe-inline' for HMR styles in dev; tightened in prod.
-	// 'unsafe-inline' on styles stays because the app uses many inline style="" attrs.
-	const csp = dev
-		? "default-src 'self'; img-src 'self' data:; style-src 'self' 'unsafe-inline'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; connect-src 'self' ws: wss:; font-src 'self' data:; frame-ancestors 'none'; base-uri 'self'; form-action 'self'"
-		: "default-src 'self'; img-src 'self' data:; style-src 'self' 'unsafe-inline'; script-src 'self'; connect-src 'self'; font-src 'self' data:; frame-ancestors 'none'; base-uri 'self'; form-action 'self'";
-	response.headers.set('Content-Security-Policy', csp);
 
 	return response;
 };
