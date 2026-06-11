@@ -603,8 +603,14 @@
 			</div>
 			<button type="submit" class="btn btn-danger" style="width:100%;" disabled={archiveConfirmText.trim().toUpperCase() !== ARCHIVE_KEYWORD}>{t[$lang].archiveReset}</button>
 		</form>
-		{#if data.archives.length > 0}
 			<h4 style="margin-top:16px;">{t[$lang].pastArchives}</h4>
+		{#if data.archives.length === 0}
+			<p style="color:var(--text-light);font-size:0.85rem;">
+				{$lang === 'en'
+					? 'No archived seasons yet. After you archive a season above, it will appear here with a Restore button.'
+					: 'Aucune saison archivée pour l\'instant. Après avoir archivé une saison ci-dessus, elle apparaîtra ici avec un bouton Restaurer.'}
+			</p>
+		{:else}
 			{#each data.archives as archive}
 				<div style="padding:8px 0;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;">
 					<div style="display:flex;flex-direction:column;">
