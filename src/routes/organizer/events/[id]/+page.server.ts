@@ -5,6 +5,7 @@ import { db } from '$lib/server/db';
 import { events, eventSignups, users, contributions } from '$lib/server/db/schema';
 import { eq, asc } from 'drizzle-orm';
 import { error } from '@sveltejs/kit';
+import { isEventPast } from '$lib/formatEventDate';
 
 export const load: PageServerLoad = async ({ params }) => {
 	const eventId = Number(params.id);
@@ -46,7 +47,5 @@ export const load: PageServerLoad = async ({ params }) => {
 		})
 		.filter((r): r is NonNullable<typeof r> => r !== null);
 
-	const todayStr = new Date().toISOString().split('T')[0];
-
-	return { event, registrants, isPast: event.date < todayStr };
+	return { event, registrants, isPast: isEventPast(event) };
 };

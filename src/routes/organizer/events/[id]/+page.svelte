@@ -3,6 +3,7 @@
 	import type { PageData } from './$types';
 	import { lang } from '$lib/stores/lang';
 	import { t } from '$lib/i18n';
+	import { formatEventDateTime } from '$lib/formatEventDate';
 
 	let { data }: { data: PageData } = $props();
 
@@ -19,7 +20,7 @@
 <div class="card" style="margin-top:12px;">
 	<h1>{data.event.title}</h1>
 	<p style="color:var(--text-light);margin-top:4px;">
-		{data.event.date} at {data.event.startTime}{data.event.endTime ? ` - ${data.event.endTime}` : ''}
+		{formatEventDateTime(data.event, $lang)}
 	</p>
 	{#if data.event.location}<p style="margin-top:4px;">{$lang === 'en' ? 'Location:' : 'Lieu :'} <strong>{data.event.location}</strong></p>{/if}
 	{#if data.event.description}<p style="margin-top:12px;">{data.event.description}</p>{/if}
