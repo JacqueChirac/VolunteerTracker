@@ -331,7 +331,6 @@
     <div class="group-buttons">
       <button class="btn btn-outline btn-sm" onclick={() => selectGroup(1)}>{t[$lang].allVolunteers}</button>
       <button class="btn btn-outline btn-sm" onclick={() => selectGroup(2)}>{t[$lang].underCriteria}</button>
-      <button class="btn btn-outline btn-sm" onclick={() => selectGroup(3)}>{t[$lang].customGroup}</button>
       <button class="btn btn-danger btn-sm" onclick={() => selectGroup(0)}>{t[$lang].clearAll}</button>
     </div>
   </div>
