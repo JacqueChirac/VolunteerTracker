@@ -1,4 +1,4 @@
-<!-- volunteer layout — blue nav bar -->
+<!-- volunteer layout - blue nav bar -->
 <script lang="ts">
 	import { page } from '$app/state';
 	import { enhance } from '$app/forms';

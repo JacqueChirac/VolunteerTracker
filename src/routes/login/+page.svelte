@@ -1,4 +1,4 @@
-<!-- login page — uses SvelteKit form actions (server-side) -->
+<!-- login page - uses SvelteKit form actions (server-side) -->
 <script lang="ts">
 	import { enhance } from '$app/forms';
 	import type { ActionData } from './$types';

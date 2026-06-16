@@ -1,4 +1,4 @@
-<!-- manage page — settings, activities, announcements, manual entry, export, archive -->
+<!-- manage page - settings, activities, announcements, manual entry, export, archive -->
 <script lang="ts">
 	import { enhance } from '$app/forms';
 	import type { PageData, ActionData } from './$types';
@@ -90,6 +90,7 @@
 			{#each data.announcements as a (a.id)}
 				<div style="padding:10px 0;border-bottom:1px solid var(--border);">
 					{#if editingAnnouncementId === a.id}
+						<!-- enhance callback runs after submit, drops us out of edit mode -->
 						<form method="POST" action="?/editAnnouncement" use:enhance={() => () => { editingAnnouncementId = null; }}>
 							<input type="hidden" name="id" value={a.id} />
 							<div class="form-group" style="margin-bottom:8px;">
@@ -476,6 +477,7 @@
                   aria-label={t[$lang].selectVolunteerToLink}
                 >
                   <option value="">{t[$lang].addLinkVolunteer}</option>
+                  <!-- only offer volunteers not already linked to this child -->
                   {#each data.volunteers.filter((v) => !child.volunteerIds.includes(v.id)) as v}
                     <option value={v.id}>{v.firstName} {v.lastName}</option>
                   {/each}
@@ -601,6 +603,7 @@
 				</label>
 				<input id="archiveConfirm" type="text" autocomplete="off" bind:value={archiveConfirmText} placeholder={ARCHIVE_KEYWORD} />
 			</div>
+			<!-- stays disabled until the keyword is typed exactly -->
 			<button type="submit" class="btn btn-danger" style="width:100%;" disabled={archiveConfirmText.trim().toUpperCase() !== ARCHIVE_KEYWORD}>{t[$lang].archiveReset}</button>
 		</form>
 			<h4 style="margin-top:16px;">{t[$lang].pastArchives}</h4>

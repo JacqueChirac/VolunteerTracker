@@ -24,6 +24,7 @@ export const actions: Actions = {
 		if (!name || !body.trim()) {
 			return fail(400, { templateError: 'A template needs both a name and a body.' });
 		}
+		// names are the key used to pick a template later, so block duplicates (case-insensitive)
 		const { templates } = await getEmailSettings();
 		if (templates.some((tpl) => tpl.name.toLowerCase() === name.toLowerCase())) {
 			return fail(400, { templateError: 'A template with that name already exists.' });

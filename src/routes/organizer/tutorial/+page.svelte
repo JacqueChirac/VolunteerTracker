@@ -1,4 +1,4 @@
-<!-- organizer tutorial — static guide for admins/organizers -->
+<!-- organizer tutorial - static guide for admins/organizers -->
 <script lang="ts">
 	import { lang } from '$lib/stores/lang';
 	import { Calendar, Users, Settings, Mail, BookOpen, Archive, Download } from 'lucide-svelte';

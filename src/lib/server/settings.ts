@@ -169,6 +169,8 @@ export async function getEmailSettings(): Promise<EmailSettings> {
 	const signature = (await getSetting('email_default_signature')) || EMAIL_DEFAULTS.signature;
 	const templatesRaw = await getSetting('email_templates');
 
+	// templates are stored as a JSON blob; tolerate garbage/old shapes by
+	// dropping anything that isn't a {name, body} pair rather than throwing
 	let templates: EmailTemplate[] = [];
 	if (templatesRaw) {
 		try {
@@ -198,7 +200,8 @@ export async function saveEmailTemplates(templates: EmailTemplate[]) {
 export async function getSwimLevels() {
 	const rows = await db.select().from(swimLevelSettings).orderBy(swimLevelSettings.displayOrder);
 	if (rows.length > 0) return rows;
-	// seed from hardcoded list on first use
+	// empty table means a fresh install, so backfill from the static list. keeps
+	// the dropdowns from being blank before an organizer has touched anything
 	for (let i = 0; i < hardcodedLevels.length; i++) {
 		const lvl = hardcodedLevels[i];
 		await db.insert(swimLevelSettings).values({ value: lvl.value, name: lvl.name, description: lvl.description, displayOrder: i }).onConflictDoNothing();

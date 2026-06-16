@@ -1,4 +1,4 @@
-// login server logic — verifies credentials and sets a signed session cookie
+// login server logic - verifies credentials and sets a signed session cookie
 import type { Actions, PageServerLoad } from "./$types";
 import { fail, redirect, error } from "@sveltejs/kit";
 import {

@@ -10,6 +10,7 @@
   let { data } = $props(); //Imported data from server.ts
 
   //Variables Declare
+  // the five EmailJS accounts we rotate between, each with its own send quota
  const services = [
   {
     serviceID: "service_cpwd0",
@@ -37,6 +38,7 @@
   const allMails = $derived(data.allMails); //All emails as [] strings
   const allNames = $derived(data.allNames); //All names as [] strings
   const volunteers = $derived(data.volunteers);
+  // which service account is currently picked
   let node = $state(Number(0));
   let messageParams = $state({
     // Parameters defined in the template
@@ -50,11 +52,14 @@
 
 
   let inputElement: HTMLInputElement;
+  // where the cursor sits in the recipient box, used to figure out which email is being typed
   let focus = $state(0);
+  // remaining send quota per node, in the same order as `services`
   let tokens = $derived(
   data.nodes?.map(n => n.token) ?? []
 );
 
+  // grab the comma-delimited chunk the cursor sits in
   let wordSelected = $derived.by(() => {
     const text = messageParams.recipient;
     const cursor = focus;
@@ -64,6 +69,7 @@
     return text.slice(start, end).trim();
   });
 
+  // volunteer indices matching the current word, by name or email
   let recipientPrompted = $derived.by(() => {
     const keyword = (wordSelected ?? "").toLowerCase().trim();
     if (!keyword) return [];
@@ -96,6 +102,7 @@
   });
 
   //Service provider functions.
+  // run once on load so EmailJS is ready with the first node's public key
   (function () {
     emailjs.init({
       publicKey: services[node].publicKey,
@@ -103,6 +110,7 @@
     });
   })();
 
+  // re-point EmailJS at the currently selected node's account
   function init() {
     emailjs.init({
       publicKey: services[node].publicKey,
@@ -139,6 +147,7 @@
     toastTimer = setTimeout(() => { toastMsg = ''; }, 4000);
   }
 
+  // keep the dropdown shut for a bit after an explicit close so it doesn't pop back on input
   function closeDropdown() {
     showDropdown = false;
     recentlyClosed = true;
@@ -167,6 +176,7 @@
     openDropdown();
   }
 
+  // swap the word under the cursor for the picked email, keeping the rest of the list intact
   function selectRecipient(list: number[], index: number) {
     const text = messageParams.recipient;
     const cursor = focus;
@@ -185,11 +195,13 @@
   function SendEmail(params: any) {
     if (isCooldown) return;
 
+    // each node has its own send quota; bail if this one's spent
     if(tokens[node] <= 0){
       showToast($lang === 'en' ? 'This node has hit its message limit.' : 'Ce nœud a atteint sa limite de messages.', "error");
       return;
     }
 
+    // 3s cooldown to throttle rapid sends
     isCooldown = true;
     cooldown = 3;
     const interval = setInterval(() => {
@@ -203,6 +215,7 @@
     emailjs.send(services[node].serviceID, templates[0], params).then(
       (response) => {
         console.log("SUCCESS!", response.status, response.text);
+        // one token per recipient
         let cost = messageParams.recipient
           .split(",")
           .map((s) => s.trim())
@@ -220,6 +233,7 @@
     );
   }
 
+  // report sent count back to the server so it can decrement the node's token balance
   const sendCost = async (service: string, cost: number) => {
     const res = await fetch("?/callCost", {
       method: "POST",
@@ -238,6 +252,7 @@
     }
   };
 
+  // quick-fill buttons: 0 clears the box, 1 adds everyone, 2 adds only the flagged (bad) emails
   function selectGroup(group: number) {
     switch (group) {
       case 0:
@@ -266,12 +281,14 @@
     messageParams.recipient = combined.join(", ");
   }
 
+  // switching node re-inits emailjs with that service's key
   async function selectNode(choice: number) {
     node = choice;
     await invalidateAll();
     init();
   }
 
+  // colour the quota bar by how much is left: blue plenty, yellow low, red almost out, gray empty
   function getColor(t: number) {
 
     if (t > 100) return "#3b82f6";
@@ -318,6 +335,7 @@
       />
 
 
+      <!-- autocomplete suggestions for the word currently being typed -->
       <div class="dropdown-wrapper">
         {#if showDropdown === true && recipientPrompted.length > 0}
           {@render promptList(recipientPrompted)}
@@ -354,6 +372,7 @@
     </div>
   </div>
 
+  <!-- one-click buttons that drop a saved template into the message box -->
   {#if data.emailDefaults?.templates?.length}
     <div class="form-group">
       <p class="section-label">{$lang === 'en' ? 'Insert a template' : 'Insérer un modèle'}</p>
@@ -456,6 +475,7 @@
       <div class="node-bottom">
         <div class="bar">
           <div class="bar-track">
+            <!-- 200 is the full quota, so width is the share of tokens still left -->
             <div
               class="bar-fill"
               style={`

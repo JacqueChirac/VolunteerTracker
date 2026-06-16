@@ -1,4 +1,4 @@
-// guard — only organizers can access /organizer/* pages
+// guard - only organizers can access /organizer/* pages
 import { redirect } from '@sveltejs/kit';
 import type { LayoutServerLoad } from './$types';
 import { getUndoState } from '$lib/server/undo';

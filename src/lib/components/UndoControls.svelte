@@ -18,6 +18,7 @@
 	};
 	let L = $derived(labels[$lang as 'en' | 'fr'] ?? labels.en);
 
+	// busy guards against double-firing while a request is in flight; invalidateAll refreshes undoState
 	async function doUndo() {
 		if (busy || !undoState.canUndo) return;
 		busy = true;
@@ -70,6 +71,7 @@
 	let lastForm: unknown = null;
 	$effect(() => {
 		const f = page.form as Record<string, unknown> | null;
+		// lastForm dedupes so the same action result doesn't re-toast on unrelated reactive runs
 		if (f && f !== lastForm) {
 			lastForm = f;
 			if (f.success && f.undoable) {

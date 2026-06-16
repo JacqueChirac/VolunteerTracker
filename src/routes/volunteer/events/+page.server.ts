@@ -1,4 +1,4 @@
-// events list — loads upcoming events with signup status
+// events list - loads upcoming events with signup status
 import type { PageServerLoad, Actions } from "./$types";
 import { db } from "$lib/server/db";
 import { events, eventSignups } from "$lib/server/db/schema";
@@ -14,6 +14,8 @@ export const load: PageServerLoad = async ({ locals }) => {
     .select()
     .from(eventSignups)
     .where(eq(eventSignups.userId, locals.user!.id));
+  // Event ids this user already signed up for, so each card can show the right
+  // button (Sign up vs Cancel).
   const signedUpEventIds = new Set(userSignups.map((s) => s.eventId));
 
   const allSignups = await db.select().from(eventSignups);
@@ -23,6 +25,8 @@ export const load: PageServerLoad = async ({ locals }) => {
     .select()
     .from(contributions)
     .where(eq(contributions.userId, locals.user!.id));
+  // Add up this user's logged hours per event so past events can show how much
+  // they put in. Contributions not tied to an event are ignored here.
   const hoursByEvent: Record<number, number> = {};
   for (const c of myContribs) {
     if (c.eventId)

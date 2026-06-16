@@ -1,4 +1,4 @@
-<!-- log hours page — volunteer logs hours or donations -->
+<!-- log hours page - volunteer logs hours or donations -->
 <script lang="ts">
 	import { today, daysAgo } from "$lib/dateBounds";
 	import { enhance } from '$app/forms';
@@ -44,6 +44,8 @@
 
 		<!-- Log events with date constraints -->
 		{#if tab === 'volunteering'}
+			<!-- Block a second submit while the first is still in flight, so a fast
+			     double-click can't log the same hours twice. -->
 			<form method="POST" action="?/volunteering" use:enhance={({ cancel }) => {
 				if (submitting) return cancel();
 				submitting = true;
@@ -51,6 +53,8 @@
 			}}>
 				<div class="form-group">
 					<label for="event">Event (optional)</label>
+					<!-- Picking an event auto-fills the date field with that event's date,
+					     so the volunteer usually doesn't have to set it by hand. -->
 					<select
 						id="event"
 						name="eventId"

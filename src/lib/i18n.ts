@@ -1,3 +1,6 @@
+// UI strings keyed by locale. Values are either plain strings or small
+// formatter fns for the ones that interpolate counts/names. en and fr keys
+// must stay in sync or the typed lookup breaks.
 export const t = {
   en: {
     // ── Landing page ──────────────────────────────────────────

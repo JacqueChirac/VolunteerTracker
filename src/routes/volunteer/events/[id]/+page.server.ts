@@ -1,4 +1,4 @@
-// single event detail — shows info, volunteers signed up, signup/cancel actions
+// single event detail - shows info, volunteers signed up, signup/cancel actions
 import type { PageServerLoad, Actions } from './$types';
 import { db } from '$lib/server/db';
 import { events, eventSignups, users, contributions } from '$lib/server/db/schema';
@@ -11,6 +11,8 @@ export const load: PageServerLoad = async ({ params, locals }) => {
 	if (!event) throw error(404, 'Event not found');
 
 	const signups = await db.select().from(eventSignups).where(eq(eventSignups.eventId, eventId));
+	// Sum up hours logged against this event per volunteer, shown next to each
+	// name once the event is past.
 	const eventContribs = await db.select().from(contributions).where(eq(contributions.eventId, eventId));
 	const hoursByUser: Record<number, number> = {};
 	for (const c of eventContribs) {

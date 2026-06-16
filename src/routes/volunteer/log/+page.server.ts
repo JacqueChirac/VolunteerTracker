@@ -1,4 +1,4 @@
-// log hours — volunteer logs hours or donations
+// log hours - volunteer logs hours or donations
 import type { PageServerLoad, Actions } from "./$types";
 import { db } from "$lib/server/db";
 import { eq, desc } from "drizzle-orm";
@@ -103,6 +103,8 @@ export const actions: Actions = {
     const eventIdRaw = fd.get("eventId")?.toString();
     const eventId = eventIdRaw ? Number(eventIdRaw) : null;
 
+    // Donations are also counted as volunteer hours using a configurable
+    // dollars-per-hour rate, so a donation and worked time can be added together.
     const rate = await getDonationRate();
     const hoursEquiv = amountNum / rate;
     if (hoursEquiv > MAX_DERIVED_HOURS)

@@ -1,4 +1,4 @@
-// registration server logic — admin (organizer) creates a volunteer account
+// registration server logic - admin (organizer) creates a volunteer account
 import type { Actions, PageServerLoad } from "./$types";
 import { fail, redirect } from "@sveltejs/kit";
 import { createUser } from "$lib/server/auth";

@@ -1,4 +1,4 @@
-<!-- tutorial — display by default; organizers see an Edit toggle for inline editing. -->
+<!-- tutorial - display by default; organizers see an Edit toggle for inline editing. -->
 <script lang="ts">
 	import { enhance } from '$app/forms';
 	import { page } from '$app/state';
@@ -21,6 +21,7 @@
 		goto(url, { replaceState: true, noScroll: true, keepFocus: true });
 	}
 
+	// step/faq counts are stored as settings; build 1..n index arrays to render against
 	const stepCount = $derived(Number(data.tut.tut_step_count || '5'));
 	const faqCount = $derived(Number(data.tut.tut_faq_count || '4'));
 	const steps = $derived(Array.from({ length: stepCount }, (_, i) => i + 1));
@@ -94,6 +95,7 @@
 {#if editing && isOrganizer}
 	<!-- ─── EDIT MODE ─────────────────────────────────────────────────── -->
 
+	<!-- add/delete live in their own forms so buttons inside the save form can target them via form="" -->
 	<!-- hidden operation forms (used by buttons inside the main form) -->
 	{#each steps as n}
 		<form id="del-step-{n}" method="POST" action="?/deleteStep" use:enhance style="display:none;">

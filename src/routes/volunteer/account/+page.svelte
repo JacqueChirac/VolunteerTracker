@@ -1,4 +1,4 @@
-<!-- account page — manage children + change password (server-side forms) -->
+<!-- account page - manage children + change password (server-side forms) -->
 <script lang="ts">
   import { enhance } from "$app/forms";
   import type { PageData, ActionData } from "./$types";
@@ -8,6 +8,7 @@
   import { t } from '$lib/i18n';
 
   let { data, form }: { data: PageData; form: ActionData } = $props();
+  // Only one of these two forms is open at a time, so opening one closes the other.
   let showAddChild = $state(false);
   let showLinkChild = $state(false);
   let showLevelDetails = $state(false);
@@ -232,6 +233,7 @@
             </form>
           </div>
         </div>
+        <!-- bar caps at 100%, turns teal once the goal is met -->
         <div class="progress-bar">
           <div
             class="progress-bar-fill"

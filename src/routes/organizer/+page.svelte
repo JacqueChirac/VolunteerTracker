@@ -1,4 +1,4 @@
-<!-- organizer home — welcome, stats, quick links, recent announcements -->
+<!-- organizer home - welcome, stats, quick links, recent announcements -->
 <script lang="ts">
 	import type { PageData } from './$types';
 	import { lang } from '$lib/stores/lang';

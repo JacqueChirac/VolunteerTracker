@@ -1,4 +1,4 @@
-// POST /api/redo — re-apply the current user's most recently undone action.
+// POST /api/redo - re-apply the current user's most recently undone action.
 import type { RequestHandler } from "./$types";
 import { json, error } from "@sveltejs/kit";
 import { redo, getUndoState } from "$lib/server/undo";

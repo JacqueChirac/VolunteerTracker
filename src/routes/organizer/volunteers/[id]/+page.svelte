@@ -1,4 +1,4 @@
-<!-- individual volunteer profile — organizer can view details + edit children -->
+<!-- individual volunteer profile - organizer can view details + edit children -->
 <script lang="ts">
 	import { enhance } from '$app/forms';
 	import type { PageData, ActionData } from './$types';
@@ -7,6 +7,7 @@
 	import { t } from '$lib/i18n';
 
 	let { data, form }: { data: PageData; form: ActionData } = $props();
+	// Holds the id of the child whose inline edit form is open (null means none open).
 	let editingChildId = $state<number | null>(null);
 	let linkChildId = $state('');
 </script>
@@ -81,6 +82,7 @@
 		{#each data.children as child (child.id)}
 			<div class="card">
 				{#if editingChildId === child.id}
+					<!-- close the inline editor once the save round-trips -->
 					<form method="POST" action="?/editChild" use:enhance={() => { return async ({ update }) => { await update(); editingChildId = null; }; }}>
 						<input type="hidden" name="childId" value={child.id} />
 						<div style="display:flex;gap:8px;flex-wrap:wrap;align-items:end;">
@@ -130,7 +132,7 @@
 	</div>
 {/if}
 
-<!-- link a new child -->
+<!-- link a new child; hide the whole form if every child is already linked here -->
 {#if data.allChildren.filter(c => !data.linkedChildIds.includes(c.id)).length > 0}
 	<form method="POST" action="?/linkChild" use:enhance style="display:flex;gap:8px;align-items:center;margin-bottom:24px;flex-wrap:wrap;">
 		<select name="childId" bind:value={linkChildId} style="flex:1;max-width:260px;">

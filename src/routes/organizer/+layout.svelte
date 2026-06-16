@@ -1,4 +1,4 @@
-<!-- organizer layout — green admin nav bar -->
+<!-- organizer layout - green admin nav bar -->
 <script lang="ts">
 	import { page } from '$app/state';
 	import { enhance } from '$app/forms';

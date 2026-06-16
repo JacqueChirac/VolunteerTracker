@@ -1,4 +1,4 @@
-// volunteer home — loads announcements for the dashboard
+// volunteer home - loads announcements for the dashboard
 import type { PageServerLoad } from './$types';
 import { db } from '$lib/server/db';
 import { announcements, contributions } from '$lib/server/db/schema';

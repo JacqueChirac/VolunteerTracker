@@ -1,4 +1,4 @@
-<!-- single event detail — full info + volunteer list + signup/cancel -->
+<!-- single event detail - full info + volunteer list + signup/cancel -->
 <script lang="ts">
 	import { enhance } from '$app/forms';
 	import type { PageData, ActionData } from './$types';

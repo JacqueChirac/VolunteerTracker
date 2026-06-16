@@ -1,6 +1,6 @@
 // Centralized date+time rendering for events.
 // Handles two date precisions: 'day' (full date + optional time) and 'month'
-// (e.g. "March 2026" — no day, no time). Keeps display logic out of components.
+// (e.g. "March 2026" - no day, no time). Keeps display logic out of components.
 
 type EventLike = {
 	date: string; // YYYY-MM-DD (month-precision uses YYYY-MM-01)

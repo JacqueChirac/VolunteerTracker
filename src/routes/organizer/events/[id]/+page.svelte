@@ -1,4 +1,4 @@
-<!-- organizer single-event view — registrant list + email-all-registrants -->
+<!-- organizer single-event view - registrant list + email-all-registrants -->
 <script lang="ts">
 	import type { PageData } from './$types';
 	import { lang } from '$lib/stores/lang';

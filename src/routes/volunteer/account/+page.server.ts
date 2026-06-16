@@ -1,4 +1,4 @@
-// account page — manage children (add/link/unlink) + change password
+// account page - manage children (add/link/unlink) + change password
 import type { PageServerLoad, Actions } from "./$types";
 import { db } from "$lib/server/db";
 import {
@@ -17,6 +17,7 @@ import { recordAction, chInsert, chDelete } from "$lib/server/undo";
 //Run on page load and load the variables
 export const load: PageServerLoad = async ({ locals }) => {
   const userId = locals.user!.id;
+  // Find which children this volunteer is connected to (a child can have several parents).
   const links = await db
     .select()
     .from(childVolunteerLinks)
@@ -52,6 +53,7 @@ export const load: PageServerLoad = async ({ locals }) => {
         .from(childVolunteerLinks)
         .where(eq(childVolunteerLinks.childId, child.id));
 				//Adds up all hours from all volunteers and add it to the children they connected
+      // Pool the hours from every parent linked to this child into one shared total.
       let totalHours = 0;
       for (const l of allLinks) {
         const volunteerContribs = await db
@@ -61,6 +63,7 @@ export const load: PageServerLoad = async ({ locals }) => {
         for (const c of volunteerContribs)
           totalHours += parseFloat(c.hours ?? "0");
       }
+      // hours are shared across everyone linked to the child, so a child can be "done" via any parent
       childrenWithProgress.push({
         id: child.id,
         firstName: child.firstName,
@@ -74,6 +77,7 @@ export const load: PageServerLoad = async ({ locals }) => {
   }
 
   const allChildren = await db.select().from(children);
+  // only offer children this user isn't already linked to in the "link existing" dropdown
   const unlinkedChildren = allChildren.filter((c) => !childIds.includes(c.id));
 
   return {
@@ -97,6 +101,7 @@ export const actions: Actions = {
     if (!firstName || !lastName)
       return fail(400, { error: "First and last name are required." });
 
+    // Create the child, then immediately link it to the parent who added them.
     const [child] = await db
       .insert(children)
       .values({
@@ -145,6 +150,7 @@ export const actions: Actions = {
       .select()
       .from(childVolunteerLinks)
       .where(eq(childVolunteerLinks.userId, locals.user!.id));
+    // Don't let the same parent link to a child twice.
     if (existing.some((l) => l.childId === childId))
       return fail(400, { error: "Already linked." });
     const [link] = await db

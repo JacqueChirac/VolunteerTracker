@@ -1,4 +1,4 @@
-// individual volunteer profile — server logic for viewing + editing children
+// individual volunteer profile - server logic for viewing + editing children
 import type { PageServerLoad, Actions } from './$types';
 import { db } from '$lib/server/db';
 import { users, children, childVolunteerLinks, contributions, eventSignups } from '$lib/server/db/schema';
@@ -9,6 +9,7 @@ import { recordAction, chInsert, chUpdate, chDelete } from '$lib/server/undo';
 
 export const load: PageServerLoad = async ({ params }) => {
 	const userId = Number(params.id);
+	// This page is only for volunteers, so reject organizer/other accounts even if the id exists.
 	const [volunteer] = await db.select().from(users).where(eq(users.id, userId));
 	if (!volunteer || volunteer.role !== 'volunteer') throw error(404, 'Volunteer not found');
 
@@ -23,6 +24,7 @@ export const load: PageServerLoad = async ({ params }) => {
 
 	const linkedChildIds = new Set(links.map(l => l.childId));
 
+	// Total up each volunteer's logged hours once, so we can reuse them per child below.
 	const hoursByVol: Record<number, number> = {};
 	for (const c of allContribs) {
 		hoursByVol[c.userId] = (hoursByVol[c.userId] ?? 0) + parseFloat(c.hours ?? '0');
@@ -32,6 +34,7 @@ export const load: PageServerLoad = async ({ params }) => {
 	for (const childId of linkedChildIds) {
 		const child = allChildren.find(c => c.id === childId);
 		if (!child) continue;
+		// a child's hours = sum across every volunteer linked to them, not just this profile's volunteer
 		const volIdsForChild = allLinks2.filter(l => l.childId === childId).map(l => l.userId);
 		const totalHoursForChild = Math.round(volIdsForChild.reduce((s, vid) => s + (hoursByVol[vid] ?? 0), 0) * 100) / 100;
 		childrenData.push({ ...child, totalHours: totalHoursForChild, requiredHours: await getHoursRequired(child.status) });
@@ -58,6 +61,7 @@ export const actions: Actions = {
 		if (!childId) return fail(400, { error: 'Invalid child.' });
 		const [before] = await db.select().from(children).where(eq(children.id, childId));
 		if (!before) return fail(400, { error: 'Child not found.' });
+		// Keep the row's before/after state so this edit can be undone later.
 		const after = { ...before, level: level || null, status: status || 'full_member' };
 		await db.update(children).set({ level: level || null, status: status || 'full_member' }).where(eq(children.id, childId));
 		await recordAction(String(locals.user!.id), `Edit ${before.firstName} ${before.lastName}`, [chUpdate('children', before, after)]);
@@ -81,6 +85,7 @@ export const actions: Actions = {
 		if (!childId || !userId) return fail(400, { linkError: 'Invalid child or volunteer.' });
 		const existing = await db.select().from(childVolunteerLinks)
 			.where(and(eq(childVolunteerLinks.childId, childId), eq(childVolunteerLinks.userId, userId)));
+		// Skip if this child is already linked to this volunteer.
 		if (existing.length > 0) return fail(400, { linkError: 'Already linked.' });
 		const [row] = await db.insert(childVolunteerLinks).values({ childId, userId }).returning();
 		await recordAction(String(locals.user!.id), 'Link child', [chInsert('childVolunteerLinks', row)]);

@@ -1,4 +1,4 @@
-// organizer single-event view — full info + who signed up, so the organizer
+// organizer single-event view - full info + who signed up, so the organizer
 // can see registrants and email them
 import type { PageServerLoad } from './$types';
 import { db } from '$lib/server/db';
@@ -32,6 +32,8 @@ export const load: PageServerLoad = async ({ params }) => {
 		hoursByUser[c.userId] = (hoursByUser[c.userId] ?? 0) + parseFloat(c.hours ?? '0');
 	}
 
+	// Turn each signup into a registrant with their details and logged hours.
+	// Skip any signup whose user record is missing (e.g. a deleted account).
 	const registrants = signups
 		.map((s) => {
 			const u = byId.get(s.userId);

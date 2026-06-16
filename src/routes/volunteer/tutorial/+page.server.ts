@@ -1,4 +1,4 @@
-// volunteer-facing tutorial — display for everyone, inline editor for organizers.
+// volunteer-facing tutorial - display for everyone, inline editor for organizers.
 // Edit actions are organizer-only (re-checked here since the hook lets organizers
 // into this route specifically).
 import type { PageServerLoad, Actions } from './$types';
@@ -92,6 +92,7 @@ export const actions: Actions = {
 		if (n < 1 || n > count || count <= 1) return { success: false };
 
 		const before = await snapTut();
+		// shift every step after n down by one, then drop the now-duplicate last step
 		for (let i = n; i < count; i++) {
 			for (const field of STEP_FIELDS) {
 				const val = tut[`tut_step${i + 1}_${field}`] ?? '';
@@ -136,6 +137,7 @@ export const actions: Actions = {
 		if (n < 1 || n > count || count <= 1) return { success: false };
 
 		const before = await snapTut();
+		// same shift-down-then-drop-last as deleteStep
 		for (let i = n; i < count; i++) {
 			for (const field of FAQ_FIELDS) {
 				const val = tut[`tut_faq${i + 1}_${field}`] ?? '';

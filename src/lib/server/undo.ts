@@ -96,6 +96,8 @@ export function diffRows(table: TableName, before: Row[], after: Row[]): Change[
   for (const [pk, bRow] of beforeMap) {
     const aRow = afterMap.get(pk);
     if (!aRow) changes.push({ table, pk: pk as string | number, depth: m.depth, before: bRow, after: null });
+    // cheap deep-equal; relies on both rows coming from the same query so key
+    // order matches. skips unchanged rows so undo doesn't log no-op upserts.
     else if (JSON.stringify(bRow) !== JSON.stringify(aRow))
       changes.push({ table, pk: pk as string | number, depth: m.depth, before: bRow, after: aRow });
   }

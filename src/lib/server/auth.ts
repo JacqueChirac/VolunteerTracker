@@ -14,7 +14,7 @@ import { dev } from "$app/environment";
 const SESSION_COOKIE = "session";
 const RECOVERY_COOKIE = "recovery_token";
 
-// central tuning knobs — change here, not at call sites
+// central tuning knobs - change here, not at call sites
 export const BCRYPT_COST = 12;
 export const PASSWORD_MIN_LENGTH = 8;
 
@@ -29,7 +29,7 @@ function getSecret(): string {
       "Generate one with: node -e \"console.log(require('crypto').randomBytes(48).toString('base64url'))\"",
     );
   }
-  // dev fallback — sessions reset on each server restart, which is fine for dev
+  // dev fallback - sessions reset on each server restart, which is fine for dev
   if (!devSecret) {
     devSecret = randomBytes(48).toString("base64url");
     console.warn(

@@ -6,7 +6,7 @@
   let { form } = $props();
   let email = $state("");
   let step = $state(1); // 1: Email entry, 2: Key entry
-  let cooldown = $state(0);
+  let cooldown = $state(0); // seconds left before the user can resend the code
   let timer: ReturnType<typeof setInterval>;
 
   let toastMsg = $state("");
@@ -31,7 +31,7 @@
     }, 1000);
   }
 
-  // Update step based on server response
+  // server confirmed key was sent, move to code-entry step
   $effect(() => {
     if (form?.success && step === 1) {
       step = 2;

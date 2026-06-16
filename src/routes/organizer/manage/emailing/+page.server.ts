@@ -1,7 +1,6 @@
 import { neon } from "@neondatabase/serverless";
 import { DATABASE_URL } from "$env/static/private";
 import { json } from "@sveltejs/kit";
-import { check } from "drizzle-orm/gel-core";
 import { fail } from "@sveltejs/kit";
 import { sendEmailUniversal } from "$lib/emailLogic.js";
 import { dateCheck } from "$lib/emailLogic.js";
@@ -11,6 +10,7 @@ import { getEmailSettings } from "$lib/server/settings";
 const sql = neon(DATABASE_URL);
 
 
+// refresh time-based state (e.g. monthly quota resets) when the module first loads
 dateCheck();
 
 
@@ -22,6 +22,7 @@ export async function load({ url }) {
     const allMails = await getAllMails();
     const allNames = await getNames();
     const time = await getTime();
+    // node order must match the `services` list in the page, so sort by id
     let nodes = await sql`SELECT id, service_id, token FROM nodes`;
     nodes = nodes.sort((a, b) => a.id - b.id);
     // optional recipient list passed in from the event page ("Email registrants")
@@ -32,7 +33,7 @@ export async function load({ url }) {
       allNames,
       allMails,
       badEmails,
-      volunteers: await getVolunteers(), // Moved to function
+      volunteers: await getVolunteers(),
       newDate,
       time,
       prefillRecipients,
@@ -40,46 +41,33 @@ export async function load({ url }) {
     };
   } catch (error) {
     console.error("Error in load:", error);
-    throw error; // Let SvelteKit handle it
+    throw error;
   }
 }
 
+// subtract the number of emails just sent from a node's remaining quota
 async function updateCost(service: string, cost: number) {
-  if (!service || typeof service !== 'string' || service.trim() === '') {
-    throw new Error("Invalid service ID");
+  const result = await sql`SELECT token FROM nodes WHERE service_id = ${service}`;
+  if (result.length === 0) {
+    throw new Error(`Service not found: ${service}`);
   }
-  if (typeof cost !== 'number' || isNaN(cost) || cost < 0) {
-    throw new Error("Invalid cost: must be a non-negative number");
-  }
-  
-  try {
-    const result = await sql`SELECT token FROM nodes WHERE service_id = ${service}`;
-    if (!result || result.length === 0) {
-      throw new Error(`Service not found: ${service}`);
-    }
-    const currentToken = result[0].token;
-    if (typeof currentToken !== 'number' || isNaN(currentToken)) {
-      throw new Error("Invalid token value in database");
-    }
-    const newToken = Math.max(currentToken - cost, 0);
-    await sql`UPDATE nodes SET token = ${newToken} WHERE service_id = ${service}`;
-    return { ok: true };
-  } catch (error) {
-    console.error("Error in updateCost:", error);
-    throw error;
-  }
+  // floor at 0 so a quota can't go negative
+  const newToken = Math.max(result[0].token - cost, 0);
+  await sql`UPDATE nodes SET token = ${newToken} WHERE service_id = ${service}`;
+  return { ok: true };
 }
 
 async function getAllMails() {
   try {
     const volunteers = await getVolunteers();
-    return volunteers.map(v => v.email).filter(email => email); // Filter out null/undefined
+    return volunteers.map(v => v.email).filter(email => email);
   } catch (error) {
     console.error("Error in getAllMails:", error);
-    return []; // Return empty array on error
+    return [];
   }
 }
 
+// walk bad children -> their parent volunteers -> parent emails, deduped
 async function getBadEmails() {
   try {
     const badChildrenIDs = await badChildren();
@@ -98,6 +86,7 @@ async function getBadEmails() {
   }
 }
 
+// kids under the 30-hour threshold; their parents get flagged for follow-up email
 async function badChildren() {
   try {
     const stats = await sql`SELECT * FROM child_totals`
@@ -167,6 +156,7 @@ async function getNames() {
 }
 
 export const actions = {
+  // called by the page after a send to bill the node's quota for the emails sent
   callCost: async ({ request }) => {
     try {
       const data = await request.formData();
@@ -186,10 +176,6 @@ export const actions = {
       console.error("Error in callCost:", error);
       return fail(500, { error: "Internal server error" });
     }
-  },
-
-  updateBudget: async ({ request }) => {
-    // Placeholder 
   },
 };
 

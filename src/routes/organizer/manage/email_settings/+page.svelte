@@ -55,6 +55,7 @@
 	{#if form?.templateError}<p class="error" style="margin-bottom:8px;">{form.templateError}</p>{/if}
 
 	{#if showAddTemplate}
+		<!-- after the template saves, run the normal form update then collapse this add form -->
 		<form method="POST" action="?/addTemplate" use:enhance={() => async ({ update }) => { await update(); showAddTemplate = false; }} style="margin-bottom:16px;padding:12px;border:1px dashed var(--border);border-radius:12px;">
 			<div class="form-group">
 				<label for="tpl_name">{$lang === 'en' ? 'Template name' : 'Nom du modèle'}</label>

@@ -1,4 +1,4 @@
-<!-- volunteer home — quick links + announcements -->
+<!-- volunteer home - quick links + announcements -->
 <script lang="ts">
 	import type { PageData } from './$types';
 	import { lang } from '$lib/stores/lang';

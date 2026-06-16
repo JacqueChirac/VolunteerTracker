@@ -1,4 +1,4 @@
-// CSV export — organizer downloads all children + hours data
+// CSV export - organizer downloads all children + hours data
 import { db } from "$lib/server/db";
 import {
   users,
@@ -22,6 +22,8 @@ export const GET: RequestHandler = async ({ locals, url }) => {
 	const allLinks = await db.select().from(childVolunteerLinks);
 
 	if (type === 'volunteers') {
+		// add up each volunteer's hours, keyed by their user id, so we can look
+		// up a total in one step instead of re-scanning all contributions per row
 		const hoursByVol: Record<number, number> = {};
 		for (const c of allContributions) {
 			hoursByVol[c.userId] = (hoursByVol[c.userId] ?? 0) + parseFloat(c.hours ?? '0');
@@ -42,6 +44,8 @@ export const GET: RequestHandler = async ({ locals, url }) => {
 			rows.push([v.firstName, v.lastName, v.email, totalHours.toString(), v.manuallyApproved ? 'Yes' : 'No', childNames.join('; ')]);
 		}
 
+		// wrap every cell in quotes and double-up any quote inside it so commas
+		// or quotes in names don't break the CSV columns
 		const csv = rows.map((row) => row.map((cell) => `"${cell.replace(/"/g, '""')}"`).join(',')).join('\n');
 		return new Response(csv, {
 			headers: {

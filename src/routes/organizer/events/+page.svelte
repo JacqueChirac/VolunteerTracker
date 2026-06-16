@@ -1,4 +1,4 @@
-<!-- organizer events dashboard — event list with add/edit/delete -->
+<!-- organizer events dashboard - event list with add/edit/delete -->
 <script lang="ts">
 	import { enhance } from '$app/forms';
 	import type { PageData, ActionData } from './$types';
@@ -15,6 +15,8 @@
 	const monthMin = dateMin.slice(0, 7);
 	const monthMax = dateMax.slice(0, 7);
 
+	// Show upcoming and past events in separate sections. dateMin is today, so
+	// anything not yet past counts as upcoming.
 	let upcomingEvents = $derived(
 		data.events.filter((e: (typeof data.events)[0]) => !isEventPast(e, dateMin))
 	);
@@ -29,13 +31,15 @@
 	let editSnapshot = $state<string>(''); // JSON of fields when edit opened, for dirty check
 	let lastSavedId = $state<number | null>(null); // for per-row success message
 
-	// Errors from a failed edit attempt — only show if this row is the one that failed
+	// Errors from a failed edit attempt - only show if this row is the one that failed
 	const editError = $derived(
 		form && 'editId' in form && form.editId === editingId ? form.error : null
 	);
 
 	type EditableEvent = (typeof data.events)[0];
 
+	// Open the inline edit form for one row and remember its starting values, so
+	// we can later tell whether the user actually changed anything.
 	function openEdit(event: EditableEvent) {
 		editingId = event.id;
 		editMode = event.datePrecision === 'month' ? 'month' : 'day';
@@ -51,6 +55,8 @@
 		});
 	}
 
+	// Read what's currently typed in the edit form, in the same shape as the
+	// snapshot above, so the two can be compared for a dirty check.
 	function currentEditValues(formEl: HTMLFormElement, event: EditableEvent) {
 		const fd = new FormData(formEl);
 		return JSON.stringify({
@@ -65,6 +71,7 @@
 		});
 	}
 
+	// Warn before discarding edits, but only if something was actually changed.
 	function cancelEdit(formEl: HTMLFormElement, event: EditableEvent) {
 		const isDirty = currentEditValues(formEl, event) !== editSnapshot;
 		if (isDirty && !confirm(t[$lang].unsavedChangesConfirm)) return;
@@ -90,6 +97,9 @@
 	<form method="POST" action="?/addEvent" use:enhance style="margin-top:12px;">
 		<input type="hidden" name="datePrecision" value={addMode} />
 
+		<!-- An organizer can pin an event to an exact day (with times) or, when the
+		     date isn't settled yet, just a month. Month-only events show as
+		     "tentative" elsewhere. This toggle switches which fields appear below. -->
 		<fieldset class="form-group" style="border:none;padding:0;margin-bottom:12px;">
 			<legend style="font-weight:600;font-size:0.9rem;margin-bottom:6px;">{t[$lang].dateMode}</legend>
 			<div style="display:flex;gap:8px;" role="radiogroup">
@@ -146,6 +156,9 @@
 				</div>
 			{:else}
 				<!-- EDIT MODE -->
+				<!-- Save in place: on a validation failure we keep the form open with
+				     the user's typed values; on success we close it and flash a brief
+				     "saved" note on the row for a few seconds. -->
 				<form
 					method="POST"
 					action="?/editEvent"
@@ -154,7 +167,7 @@
 						return async ({ result, update }) => {
 							await update({ reset: false });
 							savingId = null;
-							// Only close on success — keep form open with typed data on validation failure
+							// Only close on success - keep form open with typed data on validation failure
 							if (result.type === 'success' || result.type === 'redirect') {
 								editingId = null;
 								lastSavedId = event.id;

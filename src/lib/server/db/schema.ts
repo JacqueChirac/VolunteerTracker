@@ -30,7 +30,7 @@ export const contributionTypeEnum = pgEnum("contribution_type", [
 
 // -- tables --
 
-// who can log in — parents, relatives, friends, (As volunteers) and organizers
+// who can log in - parents, relatives, friends, (As volunteers) and organizers
 export const users = pgTable("users", {
   id: serial("id").primaryKey(),
   passwordHash: text("password_hash").notNull(),
@@ -118,7 +118,7 @@ export const announcements = pgTable("announcements", {
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
-// swim team levels — editable by organizers
+// swim team levels - editable by organizers
 export const swimLevelSettings = pgTable('swim_level_settings', {
 	id: serial('id').primaryKey(),
 	value: text('value').notNull().unique(),
@@ -164,7 +164,7 @@ export const passwordResetTokens = pgTable("password_reset_tokens", {
   timeCreated: timestamp("time_created").defaultNow().notNull(),
 });
 
-// undo/redo history — one row per reversible action, scoped per user.
+// undo/redo history - one row per reversible action, scoped per user.
 // `changes` is a JSON array of row-level before/after snapshots (see lib/server/undo.ts).
 export const actionLog = pgTable("action_log", {
   id: serial("id").primaryKey(),

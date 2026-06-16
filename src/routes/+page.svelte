@@ -1,4 +1,4 @@
-<!-- landing page — shows login buttons or a dashboard link -->
+<!-- landing page - shows login buttons or a dashboard link -->
 <script lang="ts">
 	import type { PageData } from './$types';
 	import { lang } from '$lib/stores/lang';

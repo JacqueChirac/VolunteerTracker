@@ -1,4 +1,4 @@
-// organizer home — dashboard stats + recent announcements
+// organizer home - dashboard stats + recent announcements
 import type { PageServerLoad } from "./$types";
 import { db } from "$lib/server/db";
 import {
@@ -25,6 +25,8 @@ export const load: PageServerLoad = async ({ locals }) => {
     0,
   );
 
+  // count how many children have hit their required hours. A child's hours are
+  // the combined hours of every volunteer linked to that child.
   let childrenMet = 0;
   for (const child of allChildren) {
     const links = allLinks.filter((l) => l.childId === child.id);

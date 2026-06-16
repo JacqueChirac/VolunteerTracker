@@ -48,6 +48,7 @@ const checkLimiter = new RateLimiter({
 export const load = async (event) => {
   await sendLimiter.cookieLimiter?.preflight(event);
   await dateCheck();
+  // clear out old reset codes on every page visit so the table doesn't fill up
   deleteExpiredVerificationLinks();
   return {};
 };
@@ -63,6 +64,7 @@ async function deleteExpiredVerificationLinks() {
 async function initiatePasswordReset(email:string) {
   const time = await getTime();
   const token = crypto.randomInt(100000, 999999).toString();
+  // store only the hash; the plaintext 6-digit code goes out by email
   const hashToken = hashSync(token, BCRYPT_COST);
   await sql`INSERT INTO password_reset_tokens (email, link, time_created) VALUES (${email}, ${hashToken}, ${time})`;
   return token;
@@ -84,7 +86,10 @@ export const actions = {
 
     //Check if email exists
     const user = await sql`SELECT id FROM users WHERE email = ${email} LIMIT 1`;
+    // if the email isn't a real account we still return success below, so an
+    // attacker can't use this form to discover which emails are registered
     if (user.length === 0) {
+      // don't leak whether the account exists; pretend it worked
       return { success: true };
     }
 
@@ -129,6 +134,7 @@ export const actions = {
       return fail(400, { message: "Invalid email or verification key" });
     }
 
+    // codes are only good for 15 minutes after they were created
     const timeCreated = new Date(results[0].time_created);
     const now = await getTime();
     const diffInMinutes = (now.getTime() - timeCreated.getTime()) / (1000 * 60);
@@ -137,6 +143,7 @@ export const actions = {
       return fail(400, { message: "Verification key has expired" });
     }
 
+    // code checks out, hand the user a short-lived recovery cookie for the reset page
     const recoveryToken = createRecoveryToken(email);
     cookies.set(RECOVERY_COOKIE, recoveryToken, RECOVERY_COOKIE_OPTS);
 

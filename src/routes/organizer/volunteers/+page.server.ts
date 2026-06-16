@@ -17,11 +17,13 @@ export const load: PageServerLoad = async () => {
 		getHoursRequired('tryout')
 	]);
 
+	// Add up each volunteer's hours once up front; the maps below reuse this lookup.
 	const hoursByVol: Record<number, number> = {};
 	for (const c of allContributions) {
 		hoursByVol[c.userId] = (hoursByVol[c.userId] ?? 0) + parseFloat(c.hours ?? '0');
 	}
 
+	// build both directions of the child<->volunteer link map in one pass
 	const volsByChild: Record<number, number[]> = {};
 	const childrenByVol: Record<number, number[]> = {};
 	for (const l of allLinks) {
@@ -54,6 +56,7 @@ export const load: PageServerLoad = async () => {
 
 	const childrenData = allChildren.map((child) => {
 		const required = child.status === 'tryout' ? hoursTryout : hoursFullMember;
+		// A child's progress counts the hours of every volunteer linked to them, not just one parent.
 		const volIds = volsByChild[child.id] ?? [];
 		const totalHours = Math.round(volIds.reduce((s, vid) => s + (hoursByVol[vid] ?? 0), 0) * 100) / 100;
 		return {

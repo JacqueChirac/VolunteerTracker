@@ -1,4 +1,4 @@
-<!-- logout page — just a form that posts to the server action -->
+<!-- logout page - just a form that posts to the server action -->
 <script lang="ts">
 	import { enhance } from '$app/forms';
 	import { lang } from '$lib/stores/lang';

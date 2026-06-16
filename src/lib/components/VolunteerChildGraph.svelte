@@ -31,18 +31,25 @@
 	};
 	type Edge = { s: string; t: string };
 
+	// Fixed drawing area. Everything is laid out in this 900x560 coordinate space
+	// and then scaled to fit the screen by the SVG viewBox. CX/CY are the center.
 	const W = 900;
 	const H = 560;
 	const CX = W / 2;
 	const CY = H / 2;
 
+	// Turn the raw volunteer list into the node/edge data the graph draws.
+	// One node per volunteer and one per child; an edge for each volunteer-child link.
+	// `idx` maps a node id like "v-3" to its position in the nodes array for fast lookup.
 	function buildGraph(vs: Volunteer[]): { nodes: Node[]; edges: Edge[]; idx: Record<string, number> } {
 		const newNodes: Node[] = [];
 		const newEdges: Edge[] = [];
 		const idx: Record<string, number> = {};
+		// remembers which children we've already added, since one child can link to many volunteers
 		const childSeen = new Map<number, number>();
 
 		vs.forEach((v, i) => {
+			// spread evenly down the left column; t in 0..1
 			const t = vs.length === 1 ? 0.5 : i / (vs.length - 1);
 			const id = `v-${v.id}`;
 			idx[id] = newNodes.length;
@@ -81,10 +88,13 @@
 					});
 				}
 				newEdges.push({ s: `v-${v.id}`, t: cid });
+				// a child may link to several volunteers, so dedupe the node but bump degree per link
 				newNodes[childSeen.get(c.id)!].degree++;
 			});
 		});
 
+		// Once all children exist, spread them evenly down the right column so they
+		// don't all start bunched at the same y before the physics settles them.
 		const childIdxs = newNodes.filter((n) => n.type === 'child');
 		childIdxs.forEach((n, k) => {
 			const t = childIdxs.length === 1 ? 0.5 : k / (childIdxs.length - 1);
@@ -177,7 +187,11 @@
 		return false;
 	}
 
-	// FORCE SIMULATION — runs continuously, decays via alpha
+	// FORCE SIMULATION - runs continuously, decays via alpha
+	// Each frame we push nodes apart, pull linked nodes together, and nudge them
+	// toward their column/center. `alpha` is the overall "energy": it starts at 1
+	// and cools toward 0 so the layout gradually stops moving instead of jittering
+	// forever. Interacting (drag/shuffle) bumps alpha back up to re-energize it.
 	const REPULSION = 1800;
 	const SPRING_LEN = 110;
 	const SPRING_K = 0.05;
@@ -203,6 +217,7 @@
 				let dx = nj.x - ni.x;
 				let dy = nj.y - ni.y;
 				let d2 = dx * dx + dy * dy;
+				// two nodes stacked exactly: nudge apart so we don't divide by ~0
 				if (d2 < 0.01) {
 					dx = (Math.random() - 0.5) * 0.5;
 					dy = (Math.random() - 0.5) * 0.5;
@@ -244,9 +259,10 @@
 			n.vx += (targetX - n.x) * COLUMN_K * a;
 		}
 
-		// integrate
+		// integrate: apply each node's velocity to move it (fx/fy = pinned spot while dragged)
 		let energy = 0;
 		for (const n of nodes) {
+			// a pinned node (being dragged) ignores physics and stays where it's held
 			if (n.fx !== null && n.fy !== null) {
 				n.x = n.fx;
 				n.y = n.fy;
@@ -288,7 +304,8 @@
 
 		// cool
 		alpha = Math.max(0.02, alpha * 0.992);
-		// trigger reactivity
+		// We mutated node x/y in place above, which Svelte can't see. Re-assigning the
+		// array to itself tells Svelte the data changed so the SVG redraws this frame.
 		nodes = nodes;
 
 		raf = requestAnimationFrame(tick);
@@ -359,10 +376,13 @@
 	let pinchState: { dist: number; midX: number; midY: number; scale: number; tx: number; ty: number } | null = null;
 
 	function onBgPointerDown(e: PointerEvent) {
+		// ignore presses that landed on a node; those are handled as node drags, not panning
 		if ((e.target as Element).closest('[data-node]')) return;
 		activePointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
 		pinnedId = null;
 
+		// Two fingers down: start a pinch-zoom. Remember the starting finger distance
+		// and midpoint so onBgPointerMove can compare against them as fingers move.
 		if (activePointers.size === 2 && svgEl) {
 			const pts = Array.from(activePointers.values());
 			const dx = pts[1].x - pts[0].x;
@@ -417,14 +437,18 @@
 		zoomAt(factor, e.clientX, e.clientY);
 	}
 
+	// Zoom toward a point (the cursor, or the center if none given) so that point
+	// stays put under the pointer instead of the view sliding around as it scales.
 	function zoomAt(factor: number, clientX?: number, clientY?: number) {
 		if (!svgEl) return;
-		const newScale = Math.max(0.4, Math.min(3, scale * factor));
+		const newScale = Math.max(0.4, Math.min(3, scale * factor)); // clamp 0.4x..3x
 		const rect = svgEl.getBoundingClientRect();
 		const cx = clientX ?? rect.left + rect.width / 2;
 		const cy = clientY ?? rect.top + rect.height / 2;
+		// convert the screen point into graph coordinates
 		const mx = ((cx - rect.left) / rect.width) * W;
 		const my = ((cy - rect.top) / rect.height) * H;
+		// adjust the pan offset so that graph point lands in the same screen spot after scaling
 		tx = mx - (mx - tx) * (newScale / scale);
 		ty = my - (my - ty) * (newScale / scale);
 		scale = newScale;
@@ -584,7 +608,7 @@
 								{#if n.type === 'child' && n.progress > 0}
 									<!-- track -->
 									<circle r={r + 4.5} fill="none" stroke="#E1E5EC" stroke-width="2" />
-									<!-- progress arc -->
+									<!-- progress arc: dash length = fraction of circumference, clamped at a full ring -->
 									<circle
 										r={r + 4.5}
 										fill="none"
@@ -612,6 +636,7 @@
 									opacity="0.18"
 									style="pointer-events:none;"
 								/>
+								<!-- initials in the circle: first letter of first and last name -->
 								<text
 									text-anchor="middle"
 									dy="4"
@@ -621,6 +646,7 @@
 									letter-spacing="0.5"
 									style="pointer-events:none;user-select:none;"
 								>{n.label.split(' ').map((p) => p[0]).slice(0, 2).join('')}</text>
+								<!-- full-name label pill, only shown on highlight or when zoomed in enough to fit it -->
 								{#if hl || scale > 1.2}
 									<g style="pointer-events:none;">
 										<rect

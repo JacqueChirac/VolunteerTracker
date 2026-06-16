@@ -1,4 +1,4 @@
-// organizer events dashboard — loads events, handles add/edit/delete
+// organizer events dashboard - loads events, handles add/edit/delete
 import type { PageServerLoad, Actions } from "./$types";
 import { db } from "$lib/server/db";
 import { events, eventSignups, contributions } from "$lib/server/db/schema";
@@ -57,6 +57,8 @@ export const load: PageServerLoad = async () => {
   const allEvents = await db.select().from(events).orderBy(desc(events.date));
   const allSignups = await db.select().from(eventSignups);
 
+  // Tally how many people signed up for each event so the list can show
+  // "X signed up" without a separate query per event.
   const signupCounts: Record<number, number> = {};
   for (const s of allSignups) {
     signupCounts[s.eventId] = (signupCounts[s.eventId] || 0) + 1;
@@ -124,6 +126,8 @@ export const actions: Actions = {
     const parsed = parseDateFields(fd, true);
     if (!parsed.ok) return fail(400, { editId: id, error: parsed.error });
 
+    // Grab the row as it is now so the undo log can store both the old and new
+    // versions and roll the edit back if needed.
     const [before] = await db.select().from(events).where(eq(events.id, id));
     if (!before) return fail(400, { editId: id, error: "Event not found." });
 

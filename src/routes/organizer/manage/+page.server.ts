@@ -1,4 +1,4 @@
-// manage page server — settings, activity types, announcements, manual entries, archives
+// manage page server - settings, activity types, announcements, manual entries, archives
 import type { PageServerLoad, Actions } from './$types';
 import { db } from '$lib/server/db';
 import { announcements, users, contributions, children, childVolunteerLinks, seasonArchives, swimLevelSettings, events } from '$lib/server/db/schema';
@@ -137,6 +137,7 @@ export const actions: Actions = {
 				});
 			}
 			const rate = await getDonationRate();
+			// store the $ and the hours it's worth, so donations count toward totals
 			const hoursEquiv = num / rate;
 			if (hoursEquiv > MAX_DERIVED_HOURS) {
 				return fail(400, {
@@ -158,6 +159,7 @@ export const actions: Actions = {
 
 	updateSettings: async ({ request }) => {
 		const fd = await request.formData();
+		// both the numeric-settings form and the season-dates form post here; pick out setting_* fields
 		for (const [key, value] of fd.entries()) {
 			if (key.startsWith('setting_')) {
 				await updateSetting(key.replace('setting_', ''), value.toString().trim());
@@ -194,7 +196,7 @@ export const actions: Actions = {
 		const user = await createUser(password, firstName, lastName, email, 'volunteer');
 		await recordAction(String(locals.user!.id), `Add volunteer ${firstName} ${lastName}`, [chInsert('users', user)]);
 		const node = await init();
-		// fetch the timestamp safely — a failed time API must not block account creation
+		// fetch the timestamp safely - a failed time API must not block account creation
 		let emailTime: unknown;
 		try {
 			emailTime = await getTime();
@@ -305,6 +307,7 @@ export const actions: Actions = {
 
 		const markAs = fd.get('markAs')?.toString() as 'full_member' | 'tryout' ?? 'full_member';
 
+		// top up with a single contribution covering the gap to the requirement
 		const allContributions = await db.select().from(contributions).where(eq(contributions.userId, userId));
 		const currentHours = allContributions.reduce((sum, c) => sum + parseFloat(c.hours ?? '0'), 0);
 

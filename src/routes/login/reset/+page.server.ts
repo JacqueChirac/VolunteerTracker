@@ -40,6 +40,7 @@ export const actions: Actions = {
 			return fail(400, { error: "Passwords do not match." });
 		}
 
+		// re-verify the cookie on submit; load() can't guard the POST
 		const token = cookies.get(RECOVERY_COOKIE);
 		const recovery = token ? parseRecoveryToken(token) : null;
 
@@ -48,6 +49,7 @@ export const actions: Actions = {
 		}
 
 		const newPasswordHash = hashSync(password, BCRYPT_COST);
+		// email comes from the signed token, never from user input
 		const userEmail = recovery.email;
 
 		//Update

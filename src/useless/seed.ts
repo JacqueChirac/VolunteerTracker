@@ -13,7 +13,7 @@ const db = drizzle(sql, { schema });
 async function seed() {
   console.log("Seeding database...");
 
-  // admin account — this is the organizer login
+  // admin account - this is the organizer login
   const adminPassword = hashSync("admin123", 10);
   await db
     .insert(schema.users)

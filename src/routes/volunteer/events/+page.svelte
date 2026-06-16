@@ -1,4 +1,4 @@
-<!-- events list — sign up / cancel for upcoming events -->
+<!-- events list - sign up / cancel for upcoming events -->
 <script lang="ts">
 	import { enhance } from '$app/forms';
 	import type { PageData, ActionData } from './$types';
@@ -9,6 +9,7 @@
   let { data, form }: { data: PageData; form: ActionData } = $props();
 
   const today = new Date().toISOString().split("T")[0];
+  // split into upcoming vs past so each renders in its own section
   let upcomingEvents = $derived(
     data.events.filter((e: (typeof data.events)[0]) => !isEventPast(e, today)),
   );

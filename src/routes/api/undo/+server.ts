@@ -1,4 +1,4 @@
-// POST /api/undo — reverse the current user's most recent reversible action.
+// POST /api/undo - reverse the current user's most recent reversible action.
 import type { RequestHandler } from "./$types";
 import { json, error } from "@sveltejs/kit";
 import { undo, getUndoState } from "$lib/server/undo";

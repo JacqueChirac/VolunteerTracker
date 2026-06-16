@@ -3,7 +3,7 @@
 // Responsibilities:
 //   1. parse + verify the signed session cookie, attach `event.locals.user`
 //   2. enforce role-based route gating (organizer routes need organizer role)
-//      — IMPORTANT: must live here, not in +layout.server.ts. SvelteKit runs
+//      - IMPORTANT: must live here, not in +layout.server.ts. SvelteKit runs
 //        form actions BEFORE layout loads, so a layout guard would let an
 //        authenticated volunteer POST to organizer actions.
 //   3. add security headers to every response
@@ -50,7 +50,7 @@ export const handle: Handle = async ({ event, resolve }) => {
 			if (isApiCall) throw error(401, 'Not authenticated');
 			throw redirect(302, '/login?role=volunteer');
 		}
-		// /volunteer/tutorial is the merged display+editor — organizers need access
+		// /volunteer/tutorial is the merged display+editor - organizers need access
 		// to use the inline edit mode. Every other /volunteer/* route is volunteer-only.
 		const isTutorial = path === '/volunteer/tutorial' || path.startsWith('/volunteer/tutorial/');
 		if (event.locals.user.role !== 'volunteer' && !isTutorial) {

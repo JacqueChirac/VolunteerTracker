@@ -1,6 +1,6 @@
 // one-off migration: drop events.type, contributions.activity_id, and activity_types
 // run with: bun run src/lib/server/migrate-drop-event-and-activity-types.ts
-// idempotent — safe to run twice. Run BEFORE `bun run db:push`.
+// idempotent - safe to run twice. Run BEFORE `bun run db:push`.
 
 import { neon } from '@neondatabase/serverless';
 

@@ -14,6 +14,7 @@ function createToasts() {
   function push(message: string, opts: { undoable?: boolean } = {}) {
     const id = nextId++;
     update((list) => [...list, { id, message, undoable: !!opts.undoable }]);
+    // auto-dismiss; long-ish so undo toasts are actually catchable
     setTimeout(() => dismiss(id), 8000);
     return id;
   }

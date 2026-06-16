@@ -1,4 +1,4 @@
-<!-- root layout — wraps every page in the app -->
+<!-- root layout - wraps every page in the app -->
 <script lang="ts">
 	import '../app.css';
 	import { lang } from '$lib/stores/lang';

@@ -1,4 +1,4 @@
-<!-- volunteer & children roster — organizer view -->
+<!-- volunteer & children roster - organizer view -->
 <script lang="ts">
 	import type { PageData } from './$types';
 	import VolunteerChildGraph from '$lib/components/VolunteerChildGraph.svelte';
@@ -16,6 +16,7 @@
 	let filteredVolunteers = $derived.by(() => {
 		const q = search.trim().toLowerCase();
 		if (!q) return data.volunteers;
+		// match on the volunteer's own name/email or any of their linked kids' names
 		return data.volunteers.filter(
 			(v) =>
 				`${v.firstName} ${v.lastName}`.toLowerCase().includes(q) ||
